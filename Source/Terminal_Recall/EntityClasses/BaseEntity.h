@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "Terminal_Recall/StructsAndEnums/MoveTypeEnum.h"
 #include "BaseEntity.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveDone);
@@ -13,20 +14,26 @@ class TERMINAL_RECALL_API ABaseEntity : public APawn
 public:
 	ABaseEntity();
 	
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UStaticMeshComponent> MeshComponent;
+	
+	UPROPERTY(BlueprintAssignable, Category = "Events For Designers")
 	FOnMoveDone OnMoveDoneEvent; // [NOTE] Make sure to use this event when player reached destination
 	
-	UPROPERTY(EditInstanceOnly, Category="Entity Info (For Designers)")
+	UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)")
 	float MaxHealth = 100;
-	UPROPERTY(EditInstanceOnly, Category="Entity Info (For Designers)")
-	int MoveType = 0; // [NOTE] will be changed for an enum
-	UPROPERTY(EditInstanceOnly, Category="Entity Info (For Designers)", meta = (ToolTip = "How many cells entity can move in a certain direction"))
+	UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)")
+	EMoveTypeEnum MoveType = EMoveTypeEnum::None;
+	UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)", meta = (ToolTip = "How many cells entity can move in a certain direction"))
 	int MoveMagnitude;
-	
+
+	UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)", meta=(EditCondition = "false"))
 	float CurrentHealth;
 	
 	virtual void BeginPlay() override;
 	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
-	void OnMove(FVector3f pos);
+	virtual void OnMove(FVector3f pos);
+	UFUNCTION()
+	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed);
 };

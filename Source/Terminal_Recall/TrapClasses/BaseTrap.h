@@ -14,16 +14,16 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> MeshComponent;
 	
-	UPROPERTY(EditInstanceOnly, Category="Trap Info (For Designers)")
+	UPROPERTY(EditAnywhere, Category="Trap Info (For Designers)")
 	float Damage;
-	UPROPERTY(EditInstanceOnly, Category="Trap Info (For Designers)", meta=(ToolTip="Enable if you want trap to wait a bit before activating"))
+	UPROPERTY(EditAnywhere, Category="Trap Info (For Designers)", meta=(ToolTip="Enable if you want trap to wait a bit before activating"))
 	bool IsDelayed;
-	UPROPERTY(EditInstanceOnly, Category="Trap Info (For Designers)")
+	UPROPERTY(EditAnywhere, Category="Trap Info (For Designers)")
 	float DelayTime;
-	UPROPERTY(EditInstanceOnly, Category="Trap Info (For Designers)", meta=(ToolTip="The time before trap disable itself"))
+	UPROPERTY(EditAnywhere, Category="Trap Info (For Designers)", meta=(ToolTip="The time before trap disable itself"))
 	float TrapDisableTime;
 	
-	UPROPERTY(EditInstanceOnly, Category="Trap Info (For Designers)", meta=(ToolTip="Enable if you want the trap to always be on"))
+	UPROPERTY(EditAnywhere, Category="Trap Info (For Designers)", meta=(ToolTip="Enable if you want the trap to always be on"))
 	bool IsTrapOn;
 
 	UFUNCTION(BlueprintCallable, Category="Trap Function (For Designers)", meta = (ToolTip = "Will activate the trap if it not activated yet"))

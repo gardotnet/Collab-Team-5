@@ -12,6 +12,6 @@ class TERMINAL_RECALL_API AWorldGridCell : public ABaseGridCell
 public:
 	AWorldGridCell();
 
-	UPROPERTY(EditInstanceOnly, Category="Grid Cell Info (For Designers)", meta = (ToolTip = "Select the interactable related to this cell here"))
+	UPROPERTY(EditAnywhere, Category="Grid Cell Info (For Designers)", meta = (ToolTip = "Select the interactable related to this cell here"))
 	TObjectPtr<AActor> InteractableRef; // [NOTE] will change to only Interactable Class instead of AActor
 };
