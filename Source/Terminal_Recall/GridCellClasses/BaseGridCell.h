@@ -18,21 +18,19 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> MeshComponent;
 	
-	UPROPERTY(EditAnywhere, Category="Grid Cell Info (For Designers)", meta=(ToolTip="Disable to prevent player being able to step on this cell"))
+	/*UPROPERTY(EditAnywhere, Category="Grid Cell Info (For Designers)", meta=(ToolTip="Disable to prevent player being able to step on this cell"))
 	bool Walkable = true;
 	UPROPERTY(EditAnywhere, Category="Grid Cell Info (For Designers)", meta=(ToolTip="Enable this if this grid cell has a trap and assign it below"))
 	bool HasTrap = false;
 	UPROPERTY(EditAnywhere, Category="Grid Cell Info (For Designers)", meta=(ToolTip="Select the trap object related to this cell here", EditCondition = "HasTrap"))
-	TObjectPtr<ABaseTrap> TrapRef;
+	TObjectPtr<ABaseTrap> TrapRef;*/
 
 	virtual void BeginPlay() override;
-	bool OnUnitArrive(TObjectPtr<ABaseEntity> entityUnit);
+	virtual void OnUnitArrive();
 	
 private:
 	UPROPERTY()
 	TObjectPtr<ABaseEntity> UnitRef;
-	
-	void OnUnitRefMoved();
 	UFUNCTION()
-	void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed);
+	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed);
 };
