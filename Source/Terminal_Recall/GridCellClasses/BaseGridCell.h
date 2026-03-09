@@ -1,0 +1,36 @@
+﻿#pragma once
+
+#include "CoreMinimal.h"
+#include "Terminal_Recall/EntityClasses/BaseEntity.h"
+#include "Terminal_Recall/TrapClasses/BaseTrap.h"
+#include "BaseGridCell.generated.h"
+
+class UStaticMeshComponent;
+
+UCLASS()
+class TERMINAL_RECALL_API ABaseGridCell : public AActor
+{
+	GENERATED_BODY()
+
+public:
+	ABaseGridCell();
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UStaticMeshComponent> MeshComponent;
+	
+	UPROPERTY(EditInstanceOnly, Category="Grid Cell Info (For Designers)", meta=(ToolTip="Disable to prevent player being able to step on this cell"))
+	bool Walkable = true;
+	UPROPERTY(EditInstanceOnly, Category="Grid Cell Info (For Designers)", meta=(ToolTip="Select the trap object related to this cell here"))
+	TObjectPtr<ABaseTrap> TrapRef;
+
+	virtual void BeginPlay() override;
+	bool OnUnitArrive(TObjectPtr<ABaseEntity> entityUnit);
+	
+private:
+	UPROPERTY()
+	TObjectPtr<ABaseEntity> UnitRef;
+	
+	void OnUnitRefMoved();
+	UFUNCTION()
+	void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed);
+};
