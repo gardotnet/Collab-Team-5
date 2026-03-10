@@ -12,6 +12,11 @@ void AWorldGridCell::LoadLevel()
 	// [NOTE] Will tell encounter "level loader" to load the level assign to this cell.
 }
 
+/*void AWorldGridCell::CreatePath()
+{
+	UE_LOG(LogTemp, Warning, TEXT("There's Nothing to Merge"));
+}*/
+
 void AWorldGridCell::BeginPlay()
 {
 	Super::BeginPlay();

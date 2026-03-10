@@ -26,7 +26,9 @@ public:
 	TArray<FWorldNeighbourStruct> NeighbouringCells;
 
 	void LoadLevel();
-	
+
+	/*UPROPERTY(BlueprintCallable, CallInEditor)
+	void CreatePath();*/
 	virtual void BeginPlay() override;
 	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 	
