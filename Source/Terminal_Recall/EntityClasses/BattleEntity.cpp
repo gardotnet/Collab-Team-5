@@ -43,7 +43,7 @@ void ABattleEntity::HideChoices()
 	// removes all button from the UI
 }
 
-void ABattleEntity::OnMove(FVector3f pos)
+void ABattleEntity::OnMove(FVector pos)
 {
 	// check if entity can move on that grid
 }

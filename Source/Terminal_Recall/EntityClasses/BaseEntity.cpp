@@ -1,8 +1,12 @@
 ﻿#include "BaseEntity.h"
 
+#include "Components/CapsuleComponent.h"
+
 ABaseEntity::ABaseEntity()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("RootComponent"));
+	RootComponent = CapsuleComponent;
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TheMesh"));
 	MeshComponent->SetupAttachment(RootComponent);
 }
@@ -20,7 +24,7 @@ void ABaseEntity::BeginPlay()
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }*/
 
-void ABaseEntity::OnMove(FVector3f pos)
+void ABaseEntity::OnMove(FVector pos)
 {
 	// [NOTE] move entity to passed position
 }

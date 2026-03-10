@@ -33,7 +33,7 @@ public:
 	void ShowChoices();
 	void HideChoices();
 
-	virtual void OnMove(FVector3f pos) override;
+	virtual void OnMove(FVector pos) override;
 	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 };
 

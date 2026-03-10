@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "Terminal_Recall/EntityClasses/BaseEntity.h"
-#include "Terminal_Recall/TrapClasses/BaseTrap.h"
 #include "BaseGridCell.generated.h"
 
 class UStaticMeshComponent;

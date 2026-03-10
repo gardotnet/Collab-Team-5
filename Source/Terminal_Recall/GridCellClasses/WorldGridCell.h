@@ -5,6 +5,8 @@
 #include "Terminal_Recall/StructsAndEnums/WorldNeighbourStruct.h"
 #include "WorldGridCell.generated.h"
 
+class ADefaultPlayerController;
+
 UCLASS()
 class TERMINAL_RECALL_API AWorldGridCell : public ABaseGridCell
 {
@@ -12,6 +14,9 @@ class TERMINAL_RECALL_API AWorldGridCell : public ABaseGridCell
 
 public:
 	AWorldGridCell();
+	
+	UPROPERTY()
+	TObjectPtr<ADefaultPlayerController> PlayerController;
 
 	UPROPERTY(EditAnywhere, Category="Grid Cell Info (For Designers)", meta = (ToolTip = "Enable if cell will trigger an encounter"))
 	bool IsEncounter = true;
@@ -22,6 +27,7 @@ public:
 
 	void LoadLevel();
 	
+	virtual void BeginPlay() override;
 	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 	
 	/*UPROPERTY(EditAnywhere, Category="Grid Cell Info (For Designers)", meta = (ToolTip = "Select the interactable related to this cell here"))
