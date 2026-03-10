@@ -4,6 +4,7 @@
 #include "Terminal_Recall/EntityClasses/BaseEntity.h"
 #include "BaseGridCell.generated.h"
 
+class UBoxComponent;
 class UStaticMeshComponent;
 
 UCLASS()
@@ -13,6 +14,9 @@ class TERMINAL_RECALL_API ABaseGridCell : public AActor
 
 public:
 	ABaseGridCell();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UBoxComponent> BoxComponent;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> MeshComponent;

@@ -5,6 +5,7 @@
 ABaseEntity::ABaseEntity()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("RootComponent"));
 	RootComponent = CapsuleComponent;
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TheMesh"));

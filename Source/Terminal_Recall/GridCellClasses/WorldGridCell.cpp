@@ -24,7 +24,7 @@ void AWorldGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 	if (PlayerController)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Controller ready and passing cell"));
-		//PlayerController->NavigateWorld(this);
+		PlayerController->NavigateWorld(this);
 		
 	}
 }

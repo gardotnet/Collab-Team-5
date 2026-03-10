@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "DefaultPlayerController.generated.h"
 
+class AAIController;
 class ABaseEntity;
 class UNodeInfoForCellSearch;
 class AWorldGridCell;
@@ -20,8 +21,6 @@ public:
 	UPROPERTY(EditAnywhere, Category="Variable (For Designers)")
 	TSubclassOf<ABaseEntity> PlayerChar;
 	
-	
-	
 protected:
 	UPROPERTY()
 	TObjectPtr<ABaseEntity> PlayerEntity;
@@ -36,6 +35,8 @@ protected:
 	UPROPERTY()
 	TArray<TObjectPtr<UNodeInfoForCellSearch>> CloseList;
 	FTimerHandle MoveTimerHandle;
+
+	TObjectPtr<AAIController> PlayerAIController;
 	
 public:
 	UFUNCTION()

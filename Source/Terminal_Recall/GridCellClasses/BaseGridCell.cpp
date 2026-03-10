@@ -1,10 +1,16 @@
 ﻿#include "BaseGridCell.h"
 
+#include "Components/BoxComponent.h"
+
 ABaseGridCell::ABaseGridCell()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxRootPart"));
+	RootComponent = BoxComponent;
+	BoxComponent->SetCollisionProfileName("CellTraceProfile");
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TheMesh"));
 	MeshComponent->SetupAttachment(RootComponent);
+	MeshComponent->SetCollisionProfileName("NoCollision");
 }
 
 void ABaseGridCell::BeginPlay()
