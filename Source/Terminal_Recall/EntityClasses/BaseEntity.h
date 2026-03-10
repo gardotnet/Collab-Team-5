@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Terminal_Recall/StructsAndEnums/MoveTypeEnum.h"
 #include "BaseEntity.generated.h"
 
 class UCapsuleComponent;
@@ -24,10 +23,11 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)")
 	float MaxHealth = 100;
-	UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)")
-	EMoveTypeEnum MoveType = EMoveTypeEnum::None;
+	
+	/*UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)")
+	EActionTypeEnum MoveType = EActionTypeEnum::None;
 	UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)", meta = (ToolTip = "How many cells entity can move in a certain direction"))
-	int MoveMagnitude;
+	int MoveMagnitude;*/
 
 	UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)", meta=(EditCondition = "false"))
 	float CurrentHealth;

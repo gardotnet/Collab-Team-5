@@ -1,5 +1,8 @@
 ﻿#include "BattleEntity.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
+
 ABattleEntity::ABattleEntity()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -18,19 +21,33 @@ void ABattleEntity::OnTurnGo()
 	// (maybe show choices)
 }
 
-void ABattleEntity::OnMovementSelected()
+void ABattleEntity::OnActionSelected()
 {
-	// if player clicked movement button
+	// [NOTE] if player clicked an option
+	// [NOTE] get variables from button and pass it to manager
+	if (BattleManager)
+	{
+		//BattleManager->ActionChoiceSelected()
+	}
 }
 
-void ABattleEntity::OnAttackSelected(int index)
+void ABattleEntity::DoAttackAction(TObjectPtr<ABaseEntity> enemy, FVector pos)
 {
-	// if player picked one of the attack buttons
-}
+	if (enemy)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("I refuse to hit this entity"));
+		// checks if enemy is dead
+		/*if ()
+		{
+			// moves to opponent position when defeated like chess
+			OnMove(pos);
+			return;
+		}*/
+		
+	}
 
-void ABattleEntity::OnAttack(int id, FVector3f pos)
-{
-	// finds the attack in the Global Attack List and play the attack animation
+	if (OnTurnDoneEvent.IsBound())
+		OnTurnDoneEvent.Broadcast();
 }
 
 void ABattleEntity::ShowChoices()
@@ -43,6 +60,12 @@ void ABattleEntity::HideChoices()
 	// removes all button from the UI
 }
 
+void ABattleEntity::BeginPlay()
+{
+	Super::BeginPlay();
+	BattleManager = Cast<ABattleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ABattleManager::StaticClass()));
+}
+
 void ABattleEntity::OnMove(FVector pos)
 {
 	// check if entity can move on that grid
@@ -51,6 +74,7 @@ void ABattleEntity::OnMove(FVector pos)
 void ABattleEntity::OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Hey! I'm snitching to the battle manager now!"));
+	
 }
 
 
