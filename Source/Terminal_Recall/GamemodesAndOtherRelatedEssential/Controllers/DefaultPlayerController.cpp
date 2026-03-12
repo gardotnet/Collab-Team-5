@@ -27,6 +27,7 @@ void ADefaultPlayerController::BeginPlay()
 	if (hitResult.GetActor())
 	{
 		CurrentCell = Cast<AWorldGridCell>(hitResult.GetActor());
+		CurrentCell->OnUnitArrive();
 	}
 	TimerManagerRef = &GetWorld()->GetTimerManager();
 	MoveTimerHandle = FTimerHandle();
@@ -34,37 +35,16 @@ void ADefaultPlayerController::BeginPlay()
 
 void ADefaultPlayerController::MovePlayer()
 {
-	MoveTimer += 0.01f;
-	FVector playerPos = PlayerEntity->GetActorLocation();
-	FVector cellPos = ThePath[PathIndex]->GetActorLocation();
-	cellPos.Z = playerPos.Z;
-	float distance = FVector::Dist(playerPos, cellPos);
-	if (MoveTimer > DesiredMoveDuration || distance < 1)
+	CurrentCell = ThePath[PathIndex];
+	if (ThePath[PathIndex] == DestinationCell)
 	{
-		CurrentCell = ThePath[PathIndex];
-		PlayerEntity->SetActorLocation(cellPos);
-		if (ThePath[PathIndex] == DestinationCell)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("EndMovement"));
-			ThePath.Empty();
-			TimerManagerRef->ClearTimer(MoveTimerHandle);
-			PlayerEntity->OnMoveDoneEvent.Broadcast();
-		}
-		else
-		{
-			PathIndex++;
-			MoveTimer = 0;
-			cellPos = ThePath[PathIndex]->GetActorLocation();
-			cellPos.Z = playerPos.Z;
-			distance = FVector::Dist(playerPos, cellPos);
-			DesiredMoveDuration = distance/PlayerSpeed ;
-			UE_LOG(LogTemp, Warning, TEXT("Next node is %s in %f units"), *ThePath[PathIndex]->GetActorLabel(), distance);
-		}
+		ThePath.Empty();
+		DestinationCell->OnUnitArrive();
 	}
 	else
 	{
-		cellPos.Z = playerPos.Z;
-		PlayerEntity->SetActorLocation(FMath::Lerp(playerPos, cellPos, MoveTimer/DesiredMoveDuration));
+		PathIndex++;
+		PlayerEntity->StartMove(ThePath[PathIndex]->GetActorLocation());
 	}
 }
 
@@ -101,14 +81,7 @@ void ADefaultPlayerController::NavigateWorld(TObjectPtr<AWorldGridCell> cell)
 		// Flips the array around
 		Algo::Reverse(ThePath);
 		// moves the player
-		MoveTimer = 0;
-		FVector playerPos = PlayerEntity->GetActorLocation();
-		FVector cellPos = ThePath[PathIndex]->GetActorLocation();
-		cellPos.Z = playerPos.Z;
-		float distance = FVector::Dist(playerPos, cellPos);
-		DesiredMoveDuration = distance/PlayerSpeed;
-		TimerManagerRef->ClearTimer(MoveTimerHandle);
-		TimerManagerRef->SetTimer(MoveTimerHandle, this, &ADefaultPlayerController::MovePlayer, 0.01f, true);
+		PlayerEntity->StartMove(ThePath[PathIndex]->GetActorLocation());
 	}
 	else
 	{

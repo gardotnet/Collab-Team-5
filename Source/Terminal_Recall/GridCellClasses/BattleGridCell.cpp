@@ -42,7 +42,7 @@ void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 	switch (CurrentState)
 	{
 		case EBattleCellState::Move:
-			EntityCauserRef->OnMove(GetActorLocation());
+			EntityCauserRef->StartMove(GetActorLocation());
 		break;
 		case EBattleCellState::Attack:
 			EntityCauserRef->DoAttackAction(UnitRef, GetActorLocation());

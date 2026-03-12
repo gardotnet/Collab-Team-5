@@ -19,8 +19,6 @@ class TERMINAL_RECALL_API ADefaultPlayerController : public APlayerController
 	
 public:
 	UPROPERTY(EditAnywhere, Category="Variable (For Designers)")
-	TObjectPtr<AWorldGridCell> SpawnPointCell;
-	UPROPERTY(EditAnywhere, Category="Variable (For Designers)")
 	TSubclassOf<ABaseEntity> PlayerChar;
 	UPROPERTY(EditAnywhere, Category="Variable (For Designers)")
 	float PlayerSpeed = 100;

@@ -21,7 +21,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> MeshComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Variables (For Designers)")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stuff For Designers | Grid Cell Info | General Stuff")
 	bool Clickable;
 	
 	/*
@@ -34,7 +34,10 @@ public:
 	TObjectPtr<ABaseEntity> UnitRef;
 
 	virtual void BeginPlay() override;
-	virtual void OnUnitArrive();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Unit Events")
+	void OnUnitArrive();
+	
+	virtual void OnUnitArrive_Implementation();
 	
 private:
 	

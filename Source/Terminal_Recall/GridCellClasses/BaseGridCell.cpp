@@ -19,8 +19,9 @@ void ABaseGridCell::BeginPlay()
 	OnClicked.AddDynamic(this, &ABaseGridCell::OnCellClicked);
 }
 
-void ABaseGridCell::OnUnitArrive()
+void ABaseGridCell::OnUnitArrive_Implementation()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Now the party can start"));
 }
 
 void ABaseGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)

@@ -41,7 +41,7 @@ public:
 	void HideChoices();
 
 	virtual void BeginPlay() override;
-	virtual void OnMove(FVector pos) override;
+	virtual void OnMove() override;
 	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 };
 

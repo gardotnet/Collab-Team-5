@@ -66,7 +66,7 @@ void ABattleEntity::BeginPlay()
 	BattleManager = Cast<ABattleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ABattleManager::StaticClass()));
 }
 
-void ABattleEntity::OnMove(FVector pos)
+void ABattleEntity::OnMove()
 {
 	// check if entity can move on that grid
 }

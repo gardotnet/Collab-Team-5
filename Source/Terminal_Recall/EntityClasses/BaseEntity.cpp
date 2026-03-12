@@ -1,6 +1,7 @@
 ﻿#include "BaseEntity.h"
 
 #include "Components/CapsuleComponent.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/DefaultPlayerController.h"
 
 ABaseEntity::ABaseEntity()
 {
@@ -18,6 +19,19 @@ void ABaseEntity::BeginPlay()
 	
 	CurrentHealth = MaxHealth;
 	OnClicked.AddDynamic(this, &ABaseEntity::OnEntityClicked);
+	TimerManagerRef = TimerManagerRef = &GetWorld()->GetTimerManager();
+	PlayerController = Cast<ADefaultPlayerController>(GetWorld()->GetFirstPlayerController());
+}
+
+void ABaseEntity::StartMove(FVector position)
+{
+	MoveTimer = 0;
+	TargetPosition = position;
+	TargetPosition.Z = GetActorLocation().Z;
+	float distance = FVector::Dist(GetActorLocation(), position);
+	DesiredMoveDuration = distance/Speed;
+	TimerManagerRef->ClearTimer(MoveTimerHandle);
+	TimerManagerRef->SetTimer(MoveTimerHandle, this, &ABaseEntity::OnMove, 0.01f, true);
 }
 
 /*void ABaseEntity::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -25,9 +39,23 @@ void ABaseEntity::BeginPlay()
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }*/
 
-void ABaseEntity::OnMove(FVector pos)
+void ABaseEntity::OnMove()
 {
-	// [NOTE] move entity to passed position
+	MoveTimer += 0.01f;
+	FVector playerPos = GetActorLocation();
+	float distance = FVector::Dist(playerPos, TargetPosition);
+	
+	if (MoveTimer > DesiredMoveDuration || distance < 1)
+	{
+		SetActorLocation(TargetPosition);
+		TimerManagerRef->ClearTimer(MoveTimerHandle);
+		if (PlayerController)
+			PlayerController->MovePlayer();
+	}
+	else
+	{
+		SetActorLocation(FMath::Lerp(playerPos, TargetPosition, MoveTimer/DesiredMoveDuration));
+	}
 }
 
 void ABaseEntity::OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed)
