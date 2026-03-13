@@ -3,6 +3,9 @@
 
 #include "EditorUtilityWidgetComponents.h"
 #include "EncounterLevelMakerManager.h"
+#include "LevelEditor.h"
+#include "SLevelViewport.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/EnemyInfoStruct.h"
 
@@ -54,6 +57,7 @@ void UEncounterLevelMakerWindow::NativeConstruct()
 				EnemyComboBox->AddOption(enemyInfo->EnemyName.ToString());
 		}
 	}
+	HoverTimerHandle = FTimerHandle();
 }
 
 #pragma region Button Functions
@@ -61,7 +65,16 @@ void UEncounterLevelMakerWindow::NativeConstruct()
 void UEncounterLevelMakerWindow::OnCreateGridPressed()
 {
 	if (!MakerManager)
-		MakerManager = Cast<AEncounterLevelMakerManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AEncounterLevelMakerManager::StaticClass()));
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Maker manager not exist"))
+		MakerManager = Cast<AEncounterLevelMakerManager>(UGameplayStatics::GetActorOfClass(GEditor->GetEditorWorldContext().World(), AEncounterLevelMakerManager::StaticClass()));
+		if (!MakerManager)
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			MakerManager = GEditor->GetEditorWorldContext().World()->SpawnActor<AEncounterLevelMakerManager>(MakerManagerClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+		}
+	}
 	
 	FString xString =  InputGridSizeX->GetText().ToString();
 	FString yString =  InputGridSizeY->GetText().ToString();
@@ -84,6 +97,7 @@ void UEncounterLevelMakerWindow::OnWalkTogglePressed()
 	{
 		CurrentModeSelected = ECellBrushMode::Walkable;
 		WalkToggleButton->SetBackgroundColor(FLinearColor::Green);
+		SetUpTrack();
 	}
 }
 
@@ -98,6 +112,7 @@ void UEncounterLevelMakerWindow::OnWallTogglePressed()
 	{
 		CurrentModeSelected = ECellBrushMode::Wall;
 		WallToggleButton->SetBackgroundColor(FLinearColor::Green);
+		SetUpTrack();
 	}
 }
 
@@ -119,6 +134,7 @@ void UEncounterLevelMakerWindow::OnEnemyTogglePressed()
 		{
 			CurrentModeSelected = ECellBrushMode::EnemySpawn;
 			EnemyToggleButton->SetBackgroundColor(FLinearColor::Green);
+			SetUpTrack();
 		}
 	}
 }
@@ -132,7 +148,7 @@ void UEncounterLevelMakerWindow::OnTrapTogglePressed()
 	}
 	else
 	{
-		if (EnemyComboBox->GetSelectedIndex() == 0)
+		if (TrapComboBox->GetSelectedIndex() == 0)
 		{
 			CurrentModeSelected = ECellBrushMode::None;
 			HighlightComboBox(TrapComboBox);
@@ -141,6 +157,7 @@ void UEncounterLevelMakerWindow::OnTrapTogglePressed()
 		{
 			CurrentModeSelected = ECellBrushMode::Trap;
 			TrapToggleButton->SetBackgroundColor(FLinearColor::Green);
+			SetUpTrack();
 		}
 	}
 }
@@ -167,31 +184,44 @@ void UEncounterLevelMakerWindow::OnRedoPressed()
 
 #pragma endregion
 
+#pragma region On Changes Functions
+
 void UEncounterLevelMakerWindow::OnGridTextXChange(const FText& NewText)
 {
 	FString stringText = NewText.ToString();
-	if (stringText.IsNumeric())
+	if (!stringText.IsNumeric())
 	{
 		InputGridSizeX->SetText(FText::GetEmpty());
 	}
 	else
 	{
-		if (FCString::Atoi(*stringText) < 100)
+		int32 num = FCString::Atoi(*stringText);
+		if (num > 100)
+		{
+			num = 100;
 			InputGridSizeX->SetText(FText::AsNumber(100));
+		}
+		GridSize.X = num;
 	}
+	
 }
 
 void UEncounterLevelMakerWindow::OnGridTextYChange(const FText& NewText)
 {
 	FString stringText = NewText.ToString();
-	if (stringText.IsNumeric())
+	if (!stringText.IsNumeric())
 	{
 		InputGridSizeY->SetText(FText::GetEmpty());
 	}
 	else
 	{
-		if (FCString::Atoi(*stringText) < 100)
+		int32 num = FCString::Atoi(*stringText);
+		if (num > 100)
+		{
+			num = 100;
 			InputGridSizeY->SetText(FText::AsNumber(100));
+		}
+		GridSize.Y = num;
 	}
 }
 
@@ -227,12 +257,16 @@ void UEncounterLevelMakerWindow::OnTrapSelectChange(FString SelectedItem, ESelec
 	}
 }
 
+#pragma endregion
+
 #pragma region Utilities
 
 void UEncounterLevelMakerWindow::UnselectCurrent()
 {
 	UnhighlightComboBox(EnemyComboBox);
 	UnhighlightComboBox(TrapComboBox);
+	if (TimerManager)
+		TimerManager->ClearTimer(HoverTimerHandle);
 	switch (CurrentModeSelected)
 	{
 	case ECellBrushMode::Walkable:
@@ -268,6 +302,62 @@ void UEncounterLevelMakerWindow::UnhighlightComboBox(UEditorUtilityComboBoxStrin
 	newStyle.ComboButtonStyle.ButtonStyle.Hovered.TintColor = FSlateColor (FLinearColor::Black);
 	newStyle.ComboButtonStyle.ButtonStyle.Pressed.TintColor = FSlateColor (FLinearColor::Black);
 	comboBox->SetWidgetStyle(newStyle);
+}
+
+void UEncounterLevelMakerWindow::SetUpTrack()
+{
+	if (!World)
+	{
+		World = GEditor->GetEditorWorldContext().World();
+		TimerManager = &World->GetTimerManager();
+	}
+	
+	TimerManager->SetTimer(HoverTimerHandle, this, &UEncounterLevelMakerWindow::EnableMouseTrack, 0.01f, true);
+}
+
+void UEncounterLevelMakerWindow::EnableMouseTrack()
+{
+	FLevelEditorModule& LEModule = FModuleManager::GetModuleChecked<FLevelEditorModule>("LevelEditor");
+	TSharedPtr<SLevelViewport> activeViewport = LEModule.GetFirstActiveLevelViewport();
+
+	if (!activeViewport.IsValid())
+		return;
+	FLevelEditorViewportClient& clientViewpoint = activeViewport->GetLevelViewportClient();
+	
+	FViewportCursorLocation cursorLoc = clientViewpoint.GetCursorWorldLocationFromMousePos();
+
+	FVector rayStartPos = cursorLoc.GetOrigin();
+	FVector rayDir = cursorLoc.GetDirection();
+	FVector rayEndPos = rayStartPos + (rayDir * 10000.0f);
+
+	FHitResult hitResult;
+	FCollisionQueryParams params;
+	params.bTraceComplex = true;
+
+	if (!World)
+	{
+		World = GEditor->GetEditorWorldContext().World();
+		TimerManager = &World->GetTimerManager();
+		TimerManager->ClearTimer(HoverTimerHandle);
+		UnselectCurrent();
+		CurrentModeSelected = ECellBrushMode::None;
+	}
+
+	if (World && World->LineTraceSingleByChannel(hitResult, rayStartPos, rayEndPos, ECC_Visibility, params))
+	{
+		if (UInstancedStaticMeshComponent* ISMC = Cast<UInstancedStaticMeshComponent>(hitResult.GetComponent()))
+		{
+			int32 hitIndex = hitResult.Item;
+
+			FIntPoint gridPos;
+			gridPos.Y = hitIndex / GridSize.X;
+			gridPos.X = hitIndex % GridSize.X;
+			
+			UE_LOG(LogTemp, Warning, TEXT("Hovered ISM Pos: (%d, %d)"), gridPos.X, gridPos.Y);
+
+			if (clientViewpoint.ProcessClick()) 
+		}
+	}
 }
 
 #pragma endregion

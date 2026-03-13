@@ -1,10 +1,10 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "EncounterLevelMakerManager.generated.h"
+
+#if WITH_EDITOR
 
 class AGridVisualiser;
 
@@ -16,8 +16,10 @@ class TERMINAL_RECALL_API AEncounterLevelMakerManager : public AActor
 public:
 	AEncounterLevelMakerManager();
 
+	#if WITH_EDITORONLY_DATA
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	TSubclassOf<AGridVisualiser> GridDisplayerClass;
+
 
 	UFUNCTION(BlueprintCallable, CallInEditor, Category= "For Designers | Tools")
 	void SpawnGrid();
@@ -28,4 +30,6 @@ public:
 protected:
 	UPROPERTY()
 	TObjectPtr<AGridVisualiser> GridDisplayerObject;
+	#endif
 };
+#endif

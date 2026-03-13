@@ -3,8 +3,6 @@
 #include "CoreMinimal.h"
 #include "DefaultPlayerController.generated.h"
 
-
-
 class AAIController;
 class ABaseEntity;
 class UNodeInfoForCellSearch;

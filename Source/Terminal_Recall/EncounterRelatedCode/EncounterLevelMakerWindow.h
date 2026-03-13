@@ -25,13 +25,24 @@ class TERMINAL_RECALL_API UEncounterLevelMakerWindow : public UEditorUtilityWidg
 	
 	// necessary to run during editor 
 	#if WITH_EDITORONLY_DATA
+
+	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
+	TSubclassOf<AEncounterLevelMakerManager> MakerManagerClass;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "For Designers | Necessities")
 	TObjectPtr<UDataTable> EnemyDataTable;
 	
 	ECellBrushMode CurrentModeSelected = ECellBrushMode::None;
-	
+
+	UPROPERTY()
 	TObjectPtr<AEncounterLevelMakerManager> MakerManager;
+
+	FTimerHandle HoverTimerHandle;
+
+	UPROPERTY()
+	TObjectPtr<UWorld> World;
+	FTimerManager* TimerManager;
+	FIntPoint GridSize;
 	
 	#pragma region Buttons
 	
@@ -116,6 +127,8 @@ protected:
 	void UnselectCurrent();
 	void HighlightComboBox(UEditorUtilityComboBoxString* comboBox);
 	void UnhighlightComboBox(UEditorUtilityComboBoxString* comboBox);
+	void SetUpTrack();
+	void EnableMouseTrack();
 };
 
 #endif

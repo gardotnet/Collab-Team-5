@@ -1,4 +1,5 @@
-﻿#include "EncounterLevelMakerManager.h"
+﻿#if WITH_EDITOR
+#include "EncounterLevelMakerManager.h"
 
 #include "Terminal_Recall/GridCellClasses/GridVisualiser.h"
 
@@ -14,12 +15,23 @@ void AEncounterLevelMakerManager::SpawnGrid()
 
 void AEncounterLevelMakerManager::CreateGrid(FIntPoint gridSize)
 {
-	if (!GridDisplayerObject)
+	if (!GridDisplayerObject && GridDisplayerClass)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Ran this"))
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		GridDisplayerObject = GetWorld()->SpawnActor<AGridVisualiser>(GridDisplayerClass, FVector(50.0f, 50.0f, 0), FRotator::ZeroRotator, SpawnParams);
+		if (GetWorld()->IsGameWorld())
+		{
+			GridDisplayerObject = GetWorld()->SpawnActor<AGridVisualiser>(GridDisplayerClass, FVector(50.0f, 50.0f, 0), FRotator::ZeroRotator, SpawnParams);
+		}
+		else
+		{
+			// [NOTE] need to remove
+			GridDisplayerObject = GEditor->GetEditorWorldContext().World()->SpawnActor<AGridVisualiser>(GridDisplayerClass, FVector(50.0f, 50.0f, 0), FRotator::ZeroRotator, SpawnParams);
+		}
 	}
 
-	GridDisplayerObject->RegenerateGrid(gridSize);
+	if (GridDisplayerObject)
+		GridDisplayerObject->RegenerateGrid(gridSize);
 }
+#endif
