@@ -20,7 +20,7 @@ struct FWorldNeighbourStruct : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(tooltip = "Scaled by 1 Block (100 Units)"))
 	int32 Length = 1;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	bool HasPathConnected;
+	bool HasPathConnected = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<AActor> PathObject;
 };
