@@ -16,6 +16,8 @@ void AGridVisualiser::RegenerateGrid(FIntPoint gridSize)
 {
 	if (!GridVisualComp || !GridVisualComp->GetStaticMesh())
 		return;
+
+	TArray<float> color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	
 	GridVisualComp->ClearInstances();
 	for (int x = 0; x < gridSize.X; x++)
@@ -24,15 +26,8 @@ void AGridVisualiser::RegenerateGrid(FIntPoint gridSize)
 		{
 			FVector relativeLoc = FVector(x * TileSize, y * TileSize, 0.0f);
 			FTransform instanceTransform = FTransform(relativeLoc);
-			GridVisualComp->AddInstance(instanceTransform);
-
-			FIntPoint gridIndex = FIntPoint(x, y);
-			if (!GridData.Contains(gridIndex))
-			{
-				GridData.Add(gridIndex);
-			}
-			
+			int32 instanceIndex =  GridVisualComp->AddInstance(instanceTransform);
+			GridVisualComp->SetCustomData(instanceIndex, color, false);
 		}
-		
 	}
 }

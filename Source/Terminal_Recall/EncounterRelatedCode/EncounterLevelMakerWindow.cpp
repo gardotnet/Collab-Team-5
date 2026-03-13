@@ -7,6 +7,7 @@
 #include "SLevelViewport.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Terminal_Recall/GridCellClasses/GridVisualiser.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/EnemyInfoStruct.h"
 
 void UEncounterLevelMakerWindow::NativeConstruct()
@@ -25,6 +26,8 @@ void UEncounterLevelMakerWindow::NativeConstruct()
 		EnemyToggleButton->OnClicked.AddDynamic(this, &UEncounterLevelMakerWindow::OnEnemyTogglePressed);
 	if (TrapToggleButton)
 		TrapToggleButton->OnClicked.AddDynamic(this, &UEncounterLevelMakerWindow::OnTrapTogglePressed);
+	if (PlayerToggleButton)
+		PlayerToggleButton->OnClicked.AddDynamic(this, &UEncounterLevelMakerWindow::OnPlayerTogglePressed);
 	if (LoadLevelFileButton)
 		LoadLevelFileButton->OnClicked.AddDynamic(this, &UEncounterLevelMakerWindow::OnLoadFilePressed);
 	if (ExportButton)
@@ -58,32 +61,44 @@ void UEncounterLevelMakerWindow::NativeConstruct()
 		}
 	}
 	HoverTimerHandle = FTimerHandle();
+	VisualiserObject = Cast<AGridVisualiser>(UGameplayStatics::GetActorOfClass(GEditor->GetEditorWorldContext().World(), AGridVisualiser::StaticClass()));
+	if (VisualiserObject)
+		VisualiserObject->Destroy();
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	VisualiserObject = GEditor->GetEditorWorldContext().World()->SpawnActor<AGridVisualiser>(VisualiserClass, FVector(50.0f, 50.0f, 0.0f), FRotator::ZeroRotator, SpawnParams);
+	GridSize = FIntPoint(10,10);
+		
+	ResetAndPopulateGridArray();
 }
 
 #pragma region Button Functions
 
 void UEncounterLevelMakerWindow::OnCreateGridPressed()
 {
-	if (!MakerManager)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Maker manager not exist"))
-		MakerManager = Cast<AEncounterLevelMakerManager>(UGameplayStatics::GetActorOfClass(GEditor->GetEditorWorldContext().World(), AEncounterLevelMakerManager::StaticClass()));
-		if (!MakerManager)
-		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			MakerManager = GEditor->GetEditorWorldContext().World()->SpawnActor<AEncounterLevelMakerManager>(MakerManagerClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-		}
-	}
-	
 	FString xString =  InputGridSizeX->GetText().ToString();
 	FString yString =  InputGridSizeY->GetText().ToString();
-	if (xString == "" || yString == "")
-		return;
 	int32 x = FCString::Atoi(*xString);
 	int32 y = FCString::Atoi(*yString);
+	if (xString == "" || yString == "")
+	{
+		x = 10;
+		y = 10;
+	}
 	
-	MakerManager->CreateGrid(FIntPoint(x, y));
+	if (!VisualiserObject)
+	{
+		VisualiserObject = Cast<AGridVisualiser>(UGameplayStatics::GetActorOfClass(GEditor->GetEditorWorldContext().World(), AGridVisualiser::StaticClass()));
+		if (VisualiserObject)
+			VisualiserObject->Destroy();
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		VisualiserObject = GEditor->GetEditorWorldContext().World()->SpawnActor<AGridVisualiser>(VisualiserClass, FVector(50.0f, 50.0f, 0.0f), FRotator::ZeroRotator, SpawnParams);
+	}
+	
+	GridSize = FIntPoint(x,y);
+	ResetAndPopulateGridArray();
+	VisualiserObject->RegenerateGrid(FIntPoint(x, y));
 }
 
 void UEncounterLevelMakerWindow::OnWalkTogglePressed()
@@ -162,6 +177,21 @@ void UEncounterLevelMakerWindow::OnTrapTogglePressed()
 	}
 }
 
+void UEncounterLevelMakerWindow::OnPlayerTogglePressed()
+{
+	UnselectCurrent();
+	if (CurrentModeSelected == ECellBrushMode::PlayerSpawn || PlayerPlaced)
+	{
+		CurrentModeSelected = ECellBrushMode::None;
+	}
+	else
+	{
+		CurrentModeSelected = ECellBrushMode::PlayerSpawn;
+		PlayerToggleButton->SetBackgroundColor(FLinearColor::Green);
+		SetUpTrack();
+	}
+}
+
 void UEncounterLevelMakerWindow::OnLoadFilePressed()
 {
 	UE_LOG(LogTemp, Warning, TEXT("YES LEAK ALL YOUR FILES TO ME!!!"));
@@ -195,13 +225,8 @@ void UEncounterLevelMakerWindow::OnGridTextXChange(const FText& NewText)
 	}
 	else
 	{
-		int32 num = FCString::Atoi(*stringText);
-		if (num > 100)
-		{
-			num = 100;
+		if (FCString::Atoi(*stringText) > 100)
 			InputGridSizeX->SetText(FText::AsNumber(100));
-		}
-		GridSize.X = num;
 	}
 	
 }
@@ -215,13 +240,8 @@ void UEncounterLevelMakerWindow::OnGridTextYChange(const FText& NewText)
 	}
 	else
 	{
-		int32 num = FCString::Atoi(*stringText);
-		if (num > 100)
-		{
-			num = 100;
+		if (FCString::Atoi(*stringText) > 100)
 			InputGridSizeY->SetText(FText::AsNumber(100));
-		}
-		GridSize.Y = num;
 	}
 }
 
@@ -281,6 +301,9 @@ void UEncounterLevelMakerWindow::UnselectCurrent()
 		case ECellBrushMode::Trap:
 			TrapToggleButton->SetBackgroundColor(FLinearColor::White);
 		break;
+		case ECellBrushMode::PlayerSpawn:
+			PlayerToggleButton->SetBackgroundColor(FLinearColor::White);
+		break;
 		default: 
 		break;
 	}
@@ -311,7 +334,20 @@ void UEncounterLevelMakerWindow::SetUpTrack()
 		World = GEditor->GetEditorWorldContext().World();
 		TimerManager = &World->GetTimerManager();
 	}
-	
+	if (!VisualiserObject)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		VisualiserObject = GEditor->GetEditorWorldContext().World()->SpawnActor<AGridVisualiser>(VisualiserClass, FVector(50.0f, 50.0f, 0.0f), FRotator::ZeroRotator, SpawnParams);
+		GridSize = FIntPoint(10,10);
+			
+		ResetAndPopulateGridArray();
+	}
+	if (!LevelGridVisualISM)
+		LevelGridVisualISM = VisualiserObject->GridVisualComp;
+
+	LastHoverIndex = -1;
+	LastClickIndex = -1;
 	TimerManager->SetTimer(HoverTimerHandle, this, &UEncounterLevelMakerWindow::EnableMouseTrack, 0.01f, true);
 }
 
@@ -334,29 +370,146 @@ void UEncounterLevelMakerWindow::EnableMouseTrack()
 	FCollisionQueryParams params;
 	params.bTraceComplex = true;
 
-	if (!World)
+	if (!World || !LevelGridVisualISM)
 	{
-		World = GEditor->GetEditorWorldContext().World();
-		TimerManager = &World->GetTimerManager();
+		if (!World)
+		{
+			World = GEditor->GetEditorWorldContext().World();
+			TimerManager = &World->GetTimerManager();
+		}
+		if (!LevelGridVisualISM)
+			LevelGridVisualISM = VisualiserObject->GridVisualComp;
+		
 		TimerManager->ClearTimer(HoverTimerHandle);
 		UnselectCurrent();
 		CurrentModeSelected = ECellBrushMode::None;
+		return;
 	}
-
-	if (World && World->LineTraceSingleByChannel(hitResult, rayStartPos, rayEndPos, ECC_Visibility, params))
+	
+	if (World->LineTraceSingleByChannel(hitResult, rayStartPos, rayEndPos, ECC_Visibility, params))
 	{
 		if (UInstancedStaticMeshComponent* ISMC = Cast<UInstancedStaticMeshComponent>(hitResult.GetComponent()))
 		{
+			if (ISMC != LevelGridVisualISM)
+			{
+				if (FLevelCellData* CellData = LevelGridData.Find(LastHoverPos))
+				{
+					LevelGridVisualISM->SetCustomData(LastHoverIndex, GetColour(CellData->CellType), false);
+				}
+				return;
+			}
+			
 			int32 hitIndex = hitResult.Item;
 
 			FIntPoint gridPos;
 			gridPos.Y = hitIndex / GridSize.X;
 			gridPos.X = hitIndex % GridSize.X;
-			
-			UE_LOG(LogTemp, Warning, TEXT("Hovered ISM Pos: (%d, %d)"), gridPos.X, gridPos.Y);
 
-			if (clientViewpoint.ProcessClick()) 
+			/*FScopedTransaction Transaction(FText::FromString("Modify Grid"));
+			ISMC->Modify();*/
+
+			if (LastHoverIndex != hitIndex)
+			{
+				if (LastHoverIndex != -1)
+				{
+					if (FLevelCellData* CellData = LevelGridData.Find(LastHoverPos))
+					{
+						ISMC->SetCustomData(LastHoverIndex, GetColour(CellData->CellType), false);
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Unable to find (%d, %d)"), LastHoverPos.X, LastHoverPos.Y);
+					}
+				}
+				LastHoverIndex = hitIndex;
+				LastHoverPos = gridPos;
+				ISMC->SetCustomData(hitIndex, { 1.0f, 0.8f, 0.0f, 1.0f }, false);
+			}
+			
+			if (clientViewpoint.Viewport->KeyState(EKeys::LeftMouseButton) && LastClickIndex != hitIndex)
+			{
+				
+				LastClickIndex = hitIndex;
+				
+				if (FLevelCellData* CellData = LevelGridData.Find(LastHoverPos))
+				{
+					CellData->CellType = CurrentModeSelected;
+				}
+				
+				ISMC->SetCustomData(hitIndex, GetColour(CurrentModeSelected), false);
+
+				if (PlayerSpawnPos == gridPos && PlayerPlaced)
+				{
+					PlayerPlaced = false;
+					PlayerSpawnPos = FIntPoint(-1, -1);
+					PlayerToggleButton->SetIsEnabled(true);
+				}
+
+				if (CurrentModeSelected == ECellBrushMode::PlayerSpawn)
+				{
+					PlayerSpawnPos = gridPos;
+					PlayerPlaced = true;
+					TimerManager->ClearTimer(HoverTimerHandle);
+					UnselectCurrent();
+					CurrentModeSelected = ECellBrushMode::None;
+					PlayerToggleButton->SetIsEnabled(false);
+				}
+			}
+			
 		}
+		else
+		{
+			if (LastHoverIndex != -1)
+			{
+				if (FLevelCellData* CellData = LevelGridData.Find(LastHoverPos))
+				{
+					LevelGridVisualISM->SetCustomData(LastHoverIndex, GetColour(CellData->CellType), false);
+				}
+				LastHoverIndex = -1;
+			}
+		}
+	}
+	else
+	{
+		if (LastHoverIndex != -1)
+		{
+			if (FLevelCellData* CellData = LevelGridData.Find(LastHoverPos))
+			{
+				LevelGridVisualISM->SetCustomData(LastHoverIndex, GetColour(CellData->CellType), false);
+			}
+			LastHoverIndex = -1;
+		}
+	}
+	
+}
+
+void UEncounterLevelMakerWindow::ResetAndPopulateGridArray()
+{
+	LevelGridData.Empty();
+	for (int x = 0; x < GridSize.X; x++)
+	{
+		for (int y = 0; y < GridSize.Y; y++)
+		{
+			LevelGridData.FindOrAdd(FIntPoint(x, y));
+		}
+	}
+	
+}
+
+TArray<float> UEncounterLevelMakerWindow::GetColour(ECellBrushMode type)
+{
+	switch (type)
+	{
+		case ECellBrushMode::Wall:
+			return { 0.0f, 0.0f, 0.0f, 1.0f};
+		case ECellBrushMode::EnemySpawn:
+			return{ 1.0f, 0.0f, 0.0f, 1.0f};
+		case ECellBrushMode::Trap:
+			return { 0.0f, 0.0f, 1.0f, 1.0f};
+		case ECellBrushMode::PlayerSpawn:
+			return  { 0.0f, 1.0f, 0.0f, 1.0f};
+		default:
+			return { 1.0f, 1.0f, 1.0f, 1.0f};
 	}
 }
 

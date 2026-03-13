@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Terminal_Recall/StructsAndEnums/LevelEditorBrushEnum.h"
+#include "Terminal_Recall/StructsAndEnums/For2dArray/LevelCellData.h"
 
 // So we can build the game, using "Blutility", "UMGEditor" will not build properly 
 #if WITH_EDITOR
@@ -12,6 +13,7 @@
 
 #if WITH_EDITOR
 
+class AGridVisualiser;
 class AEncounterLevelMakerManager;
 class UEditorUtilityComboBoxString;
 class UEditorUtilityEditableTextBox;
@@ -27,22 +29,31 @@ class TERMINAL_RECALL_API UEncounterLevelMakerWindow : public UEditorUtilityWidg
 	#if WITH_EDITORONLY_DATA
 
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
-	TSubclassOf<AEncounterLevelMakerManager> MakerManagerClass;
+	TSubclassOf<AGridVisualiser> VisualiserClass;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "For Designers | Necessities")
 	TObjectPtr<UDataTable> EnemyDataTable;
-	
-	ECellBrushMode CurrentModeSelected = ECellBrushMode::None;
-
-	UPROPERTY()
-	TObjectPtr<AEncounterLevelMakerManager> MakerManager;
-
-	FTimerHandle HoverTimerHandle;
 
 	UPROPERTY()
 	TObjectPtr<UWorld> World;
+	UPROPERTY()
+	TObjectPtr<AGridVisualiser> VisualiserObject;
+	UPROPERTY()
+	TObjectPtr<UInstancedStaticMeshComponent> LevelGridVisualISM;
+	
+	ECellBrushMode CurrentModeSelected = ECellBrushMode::None;
+	FTimerHandle HoverTimerHandle;
+	
 	FTimerManager* TimerManager;
 	FIntPoint GridSize;
+	FIntPoint LastHoverPos = FIntPoint(-1, -1);
+	int32 LastHoverIndex = -1;
+	int32 LastClickIndex = -1;
+
+	bool PlayerPlaced = false;
+	FIntPoint PlayerSpawnPos = FIntPoint(-1, -1);
+	
+	TMap<FIntPoint, FLevelCellData> LevelGridData;
 	
 	#pragma region Buttons
 	
@@ -56,6 +67,8 @@ class TERMINAL_RECALL_API UEncounterLevelMakerWindow : public UEditorUtilityWidg
 	UEditorUtilityButton* EnemyToggleButton;
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityButton* TrapToggleButton;
+	UPROPERTY(meta = (BindWidget))
+	UEditorUtilityButton* PlayerToggleButton;
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityButton* LoadLevelFileButton;
 	UPROPERTY(meta = (BindWidget))
@@ -104,6 +117,8 @@ protected:
 	UFUNCTION()
 	void OnTrapTogglePressed();
 	UFUNCTION()
+	void OnPlayerTogglePressed();
+	UFUNCTION()
 	void OnLoadFilePressed();
 	UFUNCTION()
 	void OnExportPressed();
@@ -129,6 +144,8 @@ protected:
 	void UnhighlightComboBox(UEditorUtilityComboBoxString* comboBox);
 	void SetUpTrack();
 	void EnableMouseTrack();
+	void ResetAndPopulateGridArray();
+	TArray<float> GetColour(ECellBrushMode type);
 };
 
 #endif

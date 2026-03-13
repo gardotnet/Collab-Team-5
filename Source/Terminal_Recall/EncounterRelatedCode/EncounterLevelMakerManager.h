@@ -20,16 +20,20 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	TSubclassOf<AGridVisualiser> GridDisplayerClass;
 
+	UPROPERTY()
+	TObjectPtr<AGridVisualiser> GridDisplayerObject;
 
+	FIntPoint GridSize = FIntPoint(10, 10);
+	
 	UFUNCTION(BlueprintCallable, CallInEditor, Category= "For Designers | Tools")
-	void SpawnGrid();
+	void ResetGrid();
 	
 	UFUNCTION(BlueprintCallable, Category= "For Designers | Functions")
 	void CreateGrid(FIntPoint gridSize);
+
+	virtual void Destroyed() override;
 	
-protected:
-	UPROPERTY()
-	TObjectPtr<AGridVisualiser> GridDisplayerObject;
+	
 	#endif
 };
 #endif
