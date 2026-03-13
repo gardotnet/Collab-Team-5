@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "BaseEntity.generated.h"
 
+class ADefaultPlayerController;
 class UCapsuleComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveDone);
 
@@ -21,9 +22,19 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events For Designers")
 	FOnMoveDone OnMoveDoneEvent; // [NOTE] Make sure to use this event when player reached destination
 	
-	UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)")
+	UPROPERTY(EditAnywhere, Category="Stuff For Designers | Entity Info | General Stuff")
 	float MaxHealth = 100;
+	UPROPERTY(EditAnywhere, Category="Stuff For Designers | Entity Info | General Stuff")
+	float Speed = 200;
 	
+	float DesiredMoveDuration = 0;
+	float MoveTimer;
+	FVector TargetPosition;
+	TObjectPtr<ADefaultPlayerController> PlayerController;
+	
+	
+	FTimerHandle MoveTimerHandle;
+	FTimerManager* TimerManagerRef;
 	/*UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)")
 	EActionTypeEnum MoveType = EActionTypeEnum::None;
 	UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)", meta = (ToolTip = "How many cells entity can move in a certain direction"))
@@ -34,8 +45,8 @@ public:
 	
 	virtual void BeginPlay() override;
 	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
-	virtual void OnMove(FVector pos);
+	void StartMove(FVector position);
+	virtual void OnMove();
 	UFUNCTION()
 	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed);
 };

@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "GridRow.h"
+#include "Terminal_Recall/StructsAndEnums/For2dArray/GridRow.h"
 #include "AttackStruct.generated.h"
 
 USTRUCT(BlueprintType)

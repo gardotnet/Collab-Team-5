@@ -1,6 +1,5 @@
 ﻿#include "DefaultPlayerController.h"
 #include "Algo/Reverse.h"
-#include "Runtime/AIModule/Classes/AIController.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/GameStates/DefaultGameState.h"
 #include "Terminal_Recall/GridCellClasses/NodeInfoForCellSearch.h"
 #include "Terminal_Recall/GridCellClasses/WorldGridCell.h"
@@ -18,7 +17,6 @@ void ADefaultPlayerController::BeginPlay()
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		FRotator Rotation(0,0,0);
 		PlayerEntity = GetWorld()->SpawnActor<ABaseEntity>(PlayerChar, gameState->PlayerSpawnPos, Rotation, SpawnParams);
-		PlayerAIController = PlayerEntity->GetController<AAIController>();
 	}
 	
 	FVector endTracePos = PlayerEntity->GetActorLocation() + FVector(0,0, -1000);
@@ -29,33 +27,24 @@ void ADefaultPlayerController::BeginPlay()
 	if (hitResult.GetActor())
 	{
 		CurrentCell = Cast<AWorldGridCell>(hitResult.GetActor());
+		CurrentCell->OnUnitArrive();
 	}
+	TimerManagerRef = &GetWorld()->GetTimerManager();
 	MoveTimerHandle = FTimerHandle();
 }
 
 void ADefaultPlayerController::MovePlayer()
 {
-	FVector playerPos = PlayerEntity->GetActorLocation();
-	FVector cellPos = ThePath[PathIndex]->GetActorLocation();
-	float distance = FMath::Sqrt(FMath::Pow(cellPos.X - playerPos.X, 2) + FMath::Pow(cellPos.Y - playerPos.Y, 2));
-	UE_LOG(LogTemp, Warning, TEXT("%f"), distance);
-	if (distance < 0.5f)
+	CurrentCell = ThePath[PathIndex];
+	if (ThePath[PathIndex] == DestinationCell)
 	{
-		if (ThePath[PathIndex] == DestinationCell)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("EndMovement"));
-			GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
-		}
-		else
-		{
-			PathIndex++;
-			UE_LOG(LogTemp, Warning, TEXT("Next node is %s"), *ThePath[PathIndex]->GetActorLabel());
-		}
+		ThePath.Empty();
+		DestinationCell->OnUnitArrive();
 	}
 	else
 	{
-		cellPos.Z = playerPos.Z;
-		PlayerEntity->SetActorLocation(FMath::Lerp(playerPos, cellPos, 0.2f));
+		PathIndex++;
+		PlayerEntity->StartMove(ThePath[PathIndex]->GetActorLocation());
 	}
 }
 
@@ -63,13 +52,12 @@ void ADefaultPlayerController::NavigateWorld(TObjectPtr<AWorldGridCell> cell)
 {
 	if (DestinationCell == cell)
 		return;
-	if (cell == CurrentCell)
+	if (cell == CurrentCell && ThePath.IsEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("IDIOT, You are standing on it"));
 		return;
 	}
 	DestinationCell = cell;
-	MoveTimerHandle.Invalidate();
 	PathIndex = 0;
 	ThePath.Empty();
 	OpenList.Empty();
@@ -93,8 +81,7 @@ void ADefaultPlayerController::NavigateWorld(TObjectPtr<AWorldGridCell> cell)
 		// Flips the array around
 		Algo::Reverse(ThePath);
 		// moves the player
-		//PlayerAIController->MoveToActor(ThePath[PathIndex]);
-		GetWorld()->GetTimerManager().SetTimer(MoveTimerHandle, this, &ADefaultPlayerController::MovePlayer, 0.1f, true);
+		PlayerEntity->StartMove(ThePath[PathIndex]->GetActorLocation());
 	}
 	else
 	{

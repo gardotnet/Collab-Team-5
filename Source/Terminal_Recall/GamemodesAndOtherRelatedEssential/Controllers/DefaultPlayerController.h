@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "DefaultPlayerController.generated.h"
 
+
+
 class AAIController;
 class ABaseEntity;
 class UNodeInfoForCellSearch;
@@ -17,9 +19,9 @@ class TERMINAL_RECALL_API ADefaultPlayerController : public APlayerController
 	
 public:
 	UPROPERTY(EditAnywhere, Category="Variable (For Designers)")
-	TObjectPtr<AWorldGridCell> SpawnPointCell;
-	UPROPERTY(EditAnywhere, Category="Variable (For Designers)")
 	TSubclassOf<ABaseEntity> PlayerChar;
+	UPROPERTY(EditAnywhere, Category="Variable (For Designers)")
+	float PlayerSpeed = 100;
 	
 protected:
 	UPROPERTY()
@@ -34,10 +36,14 @@ protected:
 	TArray<TObjectPtr<UNodeInfoForCellSearch>> OpenList;
 	UPROPERTY()
 	TArray<TObjectPtr<UNodeInfoForCellSearch>> CloseList;
+	
+	FTimerManager* TimerManagerRef;
 	FTimerHandle MoveTimerHandle;
 
-	TObjectPtr<AAIController> PlayerAIController;
+	float MoveTimer = 0.0f;
+	float DesiredMoveDuration = 0.0f;
 	
+
 public:
 	UFUNCTION()
 	void MovePlayer();

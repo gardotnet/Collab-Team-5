@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Terminal_Recall/StructsAndEnums/ActionType.h"
 #include "Terminal_Recall/StructsAndEnums/BattleCellState.h"
-#include "Terminal_Recall/StructsAndEnums/FGridRowCell.h"
+#include "Terminal_Recall/StructsAndEnums/For2dArray/FGridRowCell.h"
 #include "BattleManager.generated.h"
 
 class ABattleEntity;
