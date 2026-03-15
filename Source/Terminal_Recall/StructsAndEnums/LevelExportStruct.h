@@ -1,16 +1,28 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "LevelEditorBrushEnum.h"
 #include "UObject/Object.h"
 #include "LevelExportStruct.generated.h"
 
-/**
- * 
- */
-UCLASS()
-class TERMINAL_RECALL_API ULevelExportStruct : public UObject
+USTRUCT(BlueprintType)
+struct FExportCellDetails
 {
 	GENERATED_BODY()
+	UPROPERTY()
+	FIntPoint Position = FIntPoint(-1,-1);
+	UPROPERTY()
+	ECellBrushMode CellType = ECellBrushMode::None;
+	UPROPERTY()
+	int32 IdForCellContent = -1;
+};
+
+USTRUCT(BlueprintType)
+struct FLevelExportStruct
+{
+	GENERATED_BODY()
+	UPROPERTY()
+	FIntPoint GridSize = FIntPoint(-1, -1);
+	UPROPERTY()
+	TArray<FExportCellDetails> GridCells;
 };

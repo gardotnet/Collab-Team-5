@@ -1,6 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
@@ -31,5 +29,5 @@ struct FEnemyInfoStruct : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<int32> AttackIdList;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FIntPoint GridSize = FIntPoint(1);
+	FIntPoint GridSize = FIntPoint(1, 1);
 };

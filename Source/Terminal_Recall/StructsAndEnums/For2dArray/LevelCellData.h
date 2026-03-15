@@ -9,9 +9,9 @@ USTRUCT(BlueprintType)
 struct FLevelCellData
 {
 	GENERATED_BODY()
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ECellBrushMode CellType = ECellBrushMode::None;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<UObject> RequiredObject;
+	int32 IdForCellContent = -1;
 };
