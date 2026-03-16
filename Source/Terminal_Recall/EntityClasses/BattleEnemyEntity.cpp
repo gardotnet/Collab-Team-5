@@ -7,6 +7,7 @@ ABattleEnemyEntity::ABattleEnemyEntity()
 
 void ABattleEnemyEntity::OnTurnGo()
 {
+	OnMoveDoneEvent.Broadcast();
 	// Decrement all cooldowns by 1
 	// AI code here to pick actions
 }

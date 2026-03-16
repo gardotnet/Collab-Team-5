@@ -44,8 +44,6 @@ protected:
 	virtual void NativeDestruct() override;
 	
 	UFUNCTION()
-	void OnCloseButtonClicked();
-	UFUNCTION()
 	void OnMoveTabButtonClicked();
 	UFUNCTION()
 	void OnAttackTabButtonClicked();
@@ -53,7 +51,11 @@ protected:
 	void OnItemTabButtonClicked();
 
 	void UnselectTab();
+	void RemoveChoices();
 
 public:
+	UFUNCTION()
+	void OnCloseButtonClicked();
+	
 	void AddActionButton(TArray<UActionButtonUI*>& movementList, TArray<UActionButtonUI*>& attackList, TArray<UActionButtonUI*>& itemList);
 };

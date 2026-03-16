@@ -33,7 +33,7 @@ public:
 	// [NOTE] add list to store all option button
 protected:
 	UPROPERTY()
-	FVector2f GridPos = FVector2f(0.0f, 0.0f);
+	FIntPoint GridPos = FIntPoint(0.0f, 0.0f);
 	
 	UPROPERTY()
 	TObjectPtr<APlayerBattleController> PlayerBattleController;
@@ -47,12 +47,15 @@ protected:
 	
 public:
 	ABattleEntity();
-	virtual void OnBattleStart();
+	virtual void OnBattleStart(ABattleManager* battleManager);
 	virtual void OnTurnGo();
 	void OnActionSelected();
 	void DoAttackAction(TObjectPtr<ABaseEntity> enemy, FVector pos);
 	void ShowChoices();
 	void HideChoices();
+
+	void SetPos(FIntPoint newPos);
+	FIntPoint GetPos() { return GridPos; }
 
 	virtual void BeginPlay() override;
 	virtual void OnMove() override;

@@ -1,51 +1,45 @@
 ﻿#include "BattleGridCell.h"
 
-#include "Terminal_Recall/EntityClasses/BattleEntity.h"
-#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
 
 ABattleGridCell::ABattleGridCell()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	MeshComponent->SetOverlayMaterialMaxDrawDistance(5000);
+	MeshComponent->OnBeginCursorOver.AddDynamic(this, &ABattleGridCell::OnHoverOver);
+	MeshComponent->OnEndCursorOver.AddDynamic(this, &ABattleGridCell::OnHoverEnd);
 }
-
 void ABattleGridCell::AssignTrap(TObjectPtr<ABaseTrap> trap)
 {
 	TrapRef = trap;
 }
-
-void ABattleGridCell::AssignWall()
+void ABattleGridCell::EnableCell()
 {
-	Walkable = false;
-}
-
-void ABattleGridCell::AssignGridPos(FVector2f pos)
-{
-	Clickable = false;
-	GridPos = pos;
-}
-
-void ABattleGridCell::EnableCell(EBattleCellState isAttack)
-{
-	CurrentState = isAttack;
+	if (!Walkable)
+		return;
 	Clickable = true;
+	MeshComponent->SetOverlayMaterial(MoveHighlightMat);
 }
-
-void ABattleGridCell::AddActionCauser(TObjectPtr<ABattleEntity> entity)
+void ABattleGridCell::DisableCell()
 {
-	EntityCauserRef = entity;
+	OnClickedCellEvent.Clear();
+	MeshComponent->SetOverlayMaterial(nullptr);
+	Clickable = false;
 }
-
-void ABattleGridCell::BeginPlay()
+void ABattleGridCell::SetGridPos(FIntPoint gridPos)
 {
-	Super::BeginPlay();
+	GridPos = gridPos;
 }
-
+void ABattleGridCell::SetWalkable(bool walkable)
+{
+	Walkable = walkable;
+}
 void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
 	if (!Clickable)
 		return;
 	Clickable = false;
-	switch (CurrentState)
+	OnClickedCellEvent.Broadcast(this);
+	/*switch (CurrentState)
 	{
 		case EBattleCellState::Move:
 			EntityCauserRef->StartMove(GetActorLocation());
@@ -56,8 +50,24 @@ void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 		default:
 		break;
 	}
-	CurrentState = EBattleCellState::None;
+	CurrentState = EBattleCellState::None;*/
 }
+
+void ABattleGridCell::OnHoverOver(UPrimitiveComponent* TouchedComponent)
+{
+	UE_LOG(LogTemp, Display, TEXT("OnHoverOver"));
+	if (Clickable)
+		MeshComponent->SetOverlayMaterial(HoverHighlightMat);
+}
+
+void ABattleGridCell::OnHoverEnd(UPrimitiveComponent* TouchedComponent)
+{
+	UE_LOG(LogTemp, Display, TEXT("OnHoverEnd"));
+	if (Clickable)
+		MeshComponent->SetOverlayMaterial(MoveHighlightMat);
+}
+
+
 
 
 

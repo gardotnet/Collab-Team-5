@@ -54,6 +54,7 @@ public:
 	UFUNCTION(BlueprintCallable, CallInEditor, Category="Stuff For Designers | Grid Cell Tool")
 	void ResetPathPosition();
 	
+	
 	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 	virtual void OnUnitArrive_Implementation() override;
 	

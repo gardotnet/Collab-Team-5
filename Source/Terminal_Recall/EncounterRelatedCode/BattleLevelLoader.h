@@ -41,8 +41,6 @@ protected:
 	UMaterialInterface* CheckBoardMat1;
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	UMaterialInterface* CheckBoardMat2;
-	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
-	UMaterialInterface* MoveHighlightMat;
 
 	UPROPERTY(EditAnywhere, Category="For Designers | For Editor Tool")
 	FString MapFilePath;

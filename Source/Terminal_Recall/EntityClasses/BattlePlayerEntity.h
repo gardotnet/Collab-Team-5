@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "BattleEntity.h"
+#include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
 #include "BattlePlayerEntity.generated.h"
 
 UCLASS()
@@ -11,9 +12,8 @@ class TERMINAL_RECALL_API ABattlePlayerEntity : public ABattleEntity
 
 public:
 	ABattlePlayerEntity();
-	virtual void OnBattleStart() override;
+	virtual void OnBattleStart(ABattleManager* battleManager) override;;
 
 protected:
-	virtual void BeginPlay() override;
-
+	FString GetActionName(EAttackActionTypes type);
 };

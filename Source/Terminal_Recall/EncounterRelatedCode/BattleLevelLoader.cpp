@@ -55,11 +55,10 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 						newCell->MeshComponent->SetMaterial(0, CheckBoardMat2);
 					}
 					battleManager->GridMap.Add(FIntPoint(x,y), newCell);
+					newCell->SetGridPos(FIntPoint(x,y));
 				}
 			}
 			
-			ABattlePlayerEntity* playerEntity = nullptr;
-			TArray<TObjectPtr<ABattleEnemyEntity>> EnemyArray;
 			for (const auto& cellData : levelData.GridCells)
 			{
 				FVector propSpawnLoc;
@@ -70,15 +69,17 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 						{
 							propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
 							GetWorld()->SpawnActor<AActor>(WallClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
+							(*newCell)->SetWalkable(false);
 						}
 					break;
 					case ECellBrushMode::PlayerSpawn:
-						if (playerEntity == nullptr)
+						if (battleManager->PlayerRef == nullptr)
 						{
 							if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 							{
 								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
-								playerEntity = GetWorld()->SpawnActor<ABattlePlayerEntity>(PlayerEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
+								battleManager->PlayerRef = GetWorld()->SpawnActor<ABattlePlayerEntity>(PlayerEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
+								battleManager->PlayerRef->SetPos(cellData.Position);
 							}
 						}
 						else
@@ -95,7 +96,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
 								ABattleEnemyEntity* newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
 								// [NOTE] Pass data to enemy
-								EnemyArray.Add(newEnemy);
+								battleManager->EnemyArray.Add(newEnemy);
 							}
 						}
 					break;
@@ -103,7 +104,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 					break;
 				}
 			}
-			// [NOTE] start game
+			battleManager->SetUpBattle();
 		}
 	}
 }

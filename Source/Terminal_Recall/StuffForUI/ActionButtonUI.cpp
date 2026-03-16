@@ -9,7 +9,15 @@ void UActionButtonUI::NativeConstruct()
 		ActionButton->OnClicked.AddDynamic(this, &UActionButtonUI::OnButtonClicked);
 }
 
+void UActionButtonUI::NativeDestruct()
+{
+	Super::NativeDestruct();
+	if (ActionButton)
+		ActionButton->OnClicked.RemoveDynamic(this, &UActionButtonUI::OnButtonClicked);
+}
+
 void UActionButtonUI::OnButtonClicked()
 {
 	UE_LOG(LogTemp, Display, TEXT("STOP CLICKING ME!"));
+	OnActionSelected.Broadcast(this);
 }

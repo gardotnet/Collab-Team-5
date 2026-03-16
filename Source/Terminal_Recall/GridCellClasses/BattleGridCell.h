@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "BaseGridCell.h"
-#include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
-#include "Terminal_Recall/StructsAndEnums/BattleCellState.h"
 #include "BattleGridCell.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClickedCell, ABattleGridCell*, cell);
 
 class APlayerBattleController;
 class ABattleEntity;
 class ABaseTrap;
+class UPrimitiveComponent;
 
 UCLASS()
 class TERMINAL_RECALL_API ABattleGridCell : public ABaseGridCell
@@ -19,31 +20,43 @@ class TERMINAL_RECALL_API ABattleGridCell : public ABaseGridCell
 
 public:
 	// add cell colour here
+	FOnClickedCell OnClickedCellEvent;
+
 	
 protected:
 	
 	UPROPERTY()
 	TObjectPtr<APlayerBattleController> PlayerController;
 	
-	EBattleCellState CurrentState;
 	// [NOTE] current colour
 	UPROPERTY()
 	TObjectPtr<ABaseTrap> TrapRef;
+	FIntPoint GridPos;
 	bool Walkable = true;
-	FVector2f GridPos;
 	UPROPERTY()
 	TObjectPtr<ABattleEntity> EntityCauserRef;
-	
+
+	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
+	UMaterialInterface* MoveHighlightMat;
+	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
+	UMaterialInterface* HoverHighlightMat;
 	
 public:
 	ABattleGridCell();
 	void AssignTrap(TObjectPtr<ABaseTrap> trap);
-	void AssignWall();
-	void AssignGridPos(FVector2f pos);
-	void EnableCell(EBattleCellState isAttack);
-	void AddActionCauser(TObjectPtr<ABattleEntity> entity);
+	void EnableCell();
+	UFUNCTION()
+	void DisableCell();
+
+	void SetGridPos(FIntPoint gridPos);
+	FIntPoint GetGridPos() { return GridPos; };
+	void SetWalkable(bool walkable);
+	bool GetWalkable() { return Walkable; };
 	
-	virtual void BeginPlay() override;
 protected:
 	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
+	UFUNCTION()
+	void OnHoverOver(UPrimitiveComponent* TouchedComponent);
+	UFUNCTION()
+	void OnHoverEnd(UPrimitiveComponent* TouchedComponent);
 };

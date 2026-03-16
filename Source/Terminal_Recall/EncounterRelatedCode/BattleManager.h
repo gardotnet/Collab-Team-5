@@ -1,11 +1,13 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
-#include "Terminal_Recall/StructsAndEnums/BattleCellState.h"
 #include "Terminal_Recall/StructsAndEnums/For2dArray/FGridRowCell.h"
 #include "BattleManager.generated.h"
 
+class APlayerBattleController;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCellSelected);
+
+class UActionButtonUI;
 class ABattleEntity;
 class ABattleEnemyEntity;
 class ABattlePlayerEntity;
@@ -27,13 +29,23 @@ protected:
 	int32 EntityIndex = -1;
 	UPROPERTY()
 	TObjectPtr<ABattleEntity> CurrentEntityChosen;
+	UPROPERTY()
+	TObjectPtr<APlayerBattleController> PlayerBattleController;
+
+	FCellSelected CellSelectedEvent;
 
 public:
 	ABattleManager();
-	void SetUpBattle(TObjectPtr<ABattlePlayerEntity> player, TArray<TObjectPtr<ABattleEnemyEntity>> enemies, TArray<FGridRowCell>* grid);
+	void SetUpBattle();
 	void OnEntitySelected(ABattleEntity* entity);
-	void ActionChoiceSelected(EBattleCellState attackOrMove, EActionType ActionType);
+	UFUNCTION()
+	void ActionChoiceSelected(UActionButtonUI* selectedButton);
+	
+	UFUNCTION()
+	void OnCellSelected(ABattleGridCell* selectedCell);
 protected:
 	UFUNCTION()
 	void NextEntityTurn();
+
+	virtual void BeginPlay() override;
 };

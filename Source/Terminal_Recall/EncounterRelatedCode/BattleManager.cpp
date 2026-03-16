@@ -5,20 +5,23 @@
 #include "Terminal_Recall/EntityClasses/BattlePlayerEntity.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
+#include "Terminal_Recall/StuffForUI/ActionButtonUI.h"
+#include "Terminal_Recall/StuffForUI/BattleChoiceSelectUI.h"
 
 ABattleManager::ABattleManager()
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ABattleManager::SetUpBattle(TObjectPtr<ABattlePlayerEntity> player,
-	TArray<TObjectPtr<ABattleEnemyEntity>> enemies, TArray<FGridRowCell>* grid)
+void ABattleManager::SetUpBattle()
 {
-	PlayerRef = player;
-	player->OnTurnDoneEvent.AddDynamic(this, &ABattleManager::NextEntityTurn);
-	EnemyArray = enemies;
+	if (PlayerRef)
+	{
+		PlayerRef->OnTurnDoneEvent.AddDynamic(this, &ABattleManager::NextEntityTurn);
+		PlayerRef->OnBattleStart(this);
+	}
 	// for each enemy bound an event
-	for (auto enemy : enemies)
+	for (auto enemy : EnemyArray)
 	{
 		enemy->OnTurnDoneEvent.AddDynamic(this, &ABattleManager::NextEntityTurn);
 	}
@@ -32,16 +35,56 @@ void ABattleManager::OnEntitySelected(ABattleEntity* entity)
 	entity->ShowChoices();
 }
 
-void ABattleManager::ActionChoiceSelected(EBattleCellState attackOrMove, EActionType ActionType)
+void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 {
-	// [NOTE] Based on action chosen and if it is an attack, highlight corresponding cells.
-	//GridArray[0][0]->EnableCell(attackOrMove);
-	// [NOTE] if picking for player char 
-	if (CurrentEntityChosen == PlayerRef)
+	if (selectedButton->Entity == PlayerRef)
 	{
-		// set it up so it call player's event (e.g. move or attack) when the cell is clicked
-		//GridArray[0][0]->AddActionCauser(PlayerRef);
+		// Can put in array and link after
+		UE_LOG(LogTemp, Display, TEXT("%s"), *selectedButton->ActionName);
+		PlayerBattleController->BattleChoiceUIWidget->OnCloseButtonClicked();
+		if (selectedButton->AttackType != EAttackActionTypes::Custom)
+		{
+			switch (selectedButton->AttackType)
+			{
+				case EAttackActionTypes::King:
+					FIntPoint playerPos = PlayerRef->GetPos();
+					for (int x = -1; x < 2; x++ )
+					{
+						for (int y = -1; y < 2; y++)
+						{
+							if (x == 0 && y == 0)
+								continue;
+							
+							if (TObjectPtr<ABattleGridCell>* cell = GridMap.Find(playerPos + FIntPoint(x, y)))
+							{
+								(*cell)->EnableCell();
+								(*cell)->OnClickedCellEvent.AddDynamic(this, &ABattleManager::ABattleManager::OnCellSelected);
+								CellSelectedEvent.AddDynamic(*cell, &ABattleGridCell::DisableCell);
+							}
+						}
+					}
+				break;
+				case EAttackActionTypes::Rook:
+				break;
+				case EAttackActionTypes::Bishop:
+				break;
+				case EAttackActionTypes::Knight:
+				break;
+				case EAttackActionTypes::Queen:
+				break;
+				default:
+				break;
+			}
+		}
 	}
+}
+
+void ABattleManager::OnCellSelected(ABattleGridCell* selectedCell)
+{
+	CellSelectedEvent.Broadcast();
+	CellSelectedEvent.Clear();
+	PlayerRef->SetPos(selectedCell->GetGridPos());
+	PlayerRef->StartMove(selectedCell->GetActorLocation());
 }
 
 void ABattleManager::NextEntityTurn()
@@ -56,5 +99,11 @@ void ABattleManager::NextEntityTurn()
 	{
 		EnemyArray[EntityIndex]->OnTurnGo();
 	}
+}
+
+void ABattleManager::BeginPlay()
+{
+	Super::BeginPlay();
+	PlayerBattleController = Cast<APlayerBattleController>(GetWorld()->GetFirstPlayerController());
 }
 

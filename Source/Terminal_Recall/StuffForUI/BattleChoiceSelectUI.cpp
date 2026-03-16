@@ -66,25 +66,53 @@ void UBattleChoiceSelectUI::UnselectTab()
 	ItemsScrollBox->SetVisibility(ESlateVisibility::Hidden);
 }
 
-void UBattleChoiceSelectUI::AddActionButton(TArray<UActionButtonUI*>& movementList,
-	TArray<UActionButtonUI*>& attackList, TArray<UActionButtonUI*>& itemList)
+void UBattleChoiceSelectUI::RemoveChoices()
 {
-	AddToViewport();
-	for (UActionButtonUI* moveAction : movementList)
+	for (int i = 0; i < MovesScrollBox->GetChildrenCount(); i++)
 	{
-		if (UUserWidget* parentConversion = Cast<UUserWidget>(moveAction))
-			MovesScrollBox->AddChild(parentConversion);
+		MovesScrollBox->RemoveChild(MovesScrollBox->GetChildAt(0));
 	}
-	for (UActionButtonUI* attackAction : attackList)
+	for (int i = 0; i < AttacksScrollBox->GetChildrenCount(); i++)
 	{
-		if (UUserWidget* parentConversion = Cast<UUserWidget>(attackAction))
-			AttacksScrollBox->AddChild(parentConversion);
+		AttacksScrollBox->RemoveChild(AttacksScrollBox->GetChildAt(0));
 	}
-	for (UActionButtonUI* itemAction : itemList)
+	for (int i = 0; i < ItemsScrollBox->GetChildrenCount(); i++)
 	{
-		if (UUserWidget* parentConversion = Cast<UUserWidget>(itemAction))
-			ItemsScrollBox->AddChild(parentConversion);
+		ItemsScrollBox->RemoveChild(ItemsScrollBox->GetChildAt(0));
 	}
 }
+
+void UBattleChoiceSelectUI::AddActionButton(TArray<UActionButtonUI*>& movementList,
+                                            TArray<UActionButtonUI*>& attackList, TArray<UActionButtonUI*>& itemList)
+{
+	AddToViewport();
+	RemoveChoices();
+	if (movementList.Num() > 0)
+	{
+		for (UActionButtonUI* moveAction : movementList)
+		{
+			if (UUserWidget* parentConversion = Cast<UUserWidget>(moveAction))
+				MovesScrollBox->AddChild(parentConversion);
+		}
+	}
+	if (attackList.Num() > 0)
+	{
+		for (UActionButtonUI* attackAction : attackList)
+		{
+			if (UUserWidget* parentConversion = Cast<UUserWidget>(attackAction))
+				AttacksScrollBox->AddChild(parentConversion);
+		}
+	}
+	if (itemList.Num() > 0)
+	{
+		for (UActionButtonUI* itemAction : itemList)
+		{
+			if (UUserWidget* parentConversion = Cast<UUserWidget>(itemAction))
+				ItemsScrollBox->AddChild(parentConversion);
+		}
+	}
+}
+
+
 
 

@@ -11,7 +11,7 @@ ABattleEntity::ABattleEntity()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ABattleEntity::OnBattleStart()
+void ABattleEntity::OnBattleStart(ABattleManager* battleManager)
 {
 	// Create UI buttons and linking it to 'OnAttackSelected' or 'OnMovementSelected'
 	// Also store it to show/hide the choices
@@ -61,6 +61,11 @@ void ABattleEntity::HideChoices()
 	// removes all button from the UI
 }
 
+void ABattleEntity::SetPos(FIntPoint newPos)
+{
+	GridPos = newPos;
+}
+
 void ABattleEntity::BeginPlay()
 {
 	Super::BeginPlay();
@@ -70,7 +75,18 @@ void ABattleEntity::BeginPlay()
 
 void ABattleEntity::OnMove()
 {
-	// check if entity can move on that grid
+	MoveTimer += 0.01f;
+	FVector playerPos = GetActorLocation();
+	float distance = FVector::Dist(playerPos, TargetPosition);
+	
+	if (MoveTimer > DesiredMoveDuration || distance < 1)
+	{
+		OnMoveDoneEvent.Broadcast();
+	}
+	else
+	{
+		SetActorLocation(FMath::Lerp(playerPos, TargetPosition, MoveTimer/DesiredMoveDuration));
+	}
 }
 
 void ABattleEntity::OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed)
