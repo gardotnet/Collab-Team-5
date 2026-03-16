@@ -21,15 +21,6 @@ void ABattleManager::SetUpBattle(TObjectPtr<ABattlePlayerEntity> player,
 	{
 		enemy->OnTurnDoneEvent.AddDynamic(this, &ABattleManager::NextEntityTurn);
 	}
-	GridArray = *grid;
-	
-	/*for (int row = 0; row < GridArray.Num(); row++)
-	{
-		for (int col = 0; col < GridArray[row].Num(); col++)
-		{
-			//GridArray[row][col]
-		}
-	}*/
 }
 
 void ABattleManager::OnEntitySelected(ABattleEntity* entity)

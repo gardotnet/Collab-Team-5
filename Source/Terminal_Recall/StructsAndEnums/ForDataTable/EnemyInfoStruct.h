@@ -4,6 +4,7 @@
 #include "UObject/Object.h"
 #include "EnemyInfoStruct.generated.h"
 
+class ABattleEnemyEntity;
 /**
  * 
  */
@@ -30,4 +31,6 @@ struct FEnemyInfoStruct : public FTableRowBase
 	TArray<int32> AttackIdList;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FIntPoint GridSize = FIntPoint(1, 1);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<ABattleEnemyEntity> EnemyBpRef = nullptr;
 };

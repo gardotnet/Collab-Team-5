@@ -17,4 +17,7 @@ class TERMINAL_RECALL_API ADefaultGameState : public AGameStateBase
 public:
 	UPROPERTY(EditAnywhere, Category="Variables (For Designers)")
 	FVector PlayerSpawnPos = FVector::Zero();
+	
+	UPROPERTY(EditAnywhere, Category="Variables (For Designers)")
+	FString Map = "";
 };

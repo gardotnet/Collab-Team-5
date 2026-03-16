@@ -1,22 +1,22 @@
 ﻿#include "DefaultPlayerController.h"
 #include "Algo/Reverse.h"
+#include "Kismet/GameplayStatics.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/GameStates/DefaultGameState.h"
 #include "Terminal_Recall/GridCellClasses/NodeInfoForCellSearch.h"
 #include "Terminal_Recall/GridCellClasses/WorldGridCell.h"
 
 void ADefaultPlayerController::BeginPlay()
 {
-	bShowMouseCursor = true;
-	bEnableClickEvents = true;
-	bEnableMouseOverEvents = true;
+	Super::BeginPlay();
 	// (gets game state because it will have the player spawn point)
-	ADefaultGameState* gameState = GetWorld()->GetGameState<ADefaultGameState>();
-	if (gameState && PlayerChar)
+	UDefaultInstance* gameInstance =  Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (gameInstance && PlayerChar)
 	{
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		FRotator Rotation(0,0,0);
-		PlayerEntity = GetWorld()->SpawnActor<ABaseEntity>(PlayerChar, gameState->PlayerSpawnPos, Rotation, SpawnParams);
+		PlayerEntity = GetWorld()->SpawnActor<ABaseEntity>(PlayerChar, gameInstance->PlayerSpawnPos, Rotation, SpawnParams);
 	}
 	
 	FVector endTracePos = PlayerEntity->GetActorLocation() + FVector(0,0, -1000);
@@ -29,8 +29,7 @@ void ADefaultPlayerController::BeginPlay()
 		CurrentCell = Cast<AWorldGridCell>(hitResult.GetActor());
 		CurrentCell->OnUnitArrive();
 	}
-	TimerManagerRef = &GetWorld()->GetTimerManager();
-	MoveTimerHandle = FTimerHandle();
+	
 }
 
 void ADefaultPlayerController::MovePlayer()

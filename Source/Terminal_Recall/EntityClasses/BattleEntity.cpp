@@ -2,6 +2,7 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
 
 ABattleEntity::ABattleEntity()
 {
@@ -43,9 +44,7 @@ void ABattleEntity::DoAttackAction(TObjectPtr<ABaseEntity> enemy, FVector pos)
 			OnMove(pos);
 			return;
 		}*/
-		
 	}
-
 	if (OnTurnDoneEvent.IsBound())
 		OnTurnDoneEvent.Broadcast();
 }
@@ -63,6 +62,7 @@ void ABattleEntity::HideChoices()
 void ABattleEntity::BeginPlay()
 {
 	Super::BeginPlay();
+	PlayerBattleController = Cast<APlayerBattleController>(GetWorld()->GetFirstPlayerController());
 	BattleManager = Cast<ABattleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ABattleManager::StaticClass()));
 }
 
@@ -73,10 +73,5 @@ void ABattleEntity::OnMove()
 
 void ABattleEntity::OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Hey! I'm snitching to the battle manager now!"));
-	
+	BattleManager->OnEntitySelected(this);
 }
-
-
-
-

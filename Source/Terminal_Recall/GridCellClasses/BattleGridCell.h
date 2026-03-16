@@ -8,6 +8,7 @@
 #include "Terminal_Recall/StructsAndEnums/BattleCellState.h"
 #include "BattleGridCell.generated.h"
 
+class APlayerBattleController;
 class ABattleEntity;
 class ABaseTrap;
 
@@ -20,6 +21,10 @@ public:
 	// add cell colour here
 	
 protected:
+	
+	UPROPERTY()
+	TObjectPtr<APlayerBattleController> PlayerController;
+	
 	EBattleCellState CurrentState;
 	// [NOTE] current colour
 	UPROPERTY()
@@ -29,6 +34,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<ABattleEntity> EntityCauserRef;
 	
+	
 public:
 	ABattleGridCell();
 	void AssignTrap(TObjectPtr<ABaseTrap> trap);
@@ -36,6 +42,8 @@ public:
 	void AssignGridPos(FVector2f pos);
 	void EnableCell(EBattleCellState isAttack);
 	void AddActionCauser(TObjectPtr<ABattleEntity> entity);
+	
+	virtual void BeginPlay() override;
 protected:
 	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 };

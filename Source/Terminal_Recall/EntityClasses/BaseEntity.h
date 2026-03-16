@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "BaseEntity.generated.h"
 
+class AOurBasePlayerController;
 class ADefaultPlayerController;
 class UCapsuleComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveDone);
@@ -30,7 +31,8 @@ public:
 	float DesiredMoveDuration = 0;
 	float MoveTimer;
 	FVector TargetPosition;
-	TObjectPtr<ADefaultPlayerController> PlayerController;
+	UPROPERTY()
+	TObjectPtr<AOurBasePlayerController> PlayerController;
 	
 	
 	FTimerHandle MoveTimerHandle;

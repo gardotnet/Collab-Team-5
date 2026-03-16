@@ -14,7 +14,7 @@ class TERMINAL_RECALL_API ABaseGridCell : public AActor
 
 public:
 	ABaseGridCell();
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UBoxComponent> BoxComponent;
 	

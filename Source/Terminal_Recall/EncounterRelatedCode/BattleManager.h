@@ -20,7 +20,8 @@ public:
 	UPROPERTY()
 	TObjectPtr<ABattlePlayerEntity> PlayerRef;
 	TArray<TObjectPtr<ABattleEnemyEntity>> EnemyArray;
-	TArray<FGridRowCell> GridArray;
+	UPROPERTY()
+	TMap<FIntPoint, TObjectPtr<ABattleGridCell>> GridMap;
 	
 protected:
 	int32 EntityIndex = -1;

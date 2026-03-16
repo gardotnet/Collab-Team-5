@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "OurBasePlayerController.h"
 #include "DefaultPlayerController.generated.h"
 
 class AAIController;
@@ -11,7 +12,7 @@ class AWorldGridCell;
  * 
  */
 UCLASS()
-class TERMINAL_RECALL_API ADefaultPlayerController : public APlayerController
+class TERMINAL_RECALL_API ADefaultPlayerController : public AOurBasePlayerController
 {
 	GENERATED_BODY()
 	
@@ -34,24 +35,19 @@ protected:
 	TArray<TObjectPtr<UNodeInfoForCellSearch>> OpenList;
 	UPROPERTY()
 	TArray<TObjectPtr<UNodeInfoForCellSearch>> CloseList;
-	
-	FTimerManager* TimerManagerRef;
-	FTimerHandle MoveTimerHandle;
 
 	float MoveTimer = 0.0f;
 	float DesiredMoveDuration = 0.0f;
-	
 
 public:
 	UFUNCTION()
-	void MovePlayer();
+	virtual void MovePlayer() override;
 	void NavigateWorld(TObjectPtr<AWorldGridCell> cell);
 	
 	virtual void BeginPlay() override;
 	
 protected:
 	bool FindCell(TObjectPtr<UNodeInfoForCellSearch> currentInfo);
-	
 	// Utilities
 	float Heuristic_Manhattan(FVector start, FVector end);
 	

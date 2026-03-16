@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "BaseEntity.h"
 #include "BattleEntity.generated.h"
+class APlayerBattleController;
 class ABattleManager;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTurnDone);
 UCLASS()
@@ -31,6 +32,8 @@ protected:
 	UPROPERTY()
 	FVector2f GridPos = FVector2f(0.0f, 0.0f);
 	
+	UPROPERTY()
+	TObjectPtr<APlayerBattleController> PlayerBattleController;
 public:
 	ABattleEntity();
 	virtual void OnBattleStart();

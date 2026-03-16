@@ -4,6 +4,8 @@
 #include "BattleEntity.h"
 #include "BattleEnemyEntity.generated.h"
 
+class APlayerBattleController;
+
 UCLASS()
 class TERMINAL_RECALL_API ABattleEnemyEntity : public ABattleEntity
 {
@@ -11,7 +13,6 @@ class TERMINAL_RECALL_API ABattleEnemyEntity : public ABattleEntity
 
 public:
 	ABattleEnemyEntity();
-
+	
 	virtual void OnTurnGo() override;
-
 };

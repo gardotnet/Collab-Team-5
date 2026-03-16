@@ -116,7 +116,7 @@ void UEncounterLevelMakerWindow::OnCreateGridPressed()
 	FString yString =  InputGridSizeY->GetText().ToString();
 	int32 x = FCString::Atoi(*xString);
 	int32 y = FCString::Atoi(*yString);
-	if (xString == "" || yString == "")
+	if (xString == "" || yString == "" || xString == "0" || yString == "0")
 	{
 		x = 10;
 		y = 10;

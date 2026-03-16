@@ -1,6 +1,7 @@
 ﻿#include "BattleGridCell.h"
 
 #include "Terminal_Recall/EntityClasses/BattleEntity.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
 
 ABattleGridCell::ABattleGridCell()
 {
@@ -32,6 +33,11 @@ void ABattleGridCell::EnableCell(EBattleCellState isAttack)
 void ABattleGridCell::AddActionCauser(TObjectPtr<ABattleEntity> entity)
 {
 	EntityCauserRef = entity;
+}
+
+void ABattleGridCell::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
