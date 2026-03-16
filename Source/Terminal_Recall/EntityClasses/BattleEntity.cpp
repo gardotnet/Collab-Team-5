@@ -3,6 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
+#include "Terminal_Recall/StuffForUI/BattleChoiceSelectUI.h"
 
 ABattleEntity::ABattleEntity()
 {
@@ -52,6 +53,7 @@ void ABattleEntity::DoAttackAction(TObjectPtr<ABaseEntity> enemy, FVector pos)
 void ABattleEntity::ShowChoices()
 {
 	// add all buttons to the UI
+	PlayerBattleController->BattleChoiceUIWidget->AddActionButton(MovementActionsUI, AttackActionsUI, ItemActionsUI);
 }
 
 void ABattleEntity::HideChoices()

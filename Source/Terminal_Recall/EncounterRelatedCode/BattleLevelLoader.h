@@ -26,26 +26,31 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "For Designers | Necessities")
 	TObjectPtr<UDataTable> InteractableDataTable;
 	
-	UPROPERTY(EditAnywhere, Category="For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	TSubclassOf<ABattleGridCell> BattleGridClass;
-	UPROPERTY(EditAnywhere, Category="For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	TSubclassOf<ABattleManager> BattleManagerClass;
-	UPROPERTY(EditAnywhere, Category="For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	TSubclassOf<AActor> WallClass;
-	UPROPERTY(EditAnywhere, Category="For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	TSubclassOf<ABattlePlayerEntity> PlayerEntityClass;
-	UPROPERTY(EditAnywhere, Category="For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	TSubclassOf<ABattleEnemyEntity> BaseEnemyEntityClass;
 	
-	UPROPERTY(EditAnywhere, Category="For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	UMaterialInterface* CheckBoardMat1;
-	UPROPERTY(EditAnywhere, Category="For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	UMaterialInterface* CheckBoardMat2;
-	UPROPERTY(EditAnywhere, Category="For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	UMaterialInterface* MoveHighlightMat;
+
+	UPROPERTY(EditAnywhere, Category="For Designers | For Editor Tool")
+	FString MapFilePath;
 	
 	virtual void BeginPlay() override;
 	
+	UFUNCTION(CallInEditor, BlueprintCallable, Category = "For Designers | Functions")
+	void EditorLoadLevel();
 	void LoadLevel(FString levelPath);
 	
 };

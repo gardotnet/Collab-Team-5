@@ -11,6 +11,9 @@ class TERMINAL_RECALL_API ABattlePlayerEntity : public ABattleEntity
 
 public:
 	ABattlePlayerEntity();
-
 	virtual void OnBattleStart() override;
+
+protected:
+	virtual void BeginPlay() override;
+
 };

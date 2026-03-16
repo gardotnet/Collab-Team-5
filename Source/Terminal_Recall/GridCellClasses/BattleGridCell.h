@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseGridCell.h"
-#include "Terminal_Recall/StructsAndEnums/ActionType.h"
+#include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
 #include "Terminal_Recall/StructsAndEnums/BattleCellState.h"
 #include "BattleGridCell.generated.h"
 

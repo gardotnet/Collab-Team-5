@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Terminal_Recall/StructsAndEnums/ActionType.h"
+#include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
 #include "Terminal_Recall/StructsAndEnums/BattleCellState.h"
 #include "Terminal_Recall/StructsAndEnums/For2dArray/FGridRowCell.h"
 #include "BattleManager.generated.h"
@@ -16,7 +16,7 @@ class TERMINAL_RECALL_API ABattleManager : public AActor
 	GENERATED_BODY()
 
 public:
-	ABattleManager();
+	
 	UPROPERTY()
 	TObjectPtr<ABattlePlayerEntity> PlayerRef;
 	TArray<TObjectPtr<ABattleEnemyEntity>> EnemyArray;
@@ -29,6 +29,7 @@ protected:
 	TObjectPtr<ABattleEntity> CurrentEntityChosen;
 
 public:
+	ABattleManager();
 	void SetUpBattle(TObjectPtr<ABattlePlayerEntity> player, TArray<TObjectPtr<ABattleEnemyEntity>> enemies, TArray<FGridRowCell>* grid);
 	void OnEntitySelected(ABattleEntity* entity);
 	void ActionChoiceSelected(EBattleCellState attackOrMove, EActionType ActionType);

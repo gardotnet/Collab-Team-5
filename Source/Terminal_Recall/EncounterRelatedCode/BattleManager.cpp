@@ -3,6 +3,7 @@
 #include "Terminal_Recall/EntityClasses/BattleEnemyEntity.h"
 #include "Terminal_Recall/EntityClasses/BattleEntity.h"
 #include "Terminal_Recall/EntityClasses/BattlePlayerEntity.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
 
 ABattleManager::ABattleManager()

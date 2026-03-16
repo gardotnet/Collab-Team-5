@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "BaseEntity.h"
 #include "BattleEntity.generated.h"
+class UActionButtonUI;
 class APlayerBattleController;
 class ABattleManager;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTurnDone);
@@ -12,7 +13,9 @@ class TERMINAL_RECALL_API ABattleEntity : public ABaseEntity
 	GENERATED_BODY()
 
 public:
-	
+
+	UPROPERTY(EditAnywhere, Category = "For Designers | Necessities")
+	TSubclassOf<UUserWidget> ActionButtonClass;
 	
 	UPROPERTY(EditAnywhere, BlueprintAssignable, Category = "Events For Designers")
 	FOnTurnDone OnTurnDoneEvent; // [NOTE] make sure to call this event when actions (e.g. move, attack) are done
@@ -34,6 +37,14 @@ protected:
 	
 	UPROPERTY()
 	TObjectPtr<APlayerBattleController> PlayerBattleController;
+
+	UPROPERTY()
+	TArray<UActionButtonUI*> MovementActionsUI;
+	UPROPERTY()
+	TArray<UActionButtonUI*> AttackActionsUI;
+	UPROPERTY()
+	TArray<UActionButtonUI*> ItemActionsUI;
+	
 public:
 	ABattleEntity();
 	virtual void OnBattleStart();

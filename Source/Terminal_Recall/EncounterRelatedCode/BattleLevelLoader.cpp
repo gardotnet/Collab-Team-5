@@ -23,6 +23,11 @@ void ABattleLevelLoader::BeginPlay()
 	LoadLevel(FPaths::ProjectContentDir() + gameInstance->Map);
 }
 
+void ABattleLevelLoader::EditorLoadLevel()
+{
+	LoadLevel(MapFilePath);
+}
+
 void ABattleLevelLoader::LoadLevel(FString levelPath)
 {
 	FString content;

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
 #include "DefaultInstance.generated.h"
 
 /**
@@ -15,8 +16,11 @@ class TERMINAL_RECALL_API UDefaultInstance : public UGameInstance
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, Category="Variables (For Designers)")
+	UPROPERTY(EditAnywhere, Category="For Designers | Variables")
 	FVector PlayerSpawnPos = FVector::Zero();
-	UPROPERTY(EditAnywhere, Category="Variables (For Designers)")
+	UPROPERTY(EditAnywhere, Category="For Designers | Variables")
 	FString Map = "";
+	UPROPERTY(EditAnywhere, Category="For Designers | Variables")
+	TArray<EAttackActionTypes> PlayerMoves;
+	
 };
