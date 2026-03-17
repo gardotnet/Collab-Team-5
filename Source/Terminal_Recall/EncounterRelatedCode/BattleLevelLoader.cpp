@@ -80,6 +80,8 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
 								battleManager->PlayerRef = GetWorld()->SpawnActor<ABattlePlayerEntity>(PlayerEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
 								battleManager->PlayerRef->SetPos(cellData.Position);
+								battleManager->PlayerRef->OnBattleStart(battleManager);
+								(*newCell)->HouseEntity(battleManager->PlayerRef);
 							}
 						}
 						else
@@ -97,6 +99,9 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 								ABattleEnemyEntity* newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
 								// [NOTE] Pass data to enemy
 								battleManager->EnemyArray.Add(newEnemy);
+								newEnemy->OnBattleStart(battleManager, 1, 1);
+								newEnemy->SetPos(cellData.Position);
+								(*newCell)->HouseEntity(newEnemy);
 							}
 						}
 					break;

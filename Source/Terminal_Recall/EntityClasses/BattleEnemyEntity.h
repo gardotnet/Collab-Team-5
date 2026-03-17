@@ -13,6 +13,7 @@ class TERMINAL_RECALL_API ABattleEnemyEntity : public ABattleEntity
 
 public:
 	ABattleEnemyEntity();
-	
+
 	virtual void OnTurnGo() override;
+	virtual void OnBattleStart(ABattleManager* battleManager, float health, float damageMultiplier) override;
 };

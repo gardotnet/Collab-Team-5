@@ -2,11 +2,13 @@
 
 #pragma once
 
+#include <Terminal_Recall/StructsAndEnums/ActionTypes.h>
+
 #include "CoreMinimal.h"
 #include "BaseGridCell.h"
 #include "BattleGridCell.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClickedCell, ABattleGridCell*, cell);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClickedCell, ABattleEntity*, target);
 
 class APlayerBattleController;
 class ABattleEntity;
@@ -28,13 +30,15 @@ protected:
 	UPROPERTY()
 	TObjectPtr<APlayerBattleController> PlayerController;
 	
-	// [NOTE] current colour
 	UPROPERTY()
 	TObjectPtr<ABaseTrap> TrapRef;
 	FIntPoint GridPos;
 	bool Walkable = true;
 	UPROPERTY()
 	TObjectPtr<ABattleEntity> EntityCauserRef;
+	UPROPERTY()
+	TObjectPtr<ABattleEntity> ResidingEntity;
+	EActionType ActionType;
 
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	UMaterialInterface* MoveHighlightMat;
@@ -44,9 +48,13 @@ protected:
 public:
 	ABattleGridCell();
 	void AssignTrap(TObjectPtr<ABaseTrap> trap);
-	void EnableCell();
+	void EnableCell(EActionType actionType, ABattleEntity* causer);
 	UFUNCTION()
 	void DisableCell();
+	
+	void HouseEntity(ABattleEntity* entity);
+	UFUNCTION()
+	void EvictEntity();
 
 	void SetGridPos(FIntPoint gridPos);
 	FIntPoint GetGridPos() { return GridPos; };

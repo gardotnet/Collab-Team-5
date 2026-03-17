@@ -11,43 +11,16 @@ ABattleEntity::ABattleEntity()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ABattleEntity::OnBattleStart(ABattleManager* battleManager)
+void ABattleEntity::OnBattleStart(ABattleManager* battleManager, float health, float damageMultiplier)
 {
-	// Create UI buttons and linking it to 'OnAttackSelected' or 'OnMovementSelected'
-	// Also store it to show/hide the choices
+	BattleManager = battleManager;
+	Health = health;
+	DamageMultiplier = damageMultiplier;
 }
-
 void ABattleEntity::OnTurnGo()
 {
 	// Decrement all cooldowns by 1
-	// (maybe show choices)
-}
-
-void ABattleEntity::OnActionSelected()
-{
-	// [NOTE] if player clicked an option
-	// [NOTE] get variables from button and pass it to manager
-	if (BattleManager)
-	{
-		//BattleManager->ActionChoiceSelected()
-	}
-}
-
-void ABattleEntity::DoAttackAction(TObjectPtr<ABaseEntity> enemy, FVector pos)
-{
-	if (enemy)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("I refuse to hit this entity"));
-		// checks if enemy is dead
-		/*if ()
-		{
-			// moves to opponent position when defeated like chess
-			OnMove(pos);
-			return;
-		}*/
-	}
-	if (OnTurnDoneEvent.IsBound())
-		OnTurnDoneEvent.Broadcast();
+	ShowChoices();
 }
 
 void ABattleEntity::ShowChoices()
@@ -56,14 +29,20 @@ void ABattleEntity::ShowChoices()
 	PlayerBattleController->BattleChoiceUIWidget->AddActionButton(MovementActionsUI, AttackActionsUI, ItemActionsUI);
 }
 
-void ABattleEntity::HideChoices()
-{
-	// removes all button from the UI
-}
-
 void ABattleEntity::SetPos(FIntPoint newPos)
 {
+	OnChangeCell.Broadcast();
 	GridPos = newPos;
+}
+
+void ABattleEntity::TakeDamage(float damage)
+{
+	Health = Health - damage;
+	if (Health <= 0.0f)
+	{
+		OnChangeCell.Broadcast();
+		Destroy();
+	}
 }
 
 void ABattleEntity::BeginPlay()
@@ -82,6 +61,8 @@ void ABattleEntity::OnMove()
 	if (MoveTimer > DesiredMoveDuration || distance < 1)
 	{
 		OnMoveDoneEvent.Broadcast();
+		TimerManagerRef->ClearTimer(MoveTimerHandle);
+		SetActorLocation(TargetPosition);
 	}
 	else
 	{

@@ -18,6 +18,5 @@ void UActionButtonUI::NativeDestruct()
 
 void UActionButtonUI::OnButtonClicked()
 {
-	UE_LOG(LogTemp, Display, TEXT("STOP CLICKING ME!"));
 	OnActionSelected.Broadcast(this);
 }

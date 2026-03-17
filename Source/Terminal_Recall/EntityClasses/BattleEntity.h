@@ -2,11 +2,15 @@
 
 #include "CoreMinimal.h"
 #include "BaseEntity.h"
+#include "Terminal_Recall/StructsAndEnums/ForDataTable/AttackStruct.h"
 #include "BattleEntity.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FChangeCell);
+
 class UActionButtonUI;
 class APlayerBattleController;
 class ABattleManager;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTurnDone);
+
 UCLASS()
 class TERMINAL_RECALL_API ABattleEntity : public ABaseEntity
 {
@@ -14,24 +18,23 @@ class TERMINAL_RECALL_API ABattleEntity : public ABaseEntity
 
 public:
 
+	UPROPERTY(EditDefaultsOnly, Category = "For Designers | Necessities")
+	TObjectPtr<UDataTable> AttackDataTable;
 	UPROPERTY(EditAnywhere, Category = "For Designers | Necessities")
 	TSubclassOf<UUserWidget> ActionButtonClass;
 	
-	UPROPERTY(EditAnywhere, BlueprintAssignable, Category = "Events For Designers")
-	FOnTurnDone OnTurnDoneEvent; // [NOTE] make sure to call this event when actions (e.g. move, attack) are done
+	FChangeCell OnChangeCell;
 
+protected:
+	
+	float Health = 1.0f;
+	
 	UPROPERTY()
 	TObjectPtr<ABattleManager> BattleManager;
 	
 	UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)")
 	float DamageMultiplier = 1.0f;
-
-	UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)")
-	TArray<int32> AttackListID;
 	
-	//UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)", meta = (EditCondition = "false")) 
-	// [NOTE] add list to store all option button
-protected:
 	UPROPERTY()
 	FIntPoint GridPos = FIntPoint(0.0f, 0.0f);
 	
@@ -45,17 +48,18 @@ protected:
 	UPROPERTY()
 	TArray<UActionButtonUI*> ItemActionsUI;
 	
+	TArray<FAttackStruct*> AttackInfoList; 
+	
 public:
 	ABattleEntity();
-	virtual void OnBattleStart(ABattleManager* battleManager);
+	virtual void OnBattleStart(ABattleManager* battleManager, float health, float damageMultiplier);
 	virtual void OnTurnGo();
-	void OnActionSelected();
-	void DoAttackAction(TObjectPtr<ABaseEntity> enemy, FVector pos);
 	void ShowChoices();
-	void HideChoices();
 
 	void SetPos(FIntPoint newPos);
 	FIntPoint GetPos() { return GridPos; }
+	
+	void TakeDamage(float damage);
 
 	virtual void BeginPlay() override;
 	virtual void OnMove() override;

@@ -2,7 +2,6 @@
 
 void AOurBasePlayerController::BeginPlay()
 {
-
 	bShowMouseCursor = true;
 	bEnableClickEvents = true;
 	bEnableMouseOverEvents = true;

@@ -1,5 +1,5 @@
-﻿#if WITH_EDITOR
-#include "EncounterLevelMakerWindow.h"
+﻿#include "EncounterLevelMakerWindow.h"
+#if WITH_EDITOR
 #include "DesktopPlatformModule.h"
 #include "EditorUtilityWidgetComponents.h"
 #include "IDesktopPlatform.h"

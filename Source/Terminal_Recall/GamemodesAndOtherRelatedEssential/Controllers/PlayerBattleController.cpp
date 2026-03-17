@@ -6,5 +6,6 @@
 void APlayerBattleController::BeginPlay()
 {
 	Super::BeginPlay();
+	bEnableMouseOverEvents = false;
 	BattleChoiceUIWidget = Cast<UBattleChoiceSelectUI>(CreateWidget(this, BattleChoiceUIClass));
 }

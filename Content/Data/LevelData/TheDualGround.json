@@ -108,15 +108,6 @@
 			"position":
 			{
 				"x": 1,
-				"y": 1
-			},
-			"cellType": "PlayerSpawn",
-			"idForCellContent": -1
-		},
-		{
-			"position":
-			{
-				"x": 1,
 				"y": 9
 			},
 			"cellType": "Wall",
@@ -130,6 +121,15 @@
 			},
 			"cellType": "Wall",
 			"idForCellContent": -1
+		},
+		{
+			"position":
+			{
+				"x": 2,
+				"y": 4
+			},
+			"cellType": "InteractableSpawn",
+			"idForCellContent": 1
 		},
 		{
 			"position":
@@ -173,8 +173,8 @@
 				"x": 4,
 				"y": 4
 			},
-			"cellType": "Trap",
-			"idForCellContent": 1
+			"cellType": "PlayerSpawn",
+			"idForCellContent": -1
 		},
 		{
 			"position":
@@ -200,7 +200,7 @@
 				"x": 5,
 				"y": 5
 			},
-			"cellType": "InteractableSpawn",
+			"cellType": "EnemySpawn",
 			"idForCellContent": 1
 		},
 		{
@@ -243,6 +243,15 @@
 			"position":
 			{
 				"x": 7,
+				"y": 4
+			},
+			"cellType": "Trap",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 7,
 				"y": 9
 			},
 			"cellType": "Wall",
@@ -256,15 +265,6 @@
 			},
 			"cellType": "Wall",
 			"idForCellContent": -1
-		},
-		{
-			"position":
-			{
-				"x": 8,
-				"y": 8
-			},
-			"cellType": "EnemySpawn",
-			"idForCellContent": 1
 		},
 		{
 			"position":

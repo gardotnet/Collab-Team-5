@@ -33,6 +33,8 @@ protected:
 	TObjectPtr<APlayerBattleController> PlayerBattleController;
 
 	FCellSelected CellSelectedEvent;
+	
+	bool SelectMode = false;
 
 public:
 	ABattleManager();
@@ -42,7 +44,7 @@ public:
 	void ActionChoiceSelected(UActionButtonUI* selectedButton);
 	
 	UFUNCTION()
-	void OnCellSelected(ABattleGridCell* selectedCell);
+	void OnCellSelected(ABattleEntity* target);
 protected:
 	UFUNCTION()
 	void NextEntityTurn();

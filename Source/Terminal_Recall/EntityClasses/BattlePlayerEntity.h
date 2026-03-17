@@ -12,8 +12,6 @@ class TERMINAL_RECALL_API ABattlePlayerEntity : public ABattleEntity
 
 public:
 	ABattlePlayerEntity();
-	virtual void OnBattleStart(ABattleManager* battleManager) override;;
+	virtual void OnBattleStart(ABattleManager* battleManager, float health = -1, float damageMultiplier = -1) override;
 
-protected:
-	FString GetActionName(EAttackActionTypes type);
 };

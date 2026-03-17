@@ -22,10 +22,8 @@ public:
 	TObjectPtr<ABattleEntity> Entity;
 	FString ActionName;
 	EActionType ActionType;
-	int32 IdForAction;
+	int32 IndexInOwningEntityArray = -1;
 	
-	EAttackActionTypes AttackType;
-
 	FOnActionSelected OnActionSelected;
 	
 protected:

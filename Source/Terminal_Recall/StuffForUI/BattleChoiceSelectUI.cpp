@@ -85,7 +85,8 @@ void UBattleChoiceSelectUI::RemoveChoices()
 void UBattleChoiceSelectUI::AddActionButton(TArray<UActionButtonUI*>& movementList,
                                             TArray<UActionButtonUI*>& attackList, TArray<UActionButtonUI*>& itemList)
 {
-	AddToViewport();
+	if (!IsInViewport())
+		AddToViewport();
 	RemoveChoices();
 	if (movementList.Num() > 0)
 	{

@@ -4,15 +4,8 @@
 #include "Terminal_Recall/StructsAndEnums/LevelEditorBrushEnum.h"
 #include "Terminal_Recall/StructsAndEnums/LevelEditorUndoStruct.h"
 #include "Terminal_Recall/StructsAndEnums/For2dArray/LevelCellData.h"
-
-// So we can build the game, using "Blutility", "UMGEditor" will not build properly 
-#if WITH_EDITOR
 #include "EditorUtilityWidget.h"
-#endif
-// end it so the compiler doesn't say where is it lol
 #include "EncounterLevelMakerWindow.generated.h"
-
-#if WITH_EDITOR
 
 class UTextRenderComponent;
 struct FLevelExportStruct;
@@ -26,12 +19,10 @@ USTRUCT(BlueprintType)
 struct FGridPosAnd1DIndex
 {
 	GENERATED_BODY()
-	#if WITH_EDITORONLY_DATA
 	UPROPERTY()
 	FIntPoint GridPos = FIntPoint(-1);
 	UPROPERTY()
 	int32 IndexPos = -1;
-	#endif
 };
 
 UCLASS()
@@ -39,6 +30,8 @@ class TERMINAL_RECALL_API UEncounterLevelMakerWindow : public UEditorUtilityWidg
 {
 	GENERATED_BODY()
 
+	// So we can build the game, using "Blutility", "UMGEditor" will not build properly 
+#if WITH_EDITOR
 	// necessary to run during editor 
 	#if WITH_EDITORONLY_DATA
 
@@ -195,6 +188,7 @@ public:
 	bool ActualRedo();
 	
 	#pragma endregion
+#endif
+	
 };
 
-#endif
