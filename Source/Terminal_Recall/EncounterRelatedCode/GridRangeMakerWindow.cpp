@@ -1,13 +1,15 @@
 ﻿#include "GridRangeMakerWindow.h"
 
 #if WITH_EDITOR
+#include "DesktopPlatformModule.h"
 #include "EditorUtilityWidgetComponents.h"
+#include "IDesktopPlatform.h"
+#include "JsonObjectConverter.h"
 #include "Kismet/GameplayStatics.h"
 #include "LevelEditor.h"
 #include "SLevelViewport.h"
 #include "Components/CanvasPanel.h"
 #include "Components/InstancedStaticMeshComponent.h"
-#include "Terminal_Recall/StructsAndEnums/WorldNeighbourStruct.h"
 
 void UGridRangeMakerWindow::NativeConstruct()
 {
@@ -157,112 +159,41 @@ void UGridRangeMakerWindow::OnSelectButtonClicked()
 
 void UGridRangeMakerWindow::CloseDirMenu()
 {
+	UnselectCell();
 	DirectionCanvas->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UGridRangeMakerWindow::OnNorthButtonClicked()
 {
-	UnselectDirectionButton();
-	if (CurrentDirSelected == ECompassDirection::N)
-	{
-		CurrentDirSelected = ECompassDirection::None;
-	}
-	else
-	{
-		NorthButton->SetBackgroundColor(FLinearColor::Yellow);
-		CurrentDirSelected = ECompassDirection::N;
-	}
+	SelectDirectionsButton(NorthButton, ECompassDirection::N);
 }
 void UGridRangeMakerWindow::OnNorthEastButtonClicked()
 {
-	UnselectDirectionButton();
-	if (CurrentDirSelected == ECompassDirection::NE)
-	{
-		CurrentDirSelected = ECompassDirection::None;
-	}
-	else
-	{
-		CurrentDirSelected = ECompassDirection::NE;
-		NorthEastButton->SetBackgroundColor(FLinearColor::Yellow);
-	}
+	SelectDirectionsButton(NorthEastButton, ECompassDirection::NE);
 }
 void UGridRangeMakerWindow::OnEastButtonClicked()
 {
-	UnselectDirectionButton();
-	if (CurrentDirSelected == ECompassDirection::E)
-	{
-		CurrentDirSelected = ECompassDirection::None;
-	}
-	else
-	{
-		CurrentDirSelected = ECompassDirection::E;
-		EastButton->SetBackgroundColor(FLinearColor::Yellow);
-	}
+	SelectDirectionsButton(EastButton, ECompassDirection::E);
 }
 void UGridRangeMakerWindow::OnSouthEastButtonClicked()
 {
-	UnselectDirectionButton();
-	if (CurrentDirSelected == ECompassDirection::SE)
-	{
-		CurrentDirSelected = ECompassDirection::None;
-	}
-	else
-	{
-		CurrentDirSelected = ECompassDirection::SE;
-		SouthEastButton->SetBackgroundColor(FLinearColor::Yellow);
-	}
+	SelectDirectionsButton(SouthEastButton, ECompassDirection::SE);
 }
 void UGridRangeMakerWindow::OnSouthButtonClicked()
 {
-	UnselectDirectionButton();
-	if (CurrentDirSelected == ECompassDirection::S)
-	{
-		CurrentDirSelected = ECompassDirection::None;
-	}
-	else
-	{
-		CurrentDirSelected = ECompassDirection::S;
-		SouthButton->SetBackgroundColor(FLinearColor::Yellow);
-	}
+	SelectDirectionsButton(SouthButton, ECompassDirection::S);
 }
 void UGridRangeMakerWindow::OnSouthWestButtonClicked()
 {
-	UnselectDirectionButton();
-	if (CurrentDirSelected == ECompassDirection::SW)
-	{
-		CurrentDirSelected = ECompassDirection::None;
-	}
-	else
-	{
-		CurrentDirSelected = ECompassDirection::SW;
-		SouthWestButton->SetBackgroundColor(FLinearColor::Yellow);
-	}
+	SelectDirectionsButton(SouthWestButton, ECompassDirection::SW);
 }
 void UGridRangeMakerWindow::OnWestButtonClicked()
 {
-	UnselectDirectionButton();
-	if (CurrentDirSelected == ECompassDirection::W)
-	{
-		CurrentDirSelected = ECompassDirection::None;
-	}
-	else
-	{
-		CurrentDirSelected = ECompassDirection::W;
-		WestButton->SetBackgroundColor(FLinearColor::Yellow);
-	}
+	SelectDirectionsButton(WestButton, ECompassDirection::W);
 }
 void UGridRangeMakerWindow::OnNorthWestButtonClicked()
 {
-	UnselectDirectionButton();
-	if (CurrentDirSelected == ECompassDirection::NW)
-	{
-		CurrentDirSelected = ECompassDirection::None;
-	}
-	else
-	{
-		CurrentDirSelected = ECompassDirection::NW;
-		NorthWestButton->SetBackgroundColor(FLinearColor::Yellow);
-	}
+	SelectDirectionsButton(NorthWestButton, ECompassDirection::NW);
 }
 
 void UGridRangeMakerWindow::OnLoadLevelFileButtonClicked()
@@ -271,6 +202,67 @@ void UGridRangeMakerWindow::OnLoadLevelFileButtonClicked()
 
 void UGridRangeMakerWindow::OnExportButtonClicked()
 {
+	if (CentrePoint == FIntPoint(-1, -1))
+		return;
+	if (IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get())
+	{
+		// set up to find desired save location
+		FString SavePath;
+		TArray<FString> OutFiles;
+		bool bSaved = DesktopPlatform->SaveFileDialog(
+			nullptr,
+			TEXT("Export Level Data"),
+			TEXT("C:/"),
+			TEXT("MyLevel.json"),
+			TEXT("JSON Files (*.json)|*.json"),
+			EFileDialogFlags::None,
+			OutFiles
+		);
+		// if chosen location
+		if (bSaved && OutFiles.Num() > 0)
+		{
+			// turn into struct for JSON conversion 
+			FGridRangeExport newExportStruct;
+			newExportStruct.CentrePoint = CentrePoint;
+			for (const auto& [gridPos, data] : LevelGridData)
+			{
+				if ( data.CellType == EGridRangeBrushMode::None)
+					continue;
+				FGridRangeCellInfoForExport newInfo;
+				newInfo.CellType = data.CellType;
+				newInfo.GridPos = gridPos - CentrePoint;
+				if (data.N > -1)
+					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::N, data.N));
+				if (info->NE > -1)
+					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::NE, data.NE));
+				if (info->E > -1)
+					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::E, data.E));
+				if (info->SE > -1)
+					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::SE, data.SE));
+				if (info->S > -1)
+					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::S, data.S));
+				if (info->SW > -1)
+					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::SW, data.SW));
+				if (info->W > -1)
+					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::W, data.W));
+				if (info->NW > -1)
+					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::NW, data.NW));
+				newExportStruct.Cells.Add(newInfo);
+			}
+			FString jsonData;
+			// turns struct into JSON
+			FJsonObjectConverter::UStructToJsonObjectString(newExportStruct, jsonData);
+			// Add it to user's files
+			if (FFileHelper::SaveStringToFile(jsonData, *OutFiles[0]))
+			{
+				UE_LOG(LogTemp, Log, TEXT("Export Successful: %s"), *OutFiles[0]);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Failed to save file to: %s"), *OutFiles[0]);
+			}
+		}
+	}
 }
 
 void UGridRangeMakerWindow::OnUndoButtonClicked()
@@ -312,14 +304,28 @@ void UGridRangeMakerWindow::OnDirMagChange(const FText& NewText)
 	if (stringText == "0" || stringText == "INF")
 	{
 		InputDirMag->SetText(FText::FromString("INF"));
+		if (MagnitudeChanging)
+			*MagnitudeChanging = 0;
 	}
-	if (!stringText.IsNumeric())
+	else if (stringText == "-" || stringText == "-1")
+	{
+		InputDirMag->SetText(FText::FromString("N/A"));
+		if (MagnitudeChanging)
+			*MagnitudeChanging = -1;
+	}
+	else if (!stringText.IsNumeric())
 	{
 		InputDirMag->SetText(FText::GetEmpty());
+		if (MagnitudeChanging)
+			*MagnitudeChanging = -1;
+	}
+	else
+	{
+		if (MagnitudeChanging)
+			*MagnitudeChanging = FCString::Atoi(*stringText);
 	}
 }
 #pragma endregion
-
 
 void UGridRangeMakerWindow::SetUpMouseTrack()
 {
@@ -401,7 +407,7 @@ void UGridRangeMakerWindow::TrackMouse()
 				LastHoverPos = gridPos;
 				ISMC->SetCustomData(hitIndex, { 1.0f, 0.8f, 0.0f, 1.0f }, false);
 			}
-			if (CentrePoint == gridPos && CurrentModeSelected != EGridRangeBrushMode::Erase)
+			if ((CentrePoint == gridPos && CurrentModeSelected != EGridRangeBrushMode::Erase))
 				return;
 			if (clientViewpoint.Viewport->KeyState(EKeys::LeftMouseButton) && LastClickIndex != hitIndex)
 			{
@@ -418,6 +424,7 @@ void UGridRangeMakerWindow::TrackMouse()
 							CentreButton->SetIsEnabled(true);
 						}
 						CellData->CellType = EGridRangeBrushMode::None;
+						CellData->ClearModifier();
 						break;
 						case EGridRangeBrushMode::Slot:
 						CellData->CellType = EGridRangeBrushMode::Slot;
@@ -427,15 +434,21 @@ void UGridRangeMakerWindow::TrackMouse()
 							CentrePlaced = true;
 							CentrePoint = gridPos;
 							CentreButton->SetIsEnabled(false);
+							CellData->ClearModifier();
+							ISMC->SetCustomData(hitIndex, GetColour(CellData->CellType), false);
 							UnselectCurrentButton();
+							CurrentModeSelected = EGridRangeBrushMode::None;
 							TimerManager->ClearTimer(HoverTimerHandle);
 						break;
 						case EGridRangeBrushMode::Select:
-							SelectedCellInfo = CellData;
+							if (CellData->CellType != EGridRangeBrushMode::Slot)
+								return;
+							info = CellData;
 							DirectionCanvas->SetVisibility(ESlateVisibility::Visible);
 							CurrentDirSelected = ECompassDirection::None;
-							LoadDirectionsOnCell();
 							UnselectCurrentButton();
+							CurrentModeSelected = EGridRangeBrushMode::None;
+							LoadDirectionsOnCell();
 							TimerManager->ClearTimer(HoverTimerHandle);
 							return;
 						default:
@@ -444,7 +457,6 @@ void UGridRangeMakerWindow::TrackMouse()
 					ISMC->SetCustomData(hitIndex, GetColour(CellData->CellType), false);
 				}
 			}
-			UE_LOG(LogTemp, Warning, TEXT("Hovered ISM Pos: (%d, %d)"), gridPos.X, gridPos.Y);
 		}
 		else
 		{
@@ -499,38 +511,61 @@ void UGridRangeMakerWindow::UnselectCurrentButton()
 
 void UGridRangeMakerWindow::UnselectDirectionButton()
 {
-	/*switch (CurrentDirSelected)
+	switch (CurrentDirSelected)
 	{
 		case ECompassDirection::N:
-			NorthButton->SetBackgroundColor(GetDirButtonColor(ECompassDirection::N));
-		break;
+			if (info->N > -1)
+				NorthButton->SetBackgroundColor(FLinearColor::Green);
+			else
+				NorthButton->SetBackgroundColor(FLinearColor::White);
+			break;
 		case ECompassDirection::NE:
-			NorthEastButton->SetBackgroundColor(GetDirButtonColor(ECompassDirection::NE));
-		break;
+			if (info->NE > -1)
+				NorthEastButton->SetBackgroundColor(FLinearColor::Green);
+			else
+				NorthEastButton->SetBackgroundColor(FLinearColor::White);
+			break;
 		case ECompassDirection::E:
-			EastButton->SetBackgroundColor(GetDirButtonColor(ECompassDirection::E));
-		break;
+			if (info->E > -1)
+				EastButton->SetBackgroundColor(FLinearColor::Green);
+			else
+				EastButton->SetBackgroundColor(FLinearColor::White);
+			break;
 		case ECompassDirection::SE:
-			SouthEastButton->SetBackgroundColor(GetDirButtonColor(ECompassDirection::SE));
-		break;
+			if (info->SE > -1)
+				SouthEastButton->SetBackgroundColor(FLinearColor::Green);
+			else
+				SouthEastButton->SetBackgroundColor(FLinearColor::White);
+			break;
 		case ECompassDirection::S:
-			SouthButton->SetBackgroundColor(GetDirButtonColor(ECompassDirection::S));
-		break;
+			if (info->S > -1)
+				SouthButton->SetBackgroundColor(FLinearColor::Green);
+			else
+				SouthButton->SetBackgroundColor(FLinearColor::White);
+			break;
 		case ECompassDirection::SW:
-			SouthWestButton->SetBackgroundColor(GetDirButtonColor(ECompassDirection::SW));
-		break;
+			if (info->SW > -1)
+				SouthWestButton->SetBackgroundColor(FLinearColor::Green);
+			else
+				SouthWestButton->SetBackgroundColor(FLinearColor::White);
+			break;
 		case ECompassDirection::W:
-			WestButton->SetBackgroundColor(GetDirButtonColor(ECompassDirection::W));
-		break;
+			if (info->W > -1)
+				WestButton->SetBackgroundColor(FLinearColor::Green);
+			else
+				WestButton->SetBackgroundColor(FLinearColor::White);
+			break;
 		case ECompassDirection::NW:
-			NorthWestButton->SetBackgroundColor(GetDirButtonColor(ECompassDirection::NW));
-		break;
+			if (info->NW > -1)
+				NorthWestButton->SetBackgroundColor(FLinearColor::Green);
+			else
+				NorthWestButton->SetBackgroundColor(FLinearColor::White);
+			break;
 		default:
 		break;
-	}*/
+	}
 }
-
-void UGridRangeMakerWindow::UnselectAllDirectionButton()
+void UGridRangeMakerWindow::LoadDirectionsOnCell()
 {
 	NorthButton->SetBackgroundColor(FLinearColor::White);
 	NorthEastButton->SetBackgroundColor(FLinearColor::White);
@@ -540,44 +575,76 @@ void UGridRangeMakerWindow::UnselectAllDirectionButton()
 	SouthWestButton->SetBackgroundColor(FLinearColor::White);
 	WestButton->SetBackgroundColor(FLinearColor::White);
 	NorthWestButton->SetBackgroundColor(FLinearColor::White);
-}
-
-void UGridRangeMakerWindow::LoadDirectionsOnCell()
-{
-	UnselectAllDirectionButton();
 	
-		/*
-		switch (direction.Direction)
-		{
-			case ECompassDirection::N:
-			NorthButton->SetBackgroundColor(FLinearColor::Green);
-			break;
-			case ECompassDirection::NE:
-			NorthEastButton->SetBackgroundColor(FLinearColor::Green);
-			break;
-			case ECompassDirection::E:
-			EastButton->SetBackgroundColor(FLinearColor::Green);
-			break;
-			case ECompassDirection::SE:
-			SouthEastButton->SetBackgroundColor(FLinearColor::Green);
-			case ECompassDirection::S:
-			SouthButton->SetBackgroundColor(FLinearColor::Green);
-			break;
-			case ECompassDirection::SW:
-			SouthWestButton->SetBackgroundColor(FLinearColor::Green);
-			case ECompassDirection::W:
-			WestButton->SetBackgroundColor(FLinearColor::Green);
-			break;
-			case ECompassDirection::NW:
-			NorthWestButton->SetBackgroundColor(FLinearColor::Green);
-			break;
-			default:
-			break;
-		}*/
-		
-	//}
+	if (info->N > -1)
+		NorthButton->SetBackgroundColor(FLinearColor::Green);
+	if (info->NE > -1)
+		NorthEastButton->SetBackgroundColor(FLinearColor::Green);
+	if (info->E > -1)
+		EastButton->SetBackgroundColor(FLinearColor::Green);
+	if (info->SE > -1)
+		SouthEastButton->SetBackgroundColor(FLinearColor::Green);
+	if (info->S > -1)
+		SouthButton->SetBackgroundColor(FLinearColor::Green);
+	if (info->SW > -1)
+		SouthWestButton->SetBackgroundColor(FLinearColor::Green);
+	if (info->W > -1)
+		WestButton->SetBackgroundColor(FLinearColor::Green);
+	if (info->NW > -1)
+		NorthWestButton->SetBackgroundColor(FLinearColor::Green);
 }
-
+void UGridRangeMakerWindow::SelectDirectionsButton(UEditorUtilityButton* button, ECompassDirection dir)
+{
+	UnselectDirectionButton();
+	if (CurrentDirSelected == dir)
+	{
+		InputDirMag->SetIsEnabled(false);
+		CurrentDirSelected = ECompassDirection::None;
+	}
+	else
+	{
+		InputDirMag->SetIsEnabled(true);
+		CurrentDirSelected = dir;
+		button->SetBackgroundColor(FLinearColor::Yellow);
+		MagnitudeChanging = GetMagnitudeOfDirection();
+		if (*MagnitudeChanging == -1)
+		{
+			InputDirMag->SetText(FText::FromString("N/A"));
+		}
+		else if (*MagnitudeChanging == 0)
+		{
+			InputDirMag->SetText(FText::FromString("INF"));
+		}
+		else
+		{
+			InputDirMag->SetText(FText::AsNumber(*MagnitudeChanging));
+		}
+	}
+}
+int32* UGridRangeMakerWindow::GetMagnitudeOfDirection()
+{
+	switch (CurrentDirSelected)
+	{
+	case ECompassDirection::N:
+		return &info->N;
+	case ECompassDirection::NE:
+		return &info->NE;
+	case ECompassDirection::E:
+		return &info->E;
+	case ECompassDirection::SE:
+		return &info->SE;
+	case ECompassDirection::S:
+		return &info->S;
+	case ECompassDirection::SW:
+		return &info->SW;
+	case ECompassDirection::W:
+		return &info->W;
+	case ECompassDirection::NW:
+		return &info->NW;
+	default:
+		return nullptr;
+	}
+}
 
 void UGridRangeMakerWindow::UnselectCell()
 {
@@ -587,7 +654,6 @@ void UGridRangeMakerWindow::UnselectCell()
 	}
 	LastHoverIndex = -1;
 }
-
 TArray<float> UGridRangeMakerWindow::GetColour(EGridRangeBrushMode cellType)
 {
 	switch (cellType)
@@ -600,4 +666,5 @@ TArray<float> UGridRangeMakerWindow::GetColour(EGridRangeBrushMode cellType)
 			return {1.0f, 1.0f, 1.0f, 1.0f};
 	}
 }
+
 #endif

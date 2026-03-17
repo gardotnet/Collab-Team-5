@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "EditorUtilityWidget.h"
 #include "Terminal_Recall/GridCellClasses/GridVisualiser.h"
+#include "Terminal_Recall/StructsAndEnums/GridRangeExport.h"
 #include "GridRangeMakerWindow.generated.h"
 
 class UCanvasPanel;
@@ -10,49 +11,6 @@ class FLevelEditorModule;
 class SLevelViewport;
 class UEditorUtilityEditableTextBox;
 class UEditorUtilityButton;
-
-UENUM()
-enum class EGridRangeBrushMode : int32
-{
-	None,
-	Erase,
-	Slot,
-	Centre,
-	Select,
-};
-
-UENUM()
-enum class ECompassDirection : int32
-{
-	None,
-	N,
-	NE,
-	E,
-	SE,
-	S,
-	SW,
-	W,
-	NW
-};
-
-USTRUCT()
-struct FGridRangeCellInfo
-{
-	GENERATED_BODY()
-	
-	UPROPERTY()
-	EGridRangeBrushMode CellType;
-	UPROPERTY()
-	int32 N = 0;
-	int32 NE = 0;
-	int32 E = 0;
-	int32 SE = 0;
-	int32 S = 0;
-	int32 SW = 0;
-	int32 W = 0;
-	int32 NW= 0;
-	
-};
 
 UCLASS()
 class TERMINAL_RECALL_API UGridRangeMakerWindow : public UEditorUtilityWidget
@@ -80,7 +38,8 @@ protected:
 	FIntPoint LastHoverPos = FIntPoint(-1, -1);
 	int32 LastHoverIndex = -1;
 	int32 LastClickIndex = -1;
-	FGridRangeCellInfo* SelectedCellInfo;
+	FGridRangeCellInfo* info;
+	int32* MagnitudeChanging;
 	
 	TMap<FIntPoint, FGridRangeCellInfo> LevelGridData;
 	
@@ -191,12 +150,15 @@ protected:
 	
 	void ResetAndPopulateGridArray();
 	void UnselectCurrentButton();
+	
 	void UnselectDirectionButton();
-	void UnselectAllDirectionButton();
 	void LoadDirectionsOnCell();
+	void SelectDirectionsButton(UEditorUtilityButton* button, ECompassDirection dir);
+	int32* GetMagnitudeOfDirection();
 	
 	inline void UnselectCell();
 	TArray<float> GetColour(EGridRangeBrushMode cellType);
+	
 	#endif
 #endif
 };

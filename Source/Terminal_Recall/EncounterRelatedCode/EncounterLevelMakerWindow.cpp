@@ -139,7 +139,6 @@ void UEncounterLevelMakerWindow::OnCreateGridPressed()
 		return;
 	CurrentUndoSession.UndoInfo.Add(newInfo);
 	AddUndoSession();
-	
 }
 // Basically just check if button is pressed and set brush to according type
 void UEncounterLevelMakerWindow::OnWalkableTogglePressed()
