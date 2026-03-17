@@ -5,6 +5,7 @@
 #include "Terminal_Recall/GridCellClasses/GridVisualiser.h"
 #include "GridRangeMakerWindow.generated.h"
 
+class UCanvasPanel;
 class FLevelEditorModule;
 class SLevelViewport;
 class UEditorUtilityEditableTextBox;
@@ -16,6 +17,14 @@ enum class EGridRangeBrushMode : int32
 	None,
 	Erase,
 	Slot,
+	Centre,
+	Select,
+};
+
+UENUM()
+enum class ECompassDirection : int32
+{
+	None,
 	N,
 	NE,
 	E,
@@ -32,9 +41,17 @@ struct FGridRangeCellInfo
 	GENERATED_BODY()
 	
 	UPROPERTY()
-	bool IsPainted;
+	EGridRangeBrushMode CellType;
 	UPROPERTY()
-	TArray<EGridRangeBrushMode> Modifiers;
+	int32 N = 0;
+	int32 NE = 0;
+	int32 E = 0;
+	int32 SE = 0;
+	int32 S = 0;
+	int32 SW = 0;
+	int32 W = 0;
+	int32 NW= 0;
+	
 };
 
 UCLASS()
@@ -55,13 +72,20 @@ protected:
 	TObjectPtr<UInstancedStaticMeshComponent> LevelGridVisualISM;
 	
 	EGridRangeBrushMode CurrentModeSelected = EGridRangeBrushMode::None;
+	ECompassDirection CurrentDirSelected = ECompassDirection::None;
 	FTimerHandle HoverTimerHandle;
 	FTimerManager* TimerManager;
 	FIntPoint GridSize;
+	
 	FIntPoint LastHoverPos = FIntPoint(-1, -1);
 	int32 LastHoverIndex = -1;
 	int32 LastClickIndex = -1;
+	FGridRangeCellInfo* SelectedCellInfo;
+	
 	TMap<FIntPoint, FGridRangeCellInfo> LevelGridData;
+	
+	bool CentrePlaced = false;
+	FIntPoint CentrePoint = FIntPoint(-1, -1);
 	
 	#pragma region Buttons
 	UPROPERTY(meta = (BindWidget))
@@ -70,6 +94,12 @@ protected:
 	UEditorUtilityButton* EraseButton;
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityButton* SlotDrawButton;
+	UPROPERTY(meta = (BindWidget))
+	UEditorUtilityButton* CentreButton;
+	UPROPERTY(meta = (BindWidget))
+	UEditorUtilityButton* SelectButton;
+	UPROPERTY(meta = (BindWidget))
+	UEditorUtilityButton* CloseDirMenuButton;
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityButton* NorthButton;
 	UPROPERTY(meta = (BindWidget))
@@ -103,6 +133,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityEditableTextBox* InputDirMag;
 	#pragma endregion
+
+	UPROPERTY(meta = (BindWidget))
+	UCanvasPanel* DirectionCanvas;
 	
 	virtual void NativeConstruct() override;
 	
@@ -113,6 +146,12 @@ protected:
 	void OnEraseButtonClicked();
 	UFUNCTION()
 	void OnPaintButtonClicked();
+	UFUNCTION()
+	void SetCentrePoint();
+	UFUNCTION()
+	void OnSelectButtonClicked();
+	UFUNCTION()
+	void CloseDirMenu();
 	UFUNCTION()
 	void OnNorthButtonClicked();
 	UFUNCTION()
@@ -152,10 +191,12 @@ protected:
 	
 	void ResetAndPopulateGridArray();
 	void UnselectCurrentButton();
-	TArray<float> GetColour(bool isPainted);
+	void UnselectDirectionButton();
+	void UnselectAllDirectionButton();
+	void LoadDirectionsOnCell();
 	
-	
-	
+	inline void UnselectCell();
+	TArray<float> GetColour(EGridRangeBrushMode cellType);
 	#endif
 #endif
 };
