@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Object.h"
 #include "GridRangeExport.generated.h"
 
 UENUM()
@@ -29,11 +28,11 @@ enum class ECompassDirection : int32
 };
 
 USTRUCT()
-struct FGridRangeCellInfo
+struct FEditorGridRangeCellState
 {
 	GENERATED_BODY()
 	UPROPERTY()
-	EGridRangeBrushMode CellType;
+	EGridRangeBrushMode CellType = EGridRangeBrushMode::None;
 	UPROPERTY()
 	int32 N = -1;
 	int32 NE = -1;
@@ -61,28 +60,26 @@ struct FDirectionAndMag
 {
 	GENERATED_BODY()
 	UPROPERTY()
-	ECompassDirection Direction;
+	ECompassDirection Direction = ECompassDirection::None;
 	UPROPERTY()
-	int32 Magnitude;
+	int32 Magnitude = -1;
 };
 USTRUCT()
-struct FGridRangeCellInfoForExport
+struct FGridRangeCellInfo
 {
 	GENERATED_BODY()
 	UPROPERTY()
-	FIntPoint GridPos;
-	UPROPERTY()
-	EGridRangeBrushMode CellType;
+	FIntPoint GridPos = FIntPoint(-1,-1);
 	UPROPERTY()
 	TArray<FDirectionAndMag> DirectionModifier;
 };
 
 USTRUCT()
-struct FGridRangeExport
+struct FGridRangeExport : public FTableRowBase
 {
 	GENERATED_BODY()
 	UPROPERTY()
-	FIntPoint CentrePoint;
+	FIntPoint CentrePoint = FIntPoint(-1,-1);
 	UPROPERTY()
-	TArray<FGridRangeCellInfoForExport> Cells;
+	TArray<FGridRangeCellInfo> Cells;
 };

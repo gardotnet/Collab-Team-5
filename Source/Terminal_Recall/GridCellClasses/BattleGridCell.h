@@ -48,7 +48,7 @@ protected:
 public:
 	ABattleGridCell();
 	void AssignTrap(TObjectPtr<ABaseTrap> trap);
-	void EnableCell(EActionType actionType, ABattleEntity* causer);
+	bool EnableCell(EActionType actionType, ABattleEntity* causer);
 	UFUNCTION()
 	void DisableCell();
 	

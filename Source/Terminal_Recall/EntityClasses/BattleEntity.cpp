@@ -1,5 +1,8 @@
 ﻿#include "BattleEntity.h"
 
+#include "DesktopPlatformModule.h"
+#include "IDesktopPlatform.h"
+#include "JsonObjectConverter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
@@ -35,7 +38,16 @@ void ABattleEntity::SetPos(FIntPoint newPos)
 	GridPos = newPos;
 }
 
-void ABattleEntity::TakeDamage(float damage)
+FGridRangeExport* ABattleEntity::GetActionInfo(EActionType type, int32 indexInList)
+{
+	if (type == EActionType::Attack)
+		return &AttackInfoList[indexInList];
+	if (type == EActionType::Movement)
+		return &MoveInfoList[indexInList];
+	return nullptr;
+}
+
+void ABattleEntity::CustomTakeDamage(float damage)
 {
 	Health = Health - damage;
 	if (Health <= 0.0f)
@@ -74,3 +86,24 @@ void ABattleEntity::OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
 	BattleManager->OnEntitySelected(this);
 }
+
+TOptional<FGridRangeExport> ABattleEntity::LoadActionInfoFromPath(FString path)
+{
+	FString jsonData;
+	// fetch file data and shove it into "jsonData"
+	if (FFileHelper::LoadFileToString(jsonData, *path))
+	{
+		// Convert JSON to struct
+		FGridRangeExport exportData;
+		if (FJsonObjectConverter::JsonObjectStringToUStruct(jsonData, &exportData, 0, 0))
+		{
+			return exportData;
+		}
+	}
+	return TOptional<FGridRangeExport>();
+}
+
+
+
+
+

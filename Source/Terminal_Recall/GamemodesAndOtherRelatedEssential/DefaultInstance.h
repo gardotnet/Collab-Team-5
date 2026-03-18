@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
-#include "Terminal_Recall/StructsAndEnums/ForDataTable/AttackStruct.h"
+#include "Terminal_Recall/StructsAndEnums/ForDataTable/ActionStruct.h"
 #include "DefaultInstance.generated.h"
 
 /**
@@ -29,4 +29,7 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category="For Designers | Player Variables")
 	TArray<int> AttackList;
+	
+	UPROPERTY(EditAnywhere, Category="For Designers | Player Variables")
+	TArray<int> MoveList;
 };

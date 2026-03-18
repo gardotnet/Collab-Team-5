@@ -28,22 +28,30 @@ protected:
 	TObjectPtr<AGridVisualiser> VisualiserObject;
 	UPROPERTY()
 	TObjectPtr<UInstancedStaticMeshComponent> LevelGridVisualISM;
-	
 	EGridRangeBrushMode CurrentModeSelected = EGridRangeBrushMode::None;
 	ECompassDirection CurrentDirSelected = ECompassDirection::None;
 	FTimerHandle HoverTimerHandle;
 	FTimerManager* TimerManager;
+	UPROPERTY()
 	FIntPoint GridSize;
 	
+	UPROPERTY()
 	FIntPoint LastHoverPos = FIntPoint(-1, -1);
+	UPROPERTY()
 	int32 LastHoverIndex = -1;
+	UPROPERTY()
 	int32 LastClickIndex = -1;
-	FGridRangeCellInfo* info;
+	//UPROPERTY()
+	//FEditorGridRangeCellState info;
+	FEditorGridRangeCellState* infoPtr;
 	int32* MagnitudeChanging;
 	
-	TMap<FIntPoint, FGridRangeCellInfo> LevelGridData;
+	UPROPERTY()
+	TMap<FIntPoint, FEditorGridRangeCellState> LevelGridData;
 	
+	UPROPERTY()
 	bool CentrePlaced = false;
+	UPROPERTY()
 	FIntPoint CentrePoint = FIntPoint(-1, -1);
 	
 	#pragma region Buttons
@@ -79,10 +87,10 @@ protected:
 	UEditorUtilityButton* LoadLevelFileButton;
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityButton* ExportButton;
-	UPROPERTY(meta = (BindWidget))
+	/*UPROPERTY(meta = (BindWidget))
 	UEditorUtilityButton* UndoButton;
 	UPROPERTY(meta = (BindWidget))
-	UEditorUtilityButton* RedoButton;
+	UEditorUtilityButton* RedoButton;*/
 	#pragma endregion
 	#pragma region Editable Text Boxes
 	UPROPERTY(meta = (BindWidget))
@@ -131,10 +139,7 @@ protected:
 	void OnLoadLevelFileButtonClicked();
 	UFUNCTION()
 	void OnExportButtonClicked();
-	UFUNCTION()
-	void OnUndoButtonClicked();
-	UFUNCTION()
-	void OnRedoButtonClicked();
+
 	
 	UFUNCTION()
 	void OnGridTextXChange(const FText& NewText);

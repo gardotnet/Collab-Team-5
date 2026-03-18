@@ -14,17 +14,18 @@ void ABattleGridCell::AssignTrap(TObjectPtr<ABaseTrap> trap)
 	TrapRef = trap;
 }
 
-void ABattleGridCell::EnableCell(EActionType actionType,  ABattleEntity* causer)
+bool ABattleGridCell::EnableCell(EActionType actionType,  ABattleEntity* causer)
 {
 	if (ResidingEntity && actionType != EActionType::Attack)
-		return;
-	if (!Walkable)
-		return;
+		return false;
+	if (!Walkable || Clickable)
+		return false;
 	EntityCauserRef = causer;
 	ActionType = actionType;
 	MeshComponent->SetCollisionProfileName("BlockAll");
 	Clickable = true;
 	MeshComponent->SetOverlayMaterial(MoveHighlightMat);
+	return true;
 }
 
 void ABattleGridCell::DisableCell()

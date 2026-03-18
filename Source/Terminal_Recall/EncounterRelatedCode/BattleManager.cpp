@@ -42,8 +42,65 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 		// Can put in array and link after
 		UE_LOG(LogTemp, Display, TEXT("%s"), *selectedButton->ActionName);
 		PlayerBattleController->BattleChoiceUIWidget->OnCloseButtonClicked();
+		FGridRangeExport* gridRange = PlayerRef->GetActionInfo(selectedButton->ActionType, selectedButton->IndexInOwningEntityArray);
 		FIntPoint playerPos = PlayerRef->GetPos();
-		for (int x = -1; x < 2; x++ )
+		
+		for (auto cellPos : gridRange->Cells)
+		{
+			if (TObjectPtr<ABattleGridCell>* cell = GridMap.Find(playerPos + cellPos.GridPos))
+			{
+				 if (!(*cell)->EnableCell(selectedButton->ActionType, PlayerRef))
+					continue;
+				(*cell)->OnClickedCellEvent.AddDynamic(this, &ABattleManager::ABattleManager::OnCellSelected);
+				CellSelectedEvent.AddDynamic(*cell, &ABattleGridCell::DisableCell);
+				for (auto directionFollowUp : cellPos.DirectionModifier)
+				{
+					FIntPoint nextDir = FIntPoint(0, 0);
+					switch (directionFollowUp.Direction)
+					{
+						case ECompassDirection::N:
+							nextDir = FIntPoint(0, 1);
+						break;
+						case ECompassDirection::NE:
+							nextDir = FIntPoint(1, 1);
+						break;
+						case ECompassDirection::E:
+							nextDir = FIntPoint(1, 0);
+						break;
+						case ECompassDirection::SE:
+							nextDir = FIntPoint(1, -1);
+						break;
+						case ECompassDirection::S:
+							nextDir = FIntPoint(0, -1);
+						break;
+						case ECompassDirection::SW:
+							nextDir = FIntPoint(-1, -1);
+						break;
+						case ECompassDirection::W:
+							nextDir = FIntPoint(-1, 0);
+						break;
+						case ECompassDirection::NW:
+							nextDir = FIntPoint(-1, 1);
+						break;
+						default:
+						break;
+					}
+					FIntPoint prevPos = playerPos + cellPos.GridPos;
+					while (true)
+					{
+						prevPos += nextDir;
+						if (TObjectPtr<ABattleGridCell>* followUpCell = GridMap.Find(prevPos))
+						{
+							if (!(*followUpCell)->EnableCell(selectedButton->ActionType, PlayerRef))
+								break;
+							(*followUpCell)->OnClickedCellEvent.AddDynamic(this, &ABattleManager::ABattleManager::OnCellSelected);
+							CellSelectedEvent.AddDynamic(*followUpCell, &ABattleGridCell::DisableCell);
+						}
+					}
+				}
+			}
+		}
+		/*for (int x = -1; x < 2; x++ )
 		{
 			for (int y = -1; y < 2; y++)
 			{
@@ -57,8 +114,7 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 					CellSelectedEvent.AddDynamic(*cell, &ABattleGridCell::DisableCell);
 				}
 			}
-		}
-				
+		}*/
 	}
 }
 
@@ -71,7 +127,7 @@ void ABattleManager::OnCellSelected(ABattleEntity* target)
 		return;
 	UE_LOG(LogTemp, Warning, TEXT("Attacking"));
 	
-	target->TakeDamage(1.0f);
+	target->CustomTakeDamage(1.0f);
 	NextEntityTurn();
 }
 

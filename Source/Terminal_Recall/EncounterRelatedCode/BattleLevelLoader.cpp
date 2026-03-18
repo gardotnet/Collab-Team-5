@@ -36,7 +36,9 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 		FLevelExportStruct levelData;
 		if (FJsonObjectConverter::JsonObjectStringToUStruct(content, &levelData, 0, 0))
 		{
-			ABattleManager* battleManager = GetWorld()->SpawnActor<ABattleManager>(BattleManagerClass);
+			ABattleManager* battleManager =  Cast<ABattleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ABattleManager::StaticClass()));
+			if (!battleManager)
+				battleManager = GetWorld()->SpawnActor<ABattleManager>(BattleManagerClass);
 			FActorSpawnParameters spawnParams;
 			spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			for (int x = 0; x < levelData.GridSize.X; x++)
