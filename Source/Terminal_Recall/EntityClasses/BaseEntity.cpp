@@ -12,17 +12,14 @@ ABaseEntity::ABaseEntity()
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TheMesh"));
 	MeshComponent->SetupAttachment(RootComponent);
 }
-
 void ABaseEntity::BeginPlay()
 {
 	Super::BeginPlay();
-	
 	CurrentHealth = MaxHealth;
 	OnClicked.AddDynamic(this, &ABaseEntity::OnEntityClicked);
 	TimerManagerRef = TimerManagerRef = &GetWorld()->GetTimerManager();
 	PlayerController = Cast<ADefaultPlayerController>(GetWorld()->GetFirstPlayerController());
 }
-
 void ABaseEntity::StartMove(FVector position)
 {
 	MoveTimer = 0;
@@ -33,12 +30,6 @@ void ABaseEntity::StartMove(FVector position)
 	TimerManagerRef->ClearTimer(MoveTimerHandle);
 	TimerManagerRef->SetTimer(MoveTimerHandle, this, &ABaseEntity::OnMove, 0.01f, true);
 }
-
-/*void ABaseEntity::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}*/
-
 void ABaseEntity::OnMove()
 {
 	MoveTimer += 0.01f;
@@ -57,11 +48,12 @@ void ABaseEntity::OnMove()
 		SetActorLocation(FMath::Lerp(playerPos, TargetPosition, MoveTimer/DesiredMoveDuration));
 	}
 }
-
 void ABaseEntity::OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
 	UE_LOG(LogTemp, Warning, TEXT("How dare you click me, I'm telling the world manager!"));
 }
-
-
+/*void ABaseEntity::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}*/
 

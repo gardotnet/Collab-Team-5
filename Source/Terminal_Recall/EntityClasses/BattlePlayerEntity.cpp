@@ -11,12 +11,12 @@ ABattlePlayerEntity::ABattlePlayerEntity()
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
-
 void ABattlePlayerEntity::OnBattleStart(ABattleManager* battleManager, float health, float damageMultiplier)
 {
 	BattleManager = battleManager;
 	if (UDefaultInstance* gameInstance =  Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
 	{
+		// find attack info and set up button
 		for (auto attackID : gameInstance->AttackList)
 		{
 			FString stringConvert = FString::FromInt(attackID);
@@ -26,6 +26,7 @@ void ABattlePlayerEntity::OnBattleStart(ABattleManager* battleManager, float hea
 				if (!extractedData.IsSet())
 					continue;
 				AttackInfoList.Add(extractedData.GetValue());
+				// create button and set it up
 				if (UActionButtonUI* newAttackButton =Cast<UActionButtonUI>(CreateWidget(GetWorld()->GetFirstPlayerController(), ActionButtonClass)))
 				{
 					newAttackButton->Entity = this;
@@ -38,6 +39,7 @@ void ABattlePlayerEntity::OnBattleStart(ABattleManager* battleManager, float hea
 				}
 			}
 		}
+		// find move info and set up button 
 		for (auto moveID : gameInstance->MoveList)
 		{
 			FString stringConvert = FString::FromInt(moveID);
@@ -61,4 +63,3 @@ void ABattlePlayerEntity::OnBattleStart(ABattleManager* battleManager, float hea
 		}
 	}
 }
-

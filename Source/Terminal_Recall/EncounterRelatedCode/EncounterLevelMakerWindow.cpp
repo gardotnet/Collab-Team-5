@@ -319,6 +319,8 @@ void UEncounterLevelMakerWindow::OnLoadFilePressed()
 /// Turns data into JSON file
 void UEncounterLevelMakerWindow::OnExportPressed()
 {
+	if (!PlayerPlaced)
+		return;
 	if (IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get())
 	{
 		// set up to find desired save location

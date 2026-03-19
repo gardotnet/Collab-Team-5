@@ -375,8 +375,8 @@ void UGridRangeMakerWindow::OnGridTextXChange(const FText& NewText)
 		InputGridSizeX->SetText(FText::FromString(PrevXSizeText));
 		return;
 	}
-	else if (FCString::Atoi(*stringText) > 100)
-		InputGridSizeX->SetText(FText::AsNumber(100));
+	else if (FCString::Atoi(*stringText) > 50)
+		InputGridSizeX->SetText(FText::AsNumber(50));
 	PrevXSizeText = stringText;
 }
 void UGridRangeMakerWindow::OnGridTextYChange(const FText& NewText)

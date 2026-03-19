@@ -5,19 +5,16 @@
 
 APathReseter::APathReseter()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 }
-
 void APathReseter::ResetPositionForAllPath()
 {
 	TArray<AActor*> FoundCells;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWorldGridCell::StaticClass(), FoundCells);
-	
 	for (auto cell : FoundCells)
 	{
 		Cast<AWorldGridCell>(cell)->ResetPathPosition();
 	}
-	
 }
 
 

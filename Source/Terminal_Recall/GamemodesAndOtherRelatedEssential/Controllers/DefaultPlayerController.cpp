@@ -2,14 +2,13 @@
 #include "Algo/Reverse.h"
 #include "Kismet/GameplayStatics.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
-#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/GameStates/DefaultGameState.h"
 #include "Terminal_Recall/GridCellClasses/NodeInfoForCellSearch.h"
 #include "Terminal_Recall/GridCellClasses/WorldGridCell.h"
 
 void ADefaultPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	// (gets game state because it will have the player spawn point)
+	// (gets game instance because it will have the player spawn point)
 	UDefaultInstance* gameInstance =  Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if (gameInstance && PlayerChar)
 	{
@@ -18,20 +17,17 @@ void ADefaultPlayerController::BeginPlay()
 		FRotator Rotation(0,0,0);
 		PlayerEntity = GetWorld()->SpawnActor<ABaseEntity>(PlayerChar, gameInstance->PlayerSpawnPos, Rotation, SpawnParams);
 	}
-	
+	// raycast to get the cell that player spawn on
 	FVector endTracePos = PlayerEntity->GetActorLocation() + FVector(0,0, -1000);
 	FCollisionQueryParams collisionParams;
 	FHitResult hitResult;
 	GetWorld()->LineTraceSingleByChannel(hitResult, PlayerEntity->GetActorLocation(), endTracePos, ECC_GameTraceChannel1, collisionParams);
-
 	if (hitResult.GetActor())
 	{
 		CurrentCell = Cast<AWorldGridCell>(hitResult.GetActor());
 		CurrentCell->OnUnitArrive();
 	}
-	
 }
-
 void ADefaultPlayerController::MovePlayer()
 {
 	CurrentCell = ThePath[PathIndex];
@@ -46,7 +42,6 @@ void ADefaultPlayerController::MovePlayer()
 		PlayerEntity->StartMove(ThePath[PathIndex]->GetActorLocation());
 	}
 }
-
 void ADefaultPlayerController::NavigateWorld(TObjectPtr<AWorldGridCell> cell)
 {
 	if (DestinationCell == cell)
@@ -87,7 +82,6 @@ void ADefaultPlayerController::NavigateWorld(TObjectPtr<AWorldGridCell> cell)
 		UE_LOG(LogTemp, Warning, TEXT("Cell Does Not Exist"));
 	}
 }
-
 // A* algorithm to find the destination
 bool ADefaultPlayerController::FindCell(TObjectPtr<UNodeInfoForCellSearch> cellInfo)
 {
@@ -146,7 +140,6 @@ bool ADefaultPlayerController::FindCell(TObjectPtr<UNodeInfoForCellSearch> cellI
 	}
 	return false;
 }
-
 float ADefaultPlayerController::Heuristic_Manhattan(FVector start, FVector end)
 {
 	return FMath::Abs(start.X - end.X) + FMath::Abs(start.Y - end.Y);

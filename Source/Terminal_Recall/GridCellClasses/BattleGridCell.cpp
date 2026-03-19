@@ -5,7 +5,6 @@
 #include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
 #include "Terminal_Recall/EntityClasses/BattleEntity.h"
 
-
 ABattleGridCell::ABattleGridCell()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -15,9 +14,8 @@ ABattleGridCell::ABattleGridCell()
 }
 void ABattleGridCell::AssignTrap(TObjectPtr<ABaseTrap> trap)
 {
-	TrapRef = trap;
+	//TrapRef = trap;
 }
-
 bool ABattleGridCell::EnableCell(EActionType actionType,  ABattleEntity* causer, int32 groupID)
 {
 	if (ResidingEntity && actionType != EActionType::Attack)
@@ -32,43 +30,37 @@ bool ABattleGridCell::EnableCell(EActionType actionType,  ABattleEntity* causer,
 	MeshComponent->SetOverlayMaterial(MoveHighlightMat);
 	return true;
 }
-
 void ABattleGridCell::DisableCell()
 {
 	MeshComponent->SetCollisionProfileName("NoCollision");
 	MeshComponent->SetOverlayMaterial(nullptr);
 	Clickable = false;
 }
-
 void ABattleGridCell::ForceAttack(int32 groupID)
 {
 	if (groupID == CellGroupID)
-		OnClickedCellEvent.Broadcast(ResidingEntity);
+		OnClickedCellEvent.Broadcast(ResidingEntity, ActionType, false);
 }
-
 void ABattleGridCell::ForceHover(int32 groupID)
 {
 	if (groupID == CellGroupID)
 		MeshComponent->SetOverlayMaterial(HoverHighlightMat);
 }
-
 void ABattleGridCell::ForceEndHover(int32 groupID)
 {
 	if (groupID == CellGroupID)
 		MeshComponent->SetOverlayMaterial(MoveHighlightMat);
 }
-
 void ABattleGridCell::HouseEntity(ABattleEntity* entity)
 {
 	ResidingEntity = entity;
+	OnUnitArrive();
 	entity->OnChangeCell.AddDynamic(this, &ABattleGridCell::EvictEntity);
 }
-
 void ABattleGridCell::EvictEntity()
 {
 	ResidingEntity = nullptr;
 }
-
 void ABattleGridCell::CellSetUp(FIntPoint gridPos, ABattleManager* battleManager)
 {
 	GridPos = gridPos;
@@ -88,19 +80,18 @@ void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 		case EActionType::Attack:
 			// Tells listeners "I Need You To Find This Guy And #### Him Up!" 
 			BattleManager->CallGroupAttackEvent.Broadcast(CellGroupID);
-			OnClickedCellEvent.Broadcast(ResidingEntity);
+			OnClickedCellEvent.Broadcast(ResidingEntity, ActionType, true);
 			
 		break;
 		case EActionType::Movement:
 			EntityCauserRef->SetPos(GridPos);
 			EntityCauserRef->StartMove(GetActorLocation());
-			OnClickedCellEvent.Broadcast(nullptr);
+			OnClickedCellEvent.Broadcast(nullptr, ActionType, false);
 		break;
 		default:
 		break;
 	}
 }
-
 void ABattleGridCell::OnHoverOver(UPrimitiveComponent* TouchedComponent)
 {
 	if (Clickable)
@@ -110,7 +101,6 @@ void ABattleGridCell::OnHoverOver(UPrimitiveComponent* TouchedComponent)
 			BattleManager->CallGroupHoverEvent.Broadcast(CellGroupID);
 	}
 }
-
 void ABattleGridCell::OnHoverEnd(UPrimitiveComponent* TouchedComponent)
 {
 	if (Clickable)

@@ -34,10 +34,10 @@ class TERMINAL_RECALL_API UEncounterLevelMakerWindow : public UEditorUtilityWidg
 #if WITH_EDITOR
 	// necessary to run during editor 
 	#if WITH_EDITORONLY_DATA
-
+	
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	TSubclassOf<AGridVisualiser> VisualiserClass;
-	
+	// Data Tables
 	UPROPERTY(EditDefaultsOnly, Category = "For Designers | Necessities")
 	TObjectPtr<UDataTable> PropsDataTable;
 	UPROPERTY(EditDefaultsOnly, Category = "For Designers | Necessities")
@@ -53,10 +53,8 @@ class TERMINAL_RECALL_API UEncounterLevelMakerWindow : public UEditorUtilityWidg
 	TObjectPtr<AGridVisualiser> VisualiserObject;
 	UPROPERTY()
 	TObjectPtr<UInstancedStaticMeshComponent> LevelGridVisualISM;
-	
 	ECellBrushMode CurrentModeSelected = ECellBrushMode::None;
 	FTimerHandle HoverTimerHandle;
-	
 	FTimerManager* TimerManager;
 	FIntPoint GridSize;
 	FIntPoint LastHoverPos = FIntPoint(-1, -1);
@@ -66,12 +64,9 @@ class TERMINAL_RECALL_API UEncounterLevelMakerWindow : public UEditorUtilityWidg
 	TArray<FGridPosAnd1DIndex> SelectedCells;
 	bool Obstructed = false;
 	int32 SelectedGroupMainCellIndex = -1;
-	
 	bool PlayerPlaced = false;
 	FIntPoint PlayerSpawnPos = FIntPoint(-1, -1);
-	
 	TMap<FIntPoint, FLevelCellData> LevelGridData;
-	
 	TArray<FLevelEditorUndo> UndoList;
 	bool CursorDown = false;
 	FLevelEditorUndo CurrentUndoSession;

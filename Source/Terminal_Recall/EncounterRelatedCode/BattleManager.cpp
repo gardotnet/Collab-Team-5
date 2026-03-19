@@ -10,139 +10,143 @@
 
 ABattleManager::ABattleManager()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 }
-
-void ABattleManager::SetUpBattle()
-{
-	if (PlayerRef)
-	{
-		PlayerRef->OnMoveDoneEvent.AddDynamic(this, &ABattleManager::NextEntityTurn);
-	}
-	// for each enemy bound an event
-	for (auto enemy : EnemyArray)
-	{
-		enemy->OnMoveDoneEvent.AddDynamic(this, &ABattleManager::NextEntityTurn);
-	}
-}
-
 void ABattleManager::OnEntitySelected(ABattleEntity* entity)
 {
+	// if not deciding which cell to select
 	if (SelectMode)
 		return;
 	entity->ShowChoices();
 }
-
 void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 {
+	// allow player to select entity
 	SelectMode = true;
-	if (selectedButton->Entity == PlayerRef)
+	ABattleEntity* entityRef = selectedButton->Entity;
+	// allow player to pick cells
+	PlayerBattleController->bEnableMouseOverEvents = true;
+	// Can put in array and link after
+	PlayerBattleController->BattleChoiceUIWidget->OnCloseButtonClicked();
+	FGridRangeExport* gridRange = entityRef->GetActionInfo(selectedButton->ActionType, selectedButton->IndexInOwningEntityArray);
+	//TArray<ABattleGridCell*> cellsAffected;
+	FIntPoint entityPos = entityRef->GetPos();
+	// for each cell required for the action
+	for (auto cellInfo : gridRange->Cells)
 	{
-		PlayerBattleController->bEnableMouseOverEvents = true;
-		// Can put in array and link after
-		UE_LOG(LogTemp, Display, TEXT("%s"), *selectedButton->ActionName);
-		PlayerBattleController->BattleChoiceUIWidget->OnCloseButtonClicked();
-		FGridRangeExport* gridRange = PlayerRef->GetActionInfo(selectedButton->ActionType, selectedButton->IndexInOwningEntityArray);
-		FIntPoint playerPos = PlayerRef->GetPos();
-		
-		for (auto cellInfo : gridRange->Cells)
+		// find the action
+		if (TObjectPtr<ABattleGridCell>* cell = GridMap.Find(entityPos + cellInfo.GridPos))
 		{
-			if (TObjectPtr<ABattleGridCell>* cell = GridMap.Find(playerPos + cellInfo.GridPos))
+			// if it can't be an option (e.g. cell is a wall)
+			 if (!(*cell)->EnableCell(selectedButton->ActionType, entityRef, cellInfo.GroupID))
+				continue;
+			// linking events
+			CellSelectedEvent.AddDynamic(*cell, &ABattleGridCell::DisableCell);
+			if (cellInfo.GroupID != -1)
 			{
-				 if (!(*cell)->EnableCell(selectedButton->ActionType, PlayerRef, cellInfo.GroupID))
-					continue;
-				UE_LOG(LogTemp, Warning, TEXT("Group ID: %d"), cellInfo.GroupID);
-				CellSelectedEvent.AddDynamic(*cell, &ABattleGridCell::DisableCell);
-				if (cellInfo.GroupID != -1)
+				CallGroupHoverEvent.AddDynamic(*cell, &ABattleGridCell::ForceHover);
+				CallGroupHoverEndEvent.AddDynamic(*cell, &ABattleGridCell::ForceEndHover);
+				CallGroupAttackEvent.AddDynamic(*cell, &ABattleGridCell::ForceAttack);
+			}
+			// for each modifier
+			for (auto directionFollowUp : cellInfo.DirectionModifier)
+			{
+				FIntPoint nextDir = FIntPoint(0, 0);
+				// gets direction for follow-up cells
+				switch (directionFollowUp.Direction)
 				{
-					CallGroupHoverEvent.AddDynamic(*cell, &ABattleGridCell::ForceHover);
-					CallGroupHoverEndEvent.AddDynamic(*cell, &ABattleGridCell::ForceEndHover);
-					CallGroupAttackEvent.AddDynamic(*cell, &ABattleGridCell::ForceAttack);
+					case ECompassDirection::N:
+						nextDir = FIntPoint(0, 1);
+					break;
+					case ECompassDirection::NE:
+						nextDir = FIntPoint(1, 1);
+					break;
+					case ECompassDirection::E:
+						nextDir = FIntPoint(1, 0);
+					break;
+					case ECompassDirection::SE:
+						nextDir = FIntPoint(1, -1);
+					break;
+					case ECompassDirection::S:
+						nextDir = FIntPoint(0, -1);
+					break;
+					case ECompassDirection::SW:
+						nextDir = FIntPoint(-1, -1);
+					break;
+					case ECompassDirection::W:
+						nextDir = FIntPoint(-1, 0);
+					break;
+					case ECompassDirection::NW:
+						nextDir = FIntPoint(-1, 1);
+					break;
+					default:
+					break;
 				}
-				for (auto directionFollowUp : cellInfo.DirectionModifier)
+				FIntPoint prevPos = entityPos + cellInfo.GridPos;
+				// until it cant continue in that direction or maximum range reached
+				int32 totalFollowUp = 0;
+				// get follow-up cell
+				while (true)
 				{
-					FIntPoint nextDir = FIntPoint(0, 0);
-					switch (directionFollowUp.Direction)
+					// if it reached its range limit
+					if (directionFollowUp.Magnitude != 0 && directionFollowUp.Magnitude >= totalFollowUp)
+						break;
+					prevPos += nextDir;
+					if (TObjectPtr<ABattleGridCell>* followUpCell = GridMap.Find(prevPos))
 					{
-						case ECompassDirection::N:
-							nextDir = FIntPoint(0, 1);
-						break;
-						case ECompassDirection::NE:
-							nextDir = FIntPoint(1, 1);
-						break;
-						case ECompassDirection::E:
-							nextDir = FIntPoint(1, 0);
-						break;
-						case ECompassDirection::SE:
-							nextDir = FIntPoint(1, -1);
-						break;
-						case ECompassDirection::S:
-							nextDir = FIntPoint(0, -1);
-						break;
-						case ECompassDirection::SW:
-							nextDir = FIntPoint(-1, -1);
-						break;
-						case ECompassDirection::W:
-							nextDir = FIntPoint(-1, 0);
-						break;
-						case ECompassDirection::NW:
-							nextDir = FIntPoint(-1, 1);
-						break;
-						default:
-						break;
-					}
-					FIntPoint prevPos = playerPos + cellInfo.GridPos;
-					while (true)
-					{
-						prevPos += nextDir;
-						if (TObjectPtr<ABattleGridCell>* followUpCell = GridMap.Find(prevPos))
+						if (!(*followUpCell)->EnableCell(selectedButton->ActionType, entityRef, cellInfo.GroupID))
+							break;
+						CellSelectedEvent.AddDynamic(*followUpCell, &ABattleGridCell::DisableCell);
+						if (cellInfo.GroupID != -1)
 						{
-							if (!(*followUpCell)->EnableCell(selectedButton->ActionType, PlayerRef, cellInfo.GroupID))
-								break;
-							CellSelectedEvent.AddDynamic(*followUpCell, &ABattleGridCell::DisableCell);
-							if (cellInfo.GroupID != -1)
-							{
-								CallGroupHoverEvent.AddDynamic(*followUpCell, &ABattleGridCell::ForceHover);
-								CallGroupHoverEndEvent.AddDynamic(*followUpCell, &ABattleGridCell::ForceEndHover);
-								CallGroupAttackEvent.AddDynamic(*followUpCell, &ABattleGridCell::ForceAttack);
-							}
+							CallGroupHoverEvent.AddDynamic(*followUpCell, &ABattleGridCell::ForceHover);
+							CallGroupHoverEndEvent.AddDynamic(*followUpCell, &ABattleGridCell::ForceEndHover);
+							CallGroupAttackEvent.AddDynamic(*followUpCell, &ABattleGridCell::ForceAttack);
 						}
+						totalFollowUp++;
 					}
+					// if unable to find, break
+					else
+						break;
 				}
 			}
 		}
 	}
-	else
+	// if for player then enable the ability to do move and attack when cell is clicked
+	/*if (selectedButton->Entity == PlayerRef)
 	{
-		// Do enemy predict
-	}
+		
+	}*/
 }
-
-void ABattleManager::OnCellSelected(ABattleEntity* target)
+void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, bool mainCell)
 {
-	PlayerBattleController->bEnableMouseOverEvents = false;
-	CellSelectedEvent.Broadcast();
-	
-	CellSelectedEvent.Clear();
-	CallGroupHoverEvent.Clear();
-	CallGroupHoverEndEvent.Clear();
-	CallGroupAttackEvent.Clear();
-	
+	// so attack follow-ups do not trigger this
+	if (mainCell || type != EActionType::Attack)
+	{
+		// stops player raycast as no longer needed for now
+		PlayerBattleController->bEnableMouseOverEvents = false;
+		// remove selection material for every cell
+		CellSelectedEvent.Broadcast();
+		// wipes delegates for next choice
+		CellSelectedEvent.Clear();
+		CallGroupHoverEvent.Clear();
+		CallGroupHoverEndEvent.Clear();
+		CallGroupAttackEvent.Clear();
+	}
+	// if there is a target to attack
 	if (target == nullptr)
 	{
-		NextEntityTurn();
+		if (mainCell)
+			NextEntityTurn();
 		return;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Attacking"));
-	
 	target->CustomTakeDamage(1.0f);
-	NextEntityTurn();
+	if (mainCell)
+		NextEntityTurn();
 }
-
 void ABattleManager::NextEntityTurn()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Next turn"));
-	
 	if (!PlayerRef)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Player Lost"));
@@ -159,8 +163,9 @@ void ABattleManager::NextEntityTurn()
 		UE_LOG(LogTemp, Warning, TEXT("Player Won"));
 		return;
 	}
-		
-	EntityIndex++;
+	PlayerRef->OnTurnGo();
+	// gets next entity's turn
+	/*EntityIndex++;
 	if (EntityIndex == EnemyArray.Num())
 	{
 		EntityIndex = -1;
@@ -170,9 +175,8 @@ void ABattleManager::NextEntityTurn()
 	else
 	{
 		EnemyArray[EntityIndex]->OnTurnGo();
-	}
+	}*/
 }
-
 void ABattleManager::BeginPlay()
 {
 	Super::BeginPlay();

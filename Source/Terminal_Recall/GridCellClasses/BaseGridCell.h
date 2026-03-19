@@ -11,36 +11,23 @@ UCLASS()
 class TERMINAL_RECALL_API ABaseGridCell : public AActor
 {
 	GENERATED_BODY()
-
 public:
-	ABaseGridCell();
-	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UBoxComponent> BoxComponent;
-	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> MeshComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stuff For Designers | Grid Cell Info | General Stuff")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stuff For Designers | Grid Cell Info | General Stuff")
 	bool Clickable;
-	
-	/*
-	UPROPERTY(EditAnywhere, Category="Grid Cell Info (For Designers)", meta=(ToolTip="Enable this if this grid cell has a trap and assign it below"))
-	bool HasTrap = false;
-	UPROPERTY(EditAnywhere, Category="Grid Cell Info (For Designers)", meta=(ToolTip="Select the trap object related to this cell here", EditCondition = "HasTrap"))
-	TObjectPtr<ABaseTrap> TrapRef;*/
-	
 	UPROPERTY()
 	TObjectPtr<ABaseEntity> UnitRef;
-
+protected:
+	ABaseGridCell();
 	virtual void BeginPlay() override;
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Unit Events")
+public:
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Stuff For Designers | Functions")
 	void OnUnitArrive();
-	
 	virtual void OnUnitArrive_Implementation();
-	
 private:
-	
 	UFUNCTION()
 	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed);
 };

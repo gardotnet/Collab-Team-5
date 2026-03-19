@@ -167,23 +167,20 @@ protected:
 	UFUNCTION()
 	void OnCheckOneGroup(bool isChecked);
 	#pragma endregion
-	
+	#pragma region Utilities
 	UFUNCTION()
 	void TrackMouse();
-	
 	void ResetAndPopulateGridArray();
 	void UnselectCurrentButton();
-	
 	void UnselectDirectionButton();
 	inline void HideInputsForCell();
 	void LoadDirectionsOnCell(FIntPoint pos);
 	void SelectDirectionsButton(UEditorUtilityButton* button, ECompassDirection dir);
 	void RefreshInputForGroup();
 	int32* GetMagnitudeOfDirection();
-	
 	inline void UnselectCell();
 	TArray<float> GetColour(EGridRangeBrushMode cellType);
-	
+	#pragma endregion
 	#endif
 #endif
 };

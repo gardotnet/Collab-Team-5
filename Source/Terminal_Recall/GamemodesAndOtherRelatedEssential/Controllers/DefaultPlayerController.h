@@ -17,11 +17,10 @@ class TERMINAL_RECALL_API ADefaultPlayerController : public AOurBasePlayerContro
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, Category="Variable (For Designers)")
+	UPROPERTY(EditAnywhere, Category="Stuff For Designers | General Stuff")
 	TSubclassOf<ABaseEntity> PlayerChar;
-	UPROPERTY(EditAnywhere, Category="Variable (For Designers)")
+	UPROPERTY(EditAnywhere, Category="Stuff For Designers | General Stuff")
 	float PlayerSpeed = 100;
-	
 protected:
 	UPROPERTY()
 	TObjectPtr<ABaseEntity> PlayerEntity;
@@ -43,13 +42,11 @@ public:
 	UFUNCTION()
 	virtual void MovePlayer() override;
 	void NavigateWorld(TObjectPtr<AWorldGridCell> cell);
-	
 	virtual void BeginPlay() override;
 	
 protected:
 	bool FindCell(TObjectPtr<UNodeInfoForCellSearch> currentInfo);
 	// Utilities
 	float Heuristic_Manhattan(FVector start, FVector end);
-	
 };
 
