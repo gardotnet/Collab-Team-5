@@ -2,47 +2,59 @@
 
 #include "CoreMinimal.h"
 #include "BaseEntity.h"
+#include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
+#include "Terminal_Recall/StructsAndEnums/GridRangeExport.h"
 #include "BattleEntity.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FChangeCell);
+
+class UActionButtonUI;
+class APlayerBattleController;
 class ABattleManager;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTurnDone);
+
 UCLASS()
 class TERMINAL_RECALL_API ABattleEntity : public ABaseEntity
 {
 	GENERATED_BODY()
 
 public:
-	
-	
-	UPROPERTY(EditAnywhere, BlueprintAssignable, Category = "Events For Designers")
-	FOnTurnDone OnTurnDoneEvent; // [NOTE] make sure to call this event when actions (e.g. move, attack) are done
-
-	UPROPERTY()
-	TObjectPtr<ABattleManager> BattleManager;
-	
-	UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)")
-	float DamageMultiplier = 1.0f;
-
-	UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)")
-	TArray<int32> AttackListID;
-	
-	//UPROPERTY(EditAnywhere, Category="Entity Info (For Designers)", meta = (EditCondition = "false")) 
-	// [NOTE] add list to store all option button
+	UPROPERTY(EditDefaultsOnly, Category = "Stuff For Designers | Necessities")
+	TObjectPtr<UDataTable> ActionDataTable;
+	UPROPERTY(EditAnywhere, Category = "Stuff For Designers | Necessities")
+	TSubclassOf<UUserWidget> ActionButtonClass;
+	UPROPERTY(BlueprintReadOnly, Category = "Stuff For Designers | Delegates")
+	FChangeCell OnChangeCell;
 protected:
 	UPROPERTY()
-	FVector2f GridPos = FVector2f(0.0f, 0.0f);
-	
+	TObjectPtr<ABattleManager> BattleManager;
+	UPROPERTY(EditAnywhere, Category="Stuff For Designers | Entity Info | General Stuff")
+	float DamageMultiplier = 1.0f;
+	UPROPERTY()
+	FIntPoint GridPos = FIntPoint(0.0f, 0.0f);
+	UPROPERTY()
+	TObjectPtr<APlayerBattleController> PlayerBattleController;
+	UPROPERTY()
+	TArray<UActionButtonUI*> MovementActionsUI;
+	UPROPERTY()
+	TArray<UActionButtonUI*> AttackActionsUI;
+	UPROPERTY()
+	TArray<UActionButtonUI*> ItemActionsUI;
+	TArray<FGridRangeExport> AttackInfoList; 
+	TArray<FGridRangeExport> MoveInfoList; 
 public:
 	ABattleEntity();
-	virtual void OnBattleStart();
+	virtual void OnBattleStart(ABattleManager* battleManager, float health, float damageMultiplier);
 	virtual void OnTurnGo();
-	void OnActionSelected();
-	void DoAttackAction(TObjectPtr<ABaseEntity> enemy, FVector pos);
 	void ShowChoices();
-	void HideChoices();
-
+	void CustomTakeDamage(float damage);
+	void SetPos(FIntPoint newPos);
+	FIntPoint GetPos() { return GridPos; }
+	FGridRangeExport* GetActionInfo(EActionType type, int32 indexInList);
 	virtual void BeginPlay() override;
 	virtual void OnMove() override;
 	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed) override;
+protected:
+	TOptional<FGridRangeExport> LoadActionInfoFromPath(FString path);
 };
 
 

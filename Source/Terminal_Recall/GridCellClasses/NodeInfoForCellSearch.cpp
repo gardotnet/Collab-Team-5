@@ -3,8 +3,8 @@
 
 UNodeInfoForCellSearch::UNodeInfoForCellSearch()
 {
+	
 }
-
 UNodeInfoForCellSearch::UNodeInfoForCellSearch(TObjectPtr<AWorldGridCell> cell, TObjectPtr<UNodeInfoForCellSearch> parent,
                                                float gCost, float hCost)
 {
@@ -14,7 +14,6 @@ UNodeInfoForCellSearch::UNodeInfoForCellSearch(TObjectPtr<AWorldGridCell> cell, 
 	this->HCost = hCost;
 	this->FCost = gCost + hCost;
 }
-
 void UNodeInfoForCellSearch::UpdateNodeInfo(TObjectPtr<UNodeInfoForCellSearch> parent, float gCost, float hCost)
 {
 	this->ParentCell = parent;

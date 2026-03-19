@@ -1,81 +1,100 @@
 ﻿#include "BattleEntity.h"
 
+#include "DesktopPlatformModule.h"
+#include "IDesktopPlatform.h"
+#include "JsonObjectConverter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
+#include "Terminal_Recall/StuffForUI/BattleChoiceSelectUI.h"
 
 ABattleEntity::ABattleEntity()
 {
-	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
-
-void ABattleEntity::OnBattleStart()
+void ABattleEntity::OnBattleStart(ABattleManager* battleManager, float health, float damageMultiplier)
 {
-	// Create UI buttons and linking it to 'OnAttackSelected' or 'OnMovementSelected'
-	// Also store it to show/hide the choices
+	BattleManager = battleManager;
+	CurrentHealth = health;
+	MaxHealth = health;
+	DamageMultiplier = damageMultiplier;
 }
-
 void ABattleEntity::OnTurnGo()
 {
 	// Decrement all cooldowns by 1
-	// (maybe show choices)
+	ShowChoices();
 }
-
-void ABattleEntity::OnActionSelected()
-{
-	// [NOTE] if player clicked an option
-	// [NOTE] get variables from button and pass it to manager
-	if (BattleManager)
-	{
-		//BattleManager->ActionChoiceSelected()
-	}
-}
-
-void ABattleEntity::DoAttackAction(TObjectPtr<ABaseEntity> enemy, FVector pos)
-{
-	if (enemy)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("I refuse to hit this entity"));
-		// checks if enemy is dead
-		/*if ()
-		{
-			// moves to opponent position when defeated like chess
-			OnMove(pos);
-			return;
-		}*/
-		
-	}
-
-	if (OnTurnDoneEvent.IsBound())
-		OnTurnDoneEvent.Broadcast();
-}
-
 void ABattleEntity::ShowChoices()
 {
 	// add all buttons to the UI
+	PlayerBattleController->BattleChoiceUIWidget->AddActionButton(MovementActionsUI, AttackActionsUI, ItemActionsUI);
 }
-
-void ABattleEntity::HideChoices()
+void ABattleEntity::SetPos(FIntPoint newPos)
 {
-	// removes all button from the UI
+	OnChangeCell.Broadcast();
+	GridPos = newPos;
 }
-
+FGridRangeExport* ABattleEntity::GetActionInfo(EActionType type, int32 indexInList)
+{
+	if (type == EActionType::Attack)
+		return &AttackInfoList[indexInList];
+	if (type == EActionType::Movement)
+		return &MoveInfoList[indexInList];
+	return nullptr;
+}
+void ABattleEntity::CustomTakeDamage(float damage)
+{
+	CurrentHealth = CurrentHealth - damage;
+	if (CurrentHealth <= 0.0f)
+	{
+		OnChangeCell.Broadcast();
+		Destroy();
+	}
+}
 void ABattleEntity::BeginPlay()
 {
 	Super::BeginPlay();
+	PlayerBattleController = Cast<APlayerBattleController>(GetWorld()->GetFirstPlayerController());
 	BattleManager = Cast<ABattleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ABattleManager::StaticClass()));
 }
-
 void ABattleEntity::OnMove()
 {
-	// check if entity can move on that grid
+	MoveTimer += 0.01f;
+	FVector playerPos = GetActorLocation();
+	float distance = FVector::Dist(playerPos, TargetPosition);
+	
+	if (MoveTimer > DesiredMoveDuration || distance < 1)
+	{
+		OnMoveDoneEvent.Broadcast();
+		TimerManagerRef->ClearTimer(MoveTimerHandle);
+		SetActorLocation(TargetPosition);
+	}
+	else
+	{
+		SetActorLocation(FMath::Lerp(playerPos, TargetPosition, MoveTimer/DesiredMoveDuration));
+	}
 }
-
 void ABattleEntity::OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Hey! I'm snitching to the battle manager now!"));
-	
+	BattleManager->OnEntitySelected(this);
 }
+
+TOptional<FGridRangeExport> ABattleEntity::LoadActionInfoFromPath(FString path)
+{
+	FString jsonData;
+	// fetch file data and shove it into "jsonData"
+	if (FFileHelper::LoadFileToString(jsonData, *path))
+	{
+		// Convert JSON to struct
+		FGridRangeExport exportData;
+		if (FJsonObjectConverter::JsonObjectStringToUStruct(jsonData, &exportData, 0, 0))
+		{
+			return exportData;
+		}
+	}
+	return TOptional<FGridRangeExport>();
+}
+
 
 
 

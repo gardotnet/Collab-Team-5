@@ -10,6 +10,9 @@ enum class ECellBrushMode : uint8
 	None          UMETA(DisplayName = "None"),
 	Walkable      UMETA(DisplayName = "Walkable"),
 	Wall          UMETA(DisplayName = "Wall"),
-	EnemySpawn    UMETA(DisplayName = "Enemy Spawn"),
-	Trap          UMETA(DisplayName = "Trap")
+	EnemySpawn    UMETA(DisplayName = "EnemySpawn"),
+	EnemyChunk	  UMETA(DisplayName = "EnemyChunk"),
+	Trap          UMETA(DisplayName = "Trap"),
+	PlayerSpawn	  UMETA(DisplayName = "PlayerSpawn"),
+	InteractableSpawn	UMETA(DisplayName = "InteractableSpawn")
 };

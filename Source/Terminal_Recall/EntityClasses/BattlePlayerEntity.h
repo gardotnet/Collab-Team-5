@@ -8,9 +8,7 @@ UCLASS()
 class TERMINAL_RECALL_API ABattlePlayerEntity : public ABattleEntity
 {
 	GENERATED_BODY()
-
 public:
 	ABattlePlayerEntity();
-
-	virtual void OnBattleStart() override;
+	virtual void OnBattleStart(ABattleManager* battleManager, float health = -1, float damageMultiplier = -1) override;
 };

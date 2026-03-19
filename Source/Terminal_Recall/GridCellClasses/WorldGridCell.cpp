@@ -7,12 +7,10 @@ AWorldGridCell::AWorldGridCell()
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
-
 void AWorldGridCell::LoadLevel()
 {
-	// [NOTE] Will tell encounter "level loader" to load the level assign to this cell.
+	// [NOTE] Will update game mode and to load the level assign to this cell.
 }
-
 void AWorldGridCell::CreatePath()
 {
 	for (auto& neighbour : NeighbouringCells)
@@ -21,7 +19,6 @@ void AWorldGridCell::CreatePath()
 			ActualPathCreation(&neighbour);
 	}
 }
-
 void AWorldGridCell::ResetPathPosition()
 {
 	for (auto& neighbour : NeighbouringCells)
@@ -55,25 +52,21 @@ void AWorldGridCell::ResetPathPosition()
 		}
 	}
 }
-
 void AWorldGridCell::BeginPlay()
 {
 	Super::BeginPlay();
 	PlayerController = Cast<ADefaultPlayerController>(GetWorld()->GetFirstPlayerController());
 }
-
 void AWorldGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
 	if (PlayerController)
 	{
 		if (Clickable)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Controller ready and passing cell"));
 			PlayerController->NavigateWorld(this);
 		}
 	}
 }
-
 void AWorldGridCell::OnUnitArrive_Implementation()
 {
 	Super::OnUnitArrive_Implementation();
@@ -87,7 +80,6 @@ void AWorldGridCell::OnUnitArrive_Implementation()
 		}
 	}
 }
-
 void AWorldGridCell::ActualPathCreation(FWorldNeighbourStruct* neighbour)
 {
 	if (neighbour->HasPathConnected)
@@ -131,7 +123,6 @@ void AWorldGridCell::ActualPathCreation(FWorldNeighbourStruct* neighbour)
 		neighbour->Cell->NeighbouringCells.Add(newStruct);
 	}
 }
-
 void AWorldGridCell::PreEditChange(FProperty* PropertyAboutToChange)
 {
 	Super::PreEditChange(PropertyAboutToChange);
@@ -143,14 +134,11 @@ void AWorldGridCell::PreEditChange(FProperty* PropertyAboutToChange)
 		OldNeighbouringCells.Append(NeighbouringCells); 
 	}
 }
-
 void AWorldGridCell::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
     Super::PostEditChangeChainProperty(PropertyChangedEvent);
-
     FEditPropertyChain::TDoubleLinkedListNode* MemberNode = PropertyChangedEvent.PropertyChain.GetActiveMemberNode();
     FName MemberName = (MemberNode != nullptr) ? MemberNode->GetValue()->GetFName() : NAME_None;
-
 	// if the neighbour list is being changed
     if (MemberName == GET_MEMBER_NAME_CHECKED(AWorldGridCell, NeighbouringCells))
     {

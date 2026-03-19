@@ -1,11 +1,15 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Terminal_Recall/StructsAndEnums/ActionType.h"
-#include "Terminal_Recall/StructsAndEnums/BattleCellState.h"
+#include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
 #include "Terminal_Recall/StructsAndEnums/For2dArray/FGridRowCell.h"
 #include "BattleManager.generated.h"
 
+class APlayerBattleController;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCellSelected);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGroupCellDelegate, int32, groupID);
+
+class UActionButtonUI;
 class ABattleEntity;
 class ABattleEnemyEntity;
 class ABattlePlayerEntity;
@@ -16,22 +20,36 @@ class TERMINAL_RECALL_API ABattleManager : public AActor
 	GENERATED_BODY()
 
 public:
-	ABattleManager();
-	UPROPERTY()
+	FGroupCellDelegate CallGroupHoverEvent;
+	FGroupCellDelegate CallGroupHoverEndEvent;
+	FGroupCellDelegate CallGroupAttackEvent;
+	
+	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
 	TObjectPtr<ABattlePlayerEntity> PlayerRef;
+	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
 	TArray<TObjectPtr<ABattleEnemyEntity>> EnemyArray;
-	TArray<FGridRowCell> GridArray;
+	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
+	TMap<FIntPoint, TObjectPtr<ABattleGridCell>> GridMap;
 	
 protected:
 	int32 EntityIndex = -1;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
 	TObjectPtr<ABattleEntity> CurrentEntityChosen;
-
+	UPROPERTY()
+	TObjectPtr<APlayerBattleController> PlayerBattleController;
+	
+	FCellSelected CellSelectedEvent;
+	// to disable player clicking entity choices while clicking grid
+	bool SelectMode = false;
 public:
-	void SetUpBattle(TObjectPtr<ABattlePlayerEntity> player, TArray<TObjectPtr<ABattleEnemyEntity>> enemies, TArray<FGridRowCell>* grid);
+	ABattleManager();
 	void OnEntitySelected(ABattleEntity* entity);
-	void ActionChoiceSelected(EBattleCellState attackOrMove, EActionType ActionType);
-protected:
 	UFUNCTION()
+	void ActionChoiceSelected(UActionButtonUI* selectedButton);
+	UFUNCTION()
+	void OnCellSelected(ABattleEntity* target, EActionType type, bool mainCell);
+	UFUNCTION(BlueprintCallable, Category = "For Designers | Variables")
 	void NextEntityTurn();
+protected:
+	virtual void BeginPlay() override;
 };
