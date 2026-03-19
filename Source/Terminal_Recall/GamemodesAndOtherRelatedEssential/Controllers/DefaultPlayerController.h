@@ -37,13 +37,11 @@ protected:
 
 	float MoveTimer = 0.0f;
 	float DesiredMoveDuration = 0.0f;
-
 public:
 	UFUNCTION()
 	virtual void MovePlayer() override;
 	void NavigateWorld(TObjectPtr<AWorldGridCell> cell);
 	virtual void BeginPlay() override;
-	
 protected:
 	bool FindCell(TObjectPtr<UNodeInfoForCellSearch> currentInfo);
 	// Utilities
