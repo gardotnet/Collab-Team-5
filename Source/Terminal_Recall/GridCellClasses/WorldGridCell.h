@@ -54,6 +54,8 @@ public:
 protected:
 	void ActualPathCreation(FWorldNeighbourStruct* neighbour);
 	virtual void BeginPlay() override;
+#if WITH_EDITOR
 	virtual void PreEditChange(FProperty* PropertyAboutToChange) override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
 };

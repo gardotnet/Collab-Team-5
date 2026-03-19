@@ -123,6 +123,7 @@ void AWorldGridCell::ActualPathCreation(FWorldNeighbourStruct* neighbour)
 		neighbour->Cell->NeighbouringCells.Add(newStruct);
 	}
 }
+#if WITH_EDITOR
 void AWorldGridCell::PreEditChange(FProperty* PropertyAboutToChange)
 {
 	Super::PreEditChange(PropertyAboutToChange);
@@ -269,3 +270,4 @@ void AWorldGridCell::PostEditChangeChainProperty(FPropertyChangedChainEvent& Pro
 		CoverObject->SetActorLocation(coverLoc);
 	}
 }
+#endif

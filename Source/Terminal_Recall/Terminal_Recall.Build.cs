@@ -10,12 +10,12 @@ public class Terminal_Recall : ModuleRules
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "Slate", "SlateCore", "Json", "JsonUtilities", "DesktopPlatform" });
 
-		if (Target.bBuildEditor)
+		/*if (Target.bBuildEditor)
 		{
 			PublicDependencyModuleNames.AddRange(new string[] { "Blutility", "UMGEditor" });
 			
 			PrivateDependencyModuleNames.AddRange(new string[] { "UnrealEd", "EditorFramework", "LevelEditor" });
-		}
+		}*/
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

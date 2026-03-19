@@ -46,7 +46,9 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 				{
 					FVector spawnPos = FVector(100 * x, 100 * y, 0.0f);				
 					ABattleGridCell* newCell = GetWorld()->SpawnActor<ABattleGridCell>(BattleGridClass, spawnPos, FRotator::ZeroRotator, spawnParams);
+					#if WITH_EDITOR
 					newCell->SetFolderPath(FName("GridCells"));
+					#endif
 					// check board pattern
 					if ((x+y) % 2 == 0)
 					{
@@ -169,8 +171,10 @@ void ABattleLevelLoader::EditorLoadLevel()
 							FVector spawnPos = FVector(100 * x, 100 * y, 0.0f) + FVector(50.0f, 1050.0f, 0.0f);				
 							ABattleGridCell* newCell = GetWorld()->SpawnActor<ABattleGridCell>(BattleGridClass, spawnPos, FRotator::ZeroRotator, spawnParams);
 							newCell->SetFlags(RF_Transient);
-							newCell->SetLockLocation(true);;
+							#if WITH_EDITOR
+							newCell->SetLockLocation(true);
 							newCell->SetFolderPath(FName("GridCells"));
+							#endif
 							if ((x+y) % 2 == 0)
 							{
 								newCell->MeshComponent->SetMaterial(0, CheckBoardMat1);
@@ -196,7 +200,9 @@ void ABattleLevelLoader::EditorLoadLevel()
 									propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
 									AActor* wall = GetWorld()->SpawnActor<AActor>(propInfo->ActorBP, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
 									wall->SetFlags(RF_Transient);
+									#if WITH_EDITOR
 									wall->SetLockLocation(true);
+									#endif
 								}
 							}
 							break;
@@ -208,7 +214,9 @@ void ABattleLevelLoader::EditorLoadLevel()
 									propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
 									player = GetWorld()->SpawnActor<ABattlePlayerEntity>(PlayerEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
 									player->SetFlags(RF_Transient);
+									#if WITH_EDITOR
 									player->SetLockLocation(true);
+									#endif
 								}
 							}
 							else
@@ -223,7 +231,9 @@ void ABattleLevelLoader::EditorLoadLevel()
 								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
 								AActor* enemyChar = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
 								enemyChar->SetFlags(RF_Transient);
+								#if WITH_EDITOR
 								enemyChar->SetLockLocation(true);
+								#endif
 							}
 							break;
 						default:

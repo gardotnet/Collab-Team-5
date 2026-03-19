@@ -48,7 +48,7 @@ void AGridVisualiser::AddText(int32 ismIndex, FText text, FIntPoint groupSize)
 		newTextComp->SetHorizontalAlignment(EHTA_Center);
 		newTextComp->VerticalAlignment = EVRTA_TextCenter;
 		newTextComp->SetRelativeRotation(FRotator(90.0f, 180.0f, 0.0f)); 
-		TextComponentList.Add(ismIndex, *newTextComp);
+		TextComponentList.Add(ismIndex, newTextComp);
 	}
 }
 void AGridVisualiser::SetText(int32 ismIndex, FText text, FIntPoint groupSize)

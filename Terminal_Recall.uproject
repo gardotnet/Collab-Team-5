@@ -8,6 +8,11 @@
 			"Name": "Terminal_Recall",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "TerminalRecall_Editor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [

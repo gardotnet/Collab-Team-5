@@ -6,6 +6,16 @@
 #include "LevelExportStruct.generated.h"
 
 USTRUCT(BlueprintType)
+struct FGridPosAnd1DIndex
+{
+	GENERATED_BODY()
+	UPROPERTY()
+	FIntPoint GridPos = FIntPoint(-1);
+	UPROPERTY()
+	int32 IndexPos = -1;
+};
+
+USTRUCT(BlueprintType)
 struct FExportCellDetails
 {
 	GENERATED_BODY()
