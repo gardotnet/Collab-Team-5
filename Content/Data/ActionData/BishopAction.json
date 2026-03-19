@@ -16,7 +16,8 @@
 					"direction": "SW",
 					"magnitude": 0
 				}
-			]
+			],
+			"groupId": 0
 		},
 		{
 			"gridPos":
@@ -29,7 +30,8 @@
 					"direction": "NW",
 					"magnitude": 0
 				}
-			]
+			],
+			"groupId": 0
 		},
 		{
 			"gridPos":
@@ -42,7 +44,8 @@
 					"direction": "SE",
 					"magnitude": 0
 				}
-			]
+			],
+			"groupId": 0
 		},
 		{
 			"gridPos":
@@ -55,7 +58,14 @@
 					"direction": "NE",
 					"magnitude": 0
 				}
-			]
+			],
+			"groupId": 0
 		}
-	]
+	],
+	"gridSize":
+	{
+		"x": 3,
+		"y": 3
+	},
+	"oneGroup": true
 }

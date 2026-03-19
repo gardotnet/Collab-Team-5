@@ -39,6 +39,8 @@ class TERMINAL_RECALL_API UEncounterLevelMakerWindow : public UEditorUtilityWidg
 	TSubclassOf<AGridVisualiser> VisualiserClass;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "For Designers | Necessities")
+	TObjectPtr<UDataTable> PropsDataTable;
+	UPROPERTY(EditDefaultsOnly, Category = "For Designers | Necessities")
 	TObjectPtr<UDataTable> EnemyDataTable;
 	UPROPERTY(EditDefaultsOnly, Category = "For Designers | Necessities")
 	TObjectPtr<UDataTable> TrapDataTable;
@@ -117,6 +119,8 @@ class TERMINAL_RECALL_API UEncounterLevelMakerWindow : public UEditorUtilityWidg
 	UEditorUtilityComboBoxString* TrapComboBox;
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityComboBoxString* InteractableComboBox;
+	UPROPERTY(meta = (BindWidget))
+	UEditorUtilityComboBoxString* PropsComboBox;
 	
 	#pragma endregion 
 	
@@ -159,6 +163,8 @@ protected:
 	void OnTrapSelectChange(FString SelectedItem, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnInteractableSelectChange(FString SelectedItem, ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnPropSelectChange(FString SelectedItem, ESelectInfo::Type SelectionType);
 	
 	#pragma endregion
 	
@@ -169,7 +175,7 @@ protected:
 	void SetUpTrack();
 	void EnableMouseTrack();
 	void ResetAndPopulateGridArray();
-	void ProcessExportData(FLevelExportStruct ExportData);
+	void ProcessExportData(FLevelExportStruct exportData);
 	void UnhoverGridCell();
 	void CalculateSelectCells(FIntPoint gridPos);
 	void HandleNeighbouringCells(int32 placedIndex);

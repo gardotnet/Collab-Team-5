@@ -11,6 +11,7 @@
 #include "Terminal_Recall/GridCellClasses/GridVisualiser.h"
 #include "Terminal_Recall/Keybinds/InputProcessor/FUndoKeyInput.h"
 #include "Terminal_Recall/StructsAndEnums/LevelExportStruct.h"
+#include "Terminal_Recall/StructsAndEnums/ForDataTable/AssetLookUpStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/EnemyInfoStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/InteractableInfoStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/TrapInfoStruct.h"
@@ -52,6 +53,8 @@ void UEncounterLevelMakerWindow::NativeConstruct()
 		TrapComboBox->OnSelectionChanged.AddDynamic(this, &UEncounterLevelMakerWindow::OnTrapSelectChange);
 	if (InteractableComboBox)
 		InteractableComboBox->OnSelectionChanged.AddDynamic(this, &UEncounterLevelMakerWindow::OnInteractableSelectChange);
+	if (PropsComboBox)
+		PropsComboBox->OnSelectionChanged.AddDynamic(this, &UEncounterLevelMakerWindow::OnPropSelectChange);
 	#pragma endregion 
 	// adding choices to the editor
 	#pragma region Data Table Info Fetch
@@ -82,6 +85,15 @@ void UEncounterLevelMakerWindow::NativeConstruct()
 				InteractableComboBox->AddOption(interactableInfo->InteractableName.ToString());
 		}
 	}
+	if (PropsComboBox && WallToggleButton)
+	{
+		TArray<FName> rowNames = PropsDataTable->GetRowNames();
+		for (FName& name : rowNames)
+		{
+			if (FAssetLookUpTable* interactableInfo = PropsDataTable->FindRow<FAssetLookUpTable>(name, TEXT("Encounter Tool")))
+				PropsComboBox->AddOption(interactableInfo->AssetName.ToString());
+		}
+	}
 	#pragma endregion
 	// get and refresh the grid
 	GridSize = FIntPoint(10,10);
@@ -107,6 +119,8 @@ void UEncounterLevelMakerWindow::NativeDestruct()
 		FSlateApplication::Get().UnregisterInputPreProcessor(MyInputProcessor);
 		MyInputProcessor.Reset();
 	}
+	if (VisualiserObject)
+		VisualiserObject->Destroy();
 }
 #pragma region Button Functions
 void UEncounterLevelMakerWindow::OnCreateGridPressed()
@@ -164,9 +178,17 @@ void UEncounterLevelMakerWindow::OnWallTogglePressed()
 	}
 	else
 	{
-		CurrentModeSelected = ECellBrushMode::Wall;
-		WallToggleButton->SetBackgroundColor(FLinearColor::Green);
-		SetUpTrack();
+		if (PropsComboBox->GetSelectedIndex() == 0)
+		{
+			CurrentModeSelected = ECellBrushMode::None;
+			HighlightComboBox(PropsComboBox);
+		}
+		else
+		{
+			CurrentModeSelected = ECellBrushMode::Wall;
+			WallToggleButton->SetBackgroundColor(FLinearColor::Green);
+			SetUpTrack();
+		}
 	}
 }
 void UEncounterLevelMakerWindow::OnPlayerTogglePressed()
@@ -269,6 +291,7 @@ void UEncounterLevelMakerWindow::OnLoadFilePressed()
 		// if selected a file
 		if (bOpened && OutFileNames.Num() > 0)
 		{
+			
 			FString SelectedFilePath = OutFileNames[0];
 			FString jsonData;
 			// fetch file data and shove it into "jsonData"
@@ -422,6 +445,26 @@ void UEncounterLevelMakerWindow::OnInteractableSelectChange(FString SelectedItem
 	{
 		UnhighlightComboBox(InteractableComboBox);
 		if (CurrentModeSelected == ECellBrushMode::InteractableSpawn)
+		{
+			SelectSize = GetGroupSize(CurrentModeSelected);
+		}
+	}
+}
+
+void UEncounterLevelMakerWindow::OnPropSelectChange(FString SelectedItem, ESelectInfo::Type SelectionType)
+{
+	if (SelectedItem == "None" && (ESelectInfo::OnMouseClick == SelectionType || ESelectInfo::OnKeyPress == SelectionType))
+	{
+		if (CurrentModeSelected != ECellBrushMode::Wall)
+			return;
+		UnselectCurrentButton();
+		CurrentModeSelected = ECellBrushMode::None;
+		HighlightComboBox(PropsComboBox);
+	}
+	else
+	{
+		UnhighlightComboBox(PropsComboBox);
+		if (CurrentModeSelected == ECellBrushMode::Wall)
 		{
 			SelectSize = GetGroupSize(CurrentModeSelected);
 		}
@@ -669,33 +712,33 @@ void UEncounterLevelMakerWindow::ResetAndPopulateGridArray()
 	}
 }
 // Extract info from the export and apply it
-void UEncounterLevelMakerWindow::ProcessExportData(FLevelExportStruct ExportData)
+void UEncounterLevelMakerWindow::ProcessExportData(FLevelExportStruct exportData)
 {
-	GridSize = ExportData.GridSize;
+	GridSize = exportData.GridSize;
 	ResetAndPopulateGridArray();
 	VisualiserObject->RegenerateGrid(GridSize);
 	// for each cell with content
-	for (auto& CellData : ExportData.GridCells)
+	for (auto& cellData : exportData.GridCells)
 	{
-		if (FLevelCellData* cellInfo = LevelGridData.Find(CellData.Position))
+		if (FLevelCellData* cellInfo = LevelGridData.Find(cellData.Position))
 		{
-			if (PlayerPlaced && CellData.CellType == ECellBrushMode::PlayerSpawn)
+			if (PlayerPlaced && cellData.CellType == ECellBrushMode::PlayerSpawn)
 			{
-				UE_LOG(LogTemp, Log, TEXT("Why is there another player spawn point? Oh well, cell (%d, %d) IGNORED!"), CellData.Position.X, CellData.Position.Y);
+				UE_LOG(LogTemp, Log, TEXT("Why is there another player spawn point? Oh well, cell (%d, %d) IGNORED!"), cellData.Position.X, cellData.Position.Y);
 				continue;
 			}
-			int32 ismIndex = (CellData.Position.Y * GridSize.X) + CellData.Position.X;
+			int32 ismIndex = (cellData.Position.Y * GridSize.X) + cellData.Position.X;
 			FLevelCellData oldType = *cellInfo;
-			*cellInfo = FLevelCellData(CellData.CellType, CellData.IdForCellContent);
+			*cellInfo = FLevelCellData(cellData.CellType, cellData.IdForCellContent);
 			// to highlight the visual grid
-			LevelGridVisualISM->SetCustomData(ismIndex, GetColour( CellData.CellType), true);
+			LevelGridVisualISM->SetCustomData(ismIndex, GetColour( cellData.CellType), true);
 			if (SetUpTextComp(cellInfo, &oldType, ismIndex))
 				continue;
 			// disable the player spawn brush if there is alr a spawn on grid
-			if (CellData.CellType == ECellBrushMode::PlayerSpawn)
+			if (cellData.CellType == ECellBrushMode::PlayerSpawn)
 			{
 				PlayerPlaced = true;
-				PlayerSpawnPos = CellData.Position;
+				PlayerSpawnPos = cellData.Position;
 				PlayerToggleButton->SetIsEnabled(false);
 			}
 		}
@@ -792,6 +835,8 @@ int32 UEncounterLevelMakerWindow::GetRelevantObjID(ECellBrushMode type) const
 			return TrapComboBox->GetSelectedIndex();
 		case ECellBrushMode::InteractableSpawn:
 			return  InteractableComboBox->GetSelectedIndex();
+		case ECellBrushMode::Wall:
+			return PropsComboBox->GetSelectedIndex();
 		default:
 			return -1;
 	}

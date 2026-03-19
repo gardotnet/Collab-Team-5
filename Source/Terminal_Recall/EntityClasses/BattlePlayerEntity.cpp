@@ -1,6 +1,7 @@
 ﻿#include "BattlePlayerEntity.h"
 
 #include "Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
 #include "Kismet/GameplayStatics.h"
 #include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
@@ -30,6 +31,7 @@ void ABattlePlayerEntity::OnBattleStart(ABattleManager* battleManager, float hea
 					newAttackButton->Entity = this;
 					newAttackButton->ActionType = EActionType::Attack;
 					newAttackButton->ActionName = attackInfo->ActionName.ToString();
+					newAttackButton->NameLabel->SetText(FText::FromString(attackInfo->ActionName.ToString()));
 					AttackActionsUI.Add(newAttackButton);
 					newAttackButton->IndexInOwningEntityArray = AttackActionsUI.Num() - 1;
 					newAttackButton->OnActionSelected.AddDynamic(battleManager, &ABattleManager::ActionChoiceSelected);
@@ -50,6 +52,7 @@ void ABattlePlayerEntity::OnBattleStart(ABattleManager* battleManager, float hea
 					newMoveButton->Entity = this;
 					newMoveButton->ActionType = EActionType::Movement;
 					newMoveButton->ActionName = moveInfo->ActionName.ToString();
+					newMoveButton->NameLabel->SetText(FText::FromString(moveInfo->ActionName.ToString()));
 					MovementActionsUI.Add(newMoveButton);
 					newMoveButton->IndexInOwningEntityArray = MovementActionsUI.Num() - 1;
 					newMoveButton->OnActionSelected.AddDynamic(battleManager, &ABattleManager::ActionChoiceSelected);

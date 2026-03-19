@@ -5,6 +5,7 @@
 #include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
 #include "ActionButtonUI.generated.h"
 
+class UTextBlock;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionSelected, UActionButtonUI*, action);
 
 class ABattleEntity;
@@ -26,9 +27,13 @@ public:
 	
 	FOnActionSelected OnActionSelected;
 	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* NameLabel;
+	
 protected:
 	UPROPERTY(meta = (BindWidget))
 	UButton* ActionButton;
+	
 
 protected:
 	virtual void NativeConstruct() override;

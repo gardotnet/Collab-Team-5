@@ -11,6 +11,7 @@ AGridVisualiser::AGridVisualiser()
 	RootComponent = DummyRoot;
 	GridVisualComp = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Grid Visual");
 	GridVisualComp->SetupAttachment(DummyRoot);
+	SetFlags(RF_Transient);
 }
 
 void AGridVisualiser::RegenerateGrid(FIntPoint gridSize)
@@ -21,11 +22,11 @@ void AGridVisualiser::RegenerateGrid(FIntPoint gridSize)
 	auto color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	ClearText();
 	GridVisualComp->ClearInstances();
-	for (int x = 0; x < gridSize.X; x++)
+	for (int y = 0; y < gridSize.Y; y++)
 	{
-		for (int y = 0; y < gridSize.Y; y++)
+		for (int x = 0; x < gridSize.X; x++)
 		{
-			FVector relativeLoc = FVector(x * TileSize, y * TileSize, 0.0f);
+			FVector relativeLoc = FVector(y * TileSize, x * TileSize, 0.0f);
 			FTransform instanceTransform = FTransform(relativeLoc);
 			int32 instanceIndex =  GridVisualComp->AddInstance(instanceTransform);
 			GridVisualComp->SetCustomData(instanceIndex, color, false);

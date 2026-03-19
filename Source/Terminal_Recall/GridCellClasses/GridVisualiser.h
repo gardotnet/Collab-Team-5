@@ -32,4 +32,8 @@ public:
 	void SetText(int32 ismIndex, FText text, FIntPoint groupSize);
 	void DeleteText(int32 ismIndex);
 	void ClearText();
+	
+	#if WITH_EDITOR
+	virtual bool IsSelectable() const override { return false; }
+	#endif
 };

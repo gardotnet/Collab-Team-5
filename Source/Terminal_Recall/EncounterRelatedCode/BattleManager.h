@@ -6,6 +6,7 @@
 
 class APlayerBattleController;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCellSelected);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGroupCellDelegate, int32, groupID);
 
 class UActionButtonUI;
 class ABattleEntity;
@@ -18,6 +19,10 @@ class TERMINAL_RECALL_API ABattleManager : public AActor
 	GENERATED_BODY()
 
 public:
+	
+	FGroupCellDelegate CallGroupHoverEvent;
+	FGroupCellDelegate CallGroupHoverEndEvent;
+	FGroupCellDelegate CallGroupAttackEvent;
 	
 	UPROPERTY()
 	TObjectPtr<ABattlePlayerEntity> PlayerRef;

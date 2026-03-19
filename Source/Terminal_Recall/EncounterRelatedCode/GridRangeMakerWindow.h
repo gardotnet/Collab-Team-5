@@ -6,6 +6,8 @@
 #include "Terminal_Recall/StructsAndEnums/GridRangeExport.h"
 #include "GridRangeMakerWindow.generated.h"
 
+class UEditorUtilityCheckBox;
+class UTextBlock;
 class UCanvasPanel;
 class FLevelEditorModule;
 class SLevelViewport;
@@ -41,6 +43,10 @@ protected:
 	int32 LastHoverIndex = -1;
 	UPROPERTY()
 	int32 LastClickIndex = -1;
+	UPROPERTY()
+	int32 LastSelectedIndex = -1;
+	UPROPERTY()
+	bool MouseDownForSelect = false;
 	//UPROPERTY()
 	//FEditorGridRangeCellState info;
 	FEditorGridRangeCellState* infoPtr;
@@ -54,6 +60,11 @@ protected:
 	UPROPERTY()
 	FIntPoint CentrePoint = FIntPoint(-1, -1);
 	
+	FString PrevXSizeText = "N/A"; 
+	FString PrevYSizeText = "N/A"; 
+	FString PrevMagText = "N/A"; 
+	FString PrevGroupText = "N/A"; 
+	
 	#pragma region Buttons
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityButton* CreateGridButton;
@@ -63,10 +74,6 @@ protected:
 	UEditorUtilityButton* SlotDrawButton;
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityButton* CentreButton;
-	UPROPERTY(meta = (BindWidget))
-	UEditorUtilityButton* SelectButton;
-	UPROPERTY(meta = (BindWidget))
-	UEditorUtilityButton* CloseDirMenuButton;
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityButton* NorthButton;
 	UPROPERTY(meta = (BindWidget))
@@ -99,12 +106,23 @@ protected:
 	UEditorUtilityEditableTextBox* InputGridSizeY;
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityEditableTextBox* InputDirMag;
+	UPROPERTY(meta = (BindWidget))
+	UEditorUtilityEditableTextBox* InputGroupId;
 	#pragma endregion
 
 	UPROPERTY(meta = (BindWidget))
 	UCanvasPanel* DirectionCanvas;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* CellNameLabel;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* DirLabel;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* GroupLabel;
+	UPROPERTY(meta = (BindWidget))
+	UEditorUtilityCheckBox* OneGroup;
 	
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 	
 	#pragma region Link Functions
 	UFUNCTION()
@@ -115,10 +133,6 @@ protected:
 	void OnPaintButtonClicked();
 	UFUNCTION()
 	void SetCentrePoint();
-	UFUNCTION()
-	void OnSelectButtonClicked();
-	UFUNCTION()
-	void CloseDirMenu();
 	UFUNCTION()
 	void OnNorthButtonClicked();
 	UFUNCTION()
@@ -147,9 +161,13 @@ protected:
 	void OnGridTextYChange(const FText& NewText);
 	UFUNCTION()
 	void OnDirMagChange(const FText& NewText);
+	UFUNCTION()
+	void OnGroupChange(const FText& NewText);
+	
+	UFUNCTION()
+	void OnCheckOneGroup(bool isChecked);
 	#pragma endregion
 	
-	void SetUpMouseTrack();
 	UFUNCTION()
 	void TrackMouse();
 	
@@ -157,8 +175,10 @@ protected:
 	void UnselectCurrentButton();
 	
 	void UnselectDirectionButton();
-	void LoadDirectionsOnCell();
+	inline void HideInputsForCell();
+	void LoadDirectionsOnCell(FIntPoint pos);
 	void SelectDirectionsButton(UEditorUtilityButton* button, ECompassDirection dir);
+	void RefreshInputForGroup();
 	int32* GetMagnitudeOfDirection();
 	
 	inline void UnselectCell();

@@ -8,6 +8,7 @@
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
 #include "Terminal_Recall/StructsAndEnums/LevelExportStruct.h"
+#include "Terminal_Recall/StructsAndEnums/ForDataTable/AssetLookUpStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/EnemyInfoStruct.h"
 
 ABattleLevelLoader::ABattleLevelLoader()
@@ -57,7 +58,8 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 						newCell->MeshComponent->SetMaterial(0, CheckBoardMat2);
 					}
 					battleManager->GridMap.Add(FIntPoint(x,y), newCell);
-					newCell->SetGridPos(FIntPoint(x,y));
+					newCell->CellSetUp(FIntPoint(x,y), battleManager);
+					newCell->OnClickedCellEvent.AddDynamic(battleManager, &ABattleManager::ABattleManager::OnCellSelected);
 				}
 			}
 			
@@ -69,9 +71,13 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 					case ECellBrushMode::Wall:
 						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 						{
-							propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
-							GetWorld()->SpawnActor<AActor>(WallClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
-							(*newCell)->SetWalkable(false);
+							FString stringConvert = FString::FromInt(cellData.IdForCellContent);
+							if (FAssetLookUpTable* propInfo = PropDataTable->FindRow<FAssetLookUpTable>(FName(*stringConvert), TEXT("Level Loader")))
+							{
+								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
+								GetWorld()->SpawnActor<AActor>(propInfo->ActorBP, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
+								(*newCell)->SetWalkable(false);
+							}
 						}
 					break;
 					case ECellBrushMode::PlayerSpawn:

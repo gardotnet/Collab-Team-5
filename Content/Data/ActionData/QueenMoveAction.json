@@ -109,5 +109,11 @@
 				}
 			]
 		}
-	]
+	],
+	"gridSize":
+	{
+		"x": 3,
+		"y": 3
+	},
+	"oneGroup": false
 }

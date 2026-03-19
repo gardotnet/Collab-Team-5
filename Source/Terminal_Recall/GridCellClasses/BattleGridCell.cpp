@@ -1,4 +1,8 @@
 ﻿#include "BattleGridCell.h"
+
+#include <ThirdParty/ShaderConductor/ShaderConductor/External/DirectXShaderCompiler/include/dxc/DXIL/DxilConstants.h>
+
+#include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
 #include "Terminal_Recall/EntityClasses/BattleEntity.h"
 
 
@@ -14,7 +18,7 @@ void ABattleGridCell::AssignTrap(TObjectPtr<ABaseTrap> trap)
 	TrapRef = trap;
 }
 
-bool ABattleGridCell::EnableCell(EActionType actionType,  ABattleEntity* causer)
+bool ABattleGridCell::EnableCell(EActionType actionType,  ABattleEntity* causer, int32 groupID)
 {
 	if (ResidingEntity && actionType != EActionType::Attack)
 		return false;
@@ -22,6 +26,7 @@ bool ABattleGridCell::EnableCell(EActionType actionType,  ABattleEntity* causer)
 		return false;
 	EntityCauserRef = causer;
 	ActionType = actionType;
+	CellGroupID = groupID;
 	MeshComponent->SetCollisionProfileName("BlockAll");
 	Clickable = true;
 	MeshComponent->SetOverlayMaterial(MoveHighlightMat);
@@ -30,10 +35,27 @@ bool ABattleGridCell::EnableCell(EActionType actionType,  ABattleEntity* causer)
 
 void ABattleGridCell::DisableCell()
 {
-	OnClickedCellEvent.Clear();
 	MeshComponent->SetCollisionProfileName("NoCollision");
 	MeshComponent->SetOverlayMaterial(nullptr);
 	Clickable = false;
+}
+
+void ABattleGridCell::ForceAttack(int32 groupID)
+{
+	if (groupID == CellGroupID)
+		OnClickedCellEvent.Broadcast(ResidingEntity);
+}
+
+void ABattleGridCell::ForceHover(int32 groupID)
+{
+	if (groupID == CellGroupID)
+		MeshComponent->SetOverlayMaterial(HoverHighlightMat);
+}
+
+void ABattleGridCell::ForceEndHover(int32 groupID)
+{
+	if (groupID == CellGroupID)
+		MeshComponent->SetOverlayMaterial(MoveHighlightMat);
 }
 
 void ABattleGridCell::HouseEntity(ABattleEntity* entity)
@@ -47,9 +69,10 @@ void ABattleGridCell::EvictEntity()
 	ResidingEntity = nullptr;
 }
 
-void ABattleGridCell::SetGridPos(FIntPoint gridPos)
+void ABattleGridCell::CellSetUp(FIntPoint gridPos, ABattleManager* battleManager)
 {
 	GridPos = gridPos;
+	BattleManager = battleManager;
 }
 void ABattleGridCell::SetWalkable(bool walkable)
 {
@@ -64,7 +87,9 @@ void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 	{
 		case EActionType::Attack:
 			// Tells listeners "I Need You To Find This Guy And #### Him Up!" 
+			BattleManager->CallGroupAttackEvent.Broadcast(CellGroupID);
 			OnClickedCellEvent.Broadcast(ResidingEntity);
+			
 		break;
 		case EActionType::Movement:
 			EntityCauserRef->SetPos(GridPos);
@@ -79,11 +104,19 @@ void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 void ABattleGridCell::OnHoverOver(UPrimitiveComponent* TouchedComponent)
 {
 	if (Clickable)
+	{
 		MeshComponent->SetOverlayMaterial(HoverHighlightMat);
+		if (ActionType == EActionType::Attack)
+			BattleManager->CallGroupHoverEvent.Broadcast(CellGroupID);
+	}
 }
 
 void ABattleGridCell::OnHoverEnd(UPrimitiveComponent* TouchedComponent)
 {
 	if (Clickable)
+	{
 		MeshComponent->SetOverlayMaterial(MoveHighlightMat);
+		if (ActionType == EActionType::Attack)
+			BattleManager->CallGroupHoverEndEvent.Broadcast(CellGroupID);
+	}
 }

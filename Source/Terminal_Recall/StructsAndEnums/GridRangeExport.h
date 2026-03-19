@@ -33,7 +33,6 @@ struct FEditorGridRangeCellState
 	GENERATED_BODY()
 	UPROPERTY()
 	EGridRangeBrushMode CellType = EGridRangeBrushMode::None;
-	UPROPERTY()
 	int32 N = -1;
 	int32 NE = -1;
 	int32 E = -1;
@@ -42,6 +41,8 @@ struct FEditorGridRangeCellState
 	int32 SW = -1;
 	int32 W = -1;
 	int32 NW= -1;
+	
+	int32 GroupID = -1;
 	void ClearModifier()
 	{
 		N = -1;
@@ -72,6 +73,8 @@ struct FGridRangeCellInfo
 	FIntPoint GridPos = FIntPoint(-1,-1);
 	UPROPERTY()
 	TArray<FDirectionAndMag> DirectionModifier;
+	UPROPERTY()
+	int32 GroupID = -1;
 };
 
 USTRUCT()
@@ -82,4 +85,8 @@ struct FGridRangeExport : public FTableRowBase
 	FIntPoint CentrePoint = FIntPoint(-1,-1);
 	UPROPERTY()
 	TArray<FGridRangeCellInfo> Cells;
+	UPROPERTY()
+	FIntPoint GridSize = FIntPoint(-1,-1);
+	UPROPERTY()
+	bool OneGroup = false;
 };

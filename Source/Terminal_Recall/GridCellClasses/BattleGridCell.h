@@ -8,6 +8,7 @@
 #include "BaseGridCell.h"
 #include "BattleGridCell.generated.h"
 
+class ABattleManager;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClickedCell, ABattleEntity*, target);
 
 class APlayerBattleController;
@@ -23,7 +24,8 @@ class TERMINAL_RECALL_API ABattleGridCell : public ABaseGridCell
 public:
 	// add cell colour here
 	FOnClickedCell OnClickedCellEvent;
-
+	
+	int32 CellGroupID = -1;
 	
 protected:
 	
@@ -39,7 +41,8 @@ protected:
 	UPROPERTY()
 	TObjectPtr<ABattleEntity> ResidingEntity;
 	EActionType ActionType;
-
+	UPROPERTY()
+	ABattleManager* BattleManager;
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	UMaterialInterface* MoveHighlightMat;
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
@@ -48,15 +51,24 @@ protected:
 public:
 	ABattleGridCell();
 	void AssignTrap(TObjectPtr<ABaseTrap> trap);
-	bool EnableCell(EActionType actionType, ABattleEntity* causer);
+	bool EnableCell(EActionType actionType, ABattleEntity* causer, int32 groupID = -1);
 	UFUNCTION()
 	void DisableCell();
+	
+	UFUNCTION()
+	void ForceAttack(int32 groupID);
+	UFUNCTION()
+	void ForceHover(int32 groupID);
+	UFUNCTION()
+	void ForceEndHover(int32 groupID);
 	
 	void HouseEntity(ABattleEntity* entity);
 	UFUNCTION()
 	void EvictEntity();
 
-	void SetGridPos(FIntPoint gridPos);
+	void CellSetUp(FIntPoint gridPos, ABattleManager* battleManager);
+	
+	
 	FIntPoint GetGridPos() { return GridPos; };
 	void SetWalkable(bool walkable);
 	bool GetWalkable() { return Walkable; };

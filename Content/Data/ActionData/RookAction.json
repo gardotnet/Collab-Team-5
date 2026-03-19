@@ -16,7 +16,8 @@
 					"direction": "W",
 					"magnitude": 0
 				}
-			]
+			],
+			"groupId": 2
 		},
 		{
 			"gridPos":
@@ -29,7 +30,8 @@
 					"direction": "S",
 					"magnitude": 0
 				}
-			]
+			],
+			"groupId": 3
 		},
 		{
 			"gridPos":
@@ -42,7 +44,8 @@
 					"direction": "N",
 					"magnitude": 0
 				}
-			]
+			],
+			"groupId": 1
 		},
 		{
 			"gridPos":
@@ -55,7 +58,14 @@
 					"direction": "E",
 					"magnitude": 0
 				}
-			]
+			],
+			"groupId": 0
 		}
-	]
+	],
+	"gridSize":
+	{
+		"x": 3,
+		"y": 3
+	},
+	"oneGroup": false
 }
