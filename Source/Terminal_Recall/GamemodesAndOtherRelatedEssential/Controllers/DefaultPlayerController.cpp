@@ -8,6 +8,7 @@
 void ADefaultPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+	UE_LOG(LogTemp, Warning, TEXT("ADefaultPlayerController::BeginPlay"));
 	// (gets game instance because it will have the player spawn point)
 	UDefaultInstance* gameInstance =  Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if (gameInstance && PlayerChar)
