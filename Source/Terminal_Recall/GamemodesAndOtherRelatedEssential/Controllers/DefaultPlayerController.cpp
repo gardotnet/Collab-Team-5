@@ -1,6 +1,7 @@
 ﻿#include "DefaultPlayerController.h"
 #include "Algo/Reverse.h"
 #include "Kismet/GameplayStatics.h"
+#include "EnhancedInputSubsystems.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GridCellClasses/NodeInfoForCellSearch.h"
 #include "Terminal_Recall/GridCellClasses/WorldGridCell.h"
@@ -29,6 +30,17 @@ void ADefaultPlayerController::BeginPlay()
 		CurrentCell->OnUnitArrive();
 	}
 }
+
+void ADefaultPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+	if (UEnhancedInputLocalPlayerSubsystem* subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		if (MappingContext)
+			subsystem->AddMappingContext(MappingContext, 0);
+	}
+}
+
 void ADefaultPlayerController::MovePlayer()
 {
 	CurrentCell = ThePath[PathIndex];

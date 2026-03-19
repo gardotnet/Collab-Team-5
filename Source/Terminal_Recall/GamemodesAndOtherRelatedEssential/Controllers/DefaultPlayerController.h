@@ -4,6 +4,7 @@
 #include "OurBasePlayerController.h"
 #include "DefaultPlayerController.generated.h"
 
+class UInputMappingContext;
 class AAIController;
 class ABaseEntity;
 class UNodeInfoForCellSearch;
@@ -21,6 +22,8 @@ public:
 	TSubclassOf<ABaseEntity> PlayerChar;
 	UPROPERTY(EditAnywhere, Category="Stuff For Designers | General Stuff")
 	float PlayerSpeed = 100;
+	UPROPERTY(EditAnywhere, Category="Input Stuff")
+	TObjectPtr<UInputMappingContext> MappingContext;
 protected:
 	UPROPERTY()
 	TObjectPtr<ABaseEntity> PlayerEntity;
@@ -42,6 +45,7 @@ public:
 	virtual void MovePlayer() override;
 	void NavigateWorld(TObjectPtr<AWorldGridCell> cell);
 	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
 protected:
 	bool FindCell(TObjectPtr<UNodeInfoForCellSearch> currentInfo);
 	// Utilities
