@@ -82,14 +82,16 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 					default:
 					break;
 				}
+				UE_LOG(LogTemp, Warning, TEXT("We got a modifier"))
 				FIntPoint prevPos = entityPos + cellInfo.GridPos;
 				// until it cant continue in that direction or maximum range reached
 				int32 totalFollowUp = 0;
 				// get follow-up cell
 				while (true)
 				{
+					UE_LOG(LogTemp, Warning, TEXT("Checking mag"))
 					// if it reached its range limit
-					if (directionFollowUp.Magnitude != 0 && directionFollowUp.Magnitude >= totalFollowUp)
+					if (directionFollowUp.Magnitude != 0 && totalFollowUp >= directionFollowUp.Magnitude)
 						break;
 					prevPos += nextDir;
 					if (TObjectPtr<ABattleGridCell>* followUpCell = GridMap.Find(prevPos))

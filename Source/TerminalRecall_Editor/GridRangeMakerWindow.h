@@ -49,8 +49,6 @@ protected:
 	//UPROPERTY()
 	//FEditorGridRangeCellState info;
 	FEditorGridRangeCellState* infoPtr;
-	int32* MagnitudeChanging;
-	
 	UPROPERTY()
 	TMap<FIntPoint, FEditorGridRangeCellState> LevelGridData;
 	
@@ -176,7 +174,8 @@ protected:
 	void LoadDirectionsOnCell(FIntPoint pos);
 	void SelectDirectionsButton(UEditorUtilityButton* button, ECompassDirection dir);
 	void RefreshInputForGroup();
-	int32* GetMagnitudeOfDirection();
+	void SetDirectionMag(int32 mag);
+	int32 GetMagnitudeOfDirection();
 	inline void UnselectCell();
 	TArray<float> GetColour(EGridRangeBrushMode cellType);
 	#pragma endregion

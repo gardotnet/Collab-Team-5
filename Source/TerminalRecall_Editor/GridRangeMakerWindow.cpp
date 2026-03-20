@@ -111,7 +111,11 @@ void UGridRangeMakerWindow::OnCreateGrid()
 	}
 	if (!LevelGridVisualISM)
 		LevelGridVisualISM = VisualiserObject->GridVisualComp;
-	
+
+	DirectionCanvas->SetIsEnabled(false);
+	CellNameLabel->SetText(FText::FromString("Selected Cell: N/A"));
+	LastClickIndex = -1;
+	infoPtr = nullptr;
 	GridSize = FIntPoint(x,y);
 	ResetAndPopulateGridArray();
 	VisualiserObject->RegenerateGrid(GridSize);
@@ -398,32 +402,27 @@ void UGridRangeMakerWindow::OnDirMagChange(const FText& NewText)
 	if (stringText == "0" || stringText == "INF")
 	{
 		InputDirMag->SetText(FText::FromString("INF"));
-		if (MagnitudeChanging)
-			*MagnitudeChanging = 0;
+		SetDirectionMag(0);
 	}
 	else if (stringText == "-" || stringText == "-1")
 	{
 		InputDirMag->SetText(FText::FromString("N/A"));
-		if (MagnitudeChanging)
-			*MagnitudeChanging = -1;
+		SetDirectionMag(-1);
 	}
-	if (stringText == "")
+	else if (stringText == "")
 	{
 		InputDirMag->SetText(FText::FromString(stringText));
-		if (MagnitudeChanging)
-			*MagnitudeChanging = -1;
+		SetDirectionMag(-1);
 	}
 	else if (!stringText.IsNumeric())
 	{
 		InputDirMag->SetText(FText::FromString(PrevMagText));
-		if (MagnitudeChanging)
-			*MagnitudeChanging = -1;
+		SetDirectionMag(-1);
 		return;
 	}
 	else
 	{
-		if (MagnitudeChanging)
-			*MagnitudeChanging = FCString::Atoi(*stringText);
+		SetDirectionMag(FCString::Atoi(*stringText));
 	}
 	//*infoPtr = info;
 	PrevMagText = stringText;
@@ -551,6 +550,8 @@ void UGridRangeMakerWindow::TrackMouse()
 					switch (CurrentModeSelected)
 					{
 					case EGridRangeBrushMode::Erase:
+						if (CellData->CellType == EGridRangeBrushMode::None)
+							return;
 						if (CellData->CellType == EGridRangeBrushMode::Centre)
 						{
 							CentrePlaced = false;
@@ -566,6 +567,7 @@ void UGridRangeMakerWindow::TrackMouse()
 						}
 						CellData->CellType = EGridRangeBrushMode::None;
 						CellData->ClearModifier();
+						LastClickIndex = -1;
 						break;
 					case EGridRangeBrushMode::Slot:
 						if (CellData->CellType == EGridRangeBrushMode::Slot)
@@ -573,7 +575,6 @@ void UGridRangeMakerWindow::TrackMouse()
 							LastClickIndex = -1;
 							return;
 						}
-						UE_LOG(LogTemp, Warning, TEXT("Slot"))
 						if (LastSelectedIndex != -1)
 						{
 							infoPtr->CellType = EGridRangeBrushMode::Slot;
@@ -587,7 +588,6 @@ void UGridRangeMakerWindow::TrackMouse()
 						
 						break;
 					case EGridRangeBrushMode::Centre:
-						UE_LOG(LogTemp, Warning, TEXT("Centre"))
 						CellData->CellType = EGridRangeBrushMode::Centre;
 						CentrePlaced = true;
 						CentrePoint = gridPos;
@@ -598,7 +598,6 @@ void UGridRangeMakerWindow::TrackMouse()
 						CurrentModeSelected = EGridRangeBrushMode::None;
 						break;
 					case EGridRangeBrushMode::None:
-						UE_LOG(LogTemp, Warning, TEXT("Select Check"))
 						if (CellData->CellType != EGridRangeBrushMode::Slot && CellData->CellType != EGridRangeBrushMode::Select)
 						{
 							LastClickIndex = -1;
@@ -606,7 +605,6 @@ void UGridRangeMakerWindow::TrackMouse()
 						}
 						if (CellData->CellType == EGridRangeBrushMode::Select)
 						{
-							UE_LOG(LogTemp, Warning, TEXT("Deselecting"))
 							DirectionCanvas->SetIsEnabled(false);
 							CellNameLabel->SetText(FText::FromString("Selected Cell: N/A"));
 							CellData->CellType = EGridRangeBrushMode::Slot;
@@ -620,13 +618,13 @@ void UGridRangeMakerWindow::TrackMouse()
 						
 						if (LastSelectedIndex != -1)
 						{
-							infoPtr->CellType = EGridRangeBrushMode::Slot;
+							if (infoPtr)
+								infoPtr->CellType = EGridRangeBrushMode::Slot;
 							ISMC->SetCustomData(LastSelectedIndex, GetColour(CellData->CellType), false);
 						}
 						CellData->CellType = EGridRangeBrushMode::Select;
 						infoPtr = CellData;
 						LastSelectedIndex = hitIndex;
-						UE_LOG(LogTemp, Warning, TEXT("Selecting"))
 						CurrentDirSelected = ECompassDirection::None;
 						LoadDirectionsOnCell(gridPos);
 						MouseDownForSelect = true;
@@ -663,6 +661,7 @@ void UGridRangeMakerWindow::ResetAndPopulateGridArray()
 {
 	CentrePlaced = false;
 	CentrePoint = FIntPoint(-1, -1);
+	CentreButton->SetIsEnabled(true);
 	LastHoverPos = FIntPoint(-1, -1);
 	LastHoverIndex = -1;
 	LastClickIndex = -1;
@@ -822,18 +821,18 @@ void UGridRangeMakerWindow::SelectDirectionsButton(UEditorUtilityButton* button,
 		DirLabel->SetIsEnabled(true);
 		CurrentDirSelected = dir;
 		button->SetBackgroundColor(FLinearColor::Yellow);
-		MagnitudeChanging = GetMagnitudeOfDirection();
-		if (*MagnitudeChanging == -1)
+		int32 magnitudeChanging = GetMagnitudeOfDirection();
+		if (magnitudeChanging == -1)
 		{
 			InputDirMag->SetText(FText::GetEmpty());
 		}
-		else if (*MagnitudeChanging == 0)
+		else if (magnitudeChanging == 0)
 		{
 			InputDirMag->SetText(FText::FromString("INF"));
 		}
 		else
 		{
-			InputDirMag->SetText(FText::AsNumber(*MagnitudeChanging));
+			InputDirMag->SetText(FText::AsNumber(magnitudeChanging));
 		}
 	}
 }
@@ -852,36 +851,69 @@ void UGridRangeMakerWindow::RefreshInputForGroup()
 	}
 }
 
-int32* UGridRangeMakerWindow::GetMagnitudeOfDirection()
+void UGridRangeMakerWindow::SetDirectionMag(int32 mag)
+{
+	switch (CurrentDirSelected)
+	{
+	case ECompassDirection::N:
+		 infoPtr->N = mag;
+		break;
+	case ECompassDirection::NE:
+		infoPtr->NE = mag;
+		break;
+	case ECompassDirection::E:
+		infoPtr->E = mag;
+		break;
+	case ECompassDirection::SE:
+		infoPtr->SE = mag;
+		break;
+	case ECompassDirection::S:
+		infoPtr->S = mag;
+		break;
+	case ECompassDirection::SW:
+		infoPtr->SW = mag;
+		break;
+	case ECompassDirection::W:
+		infoPtr->W = mag;
+		break;
+	case ECompassDirection::NW:
+		infoPtr->NW = mag;
+		break;
+	default:
+		break;
+	}
+}
+
+int32 UGridRangeMakerWindow::GetMagnitudeOfDirection()
 {
 	switch (CurrentDirSelected)
 	{
 	case ECompassDirection::N:
 		//return &info.N;
-		return &infoPtr->N;
+		return infoPtr->N;
 	case ECompassDirection::NE:
 		//return &info.NE;
-		return &infoPtr->NE;
+		return infoPtr->NE;
 	case ECompassDirection::E:
 		//return &info.E;
-		return &infoPtr->E;
+		return infoPtr->E;
 	case ECompassDirection::SE:
 		//return &info.SE;
-		return &infoPtr->SE;
+		return infoPtr->SE;
 	case ECompassDirection::S:
 		//return &info.S;
-		return &infoPtr->S;
+		return infoPtr->S;
 	case ECompassDirection::SW:
 		//return &info.SW;
-		return &infoPtr->SW;
+		return infoPtr->SW;
 	case ECompassDirection::W:
 		//return &info.W;
-		return &infoPtr->W;
+		return infoPtr->W;
 	case ECompassDirection::NW:
 		//return &info.NW;
-		return &infoPtr->NW;
+		return infoPtr->NW;
 	default:
-		return nullptr;
+		return -1;
 	}
 }
 
@@ -907,4 +939,3 @@ TArray<float> UGridRangeMakerWindow::GetColour(EGridRangeBrushMode cellType)
 			return {1.0f, 1.0f, 1.0f, 1.0f};
 	}
 }
-
