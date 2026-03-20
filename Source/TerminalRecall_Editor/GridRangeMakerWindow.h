@@ -41,14 +41,18 @@ protected:
 	UPROPERTY()
 	int32 LastHoverIndex = -1;
 	UPROPERTY()
-	int32 LastClickIndex = -1;
+	bool WasClicked = false;
 	UPROPERTY()
 	int32 LastSelectedIndex = -1;
+
+	
 	UPROPERTY()
 	bool MouseDownForSelect = false;
 	//UPROPERTY()
 	//FEditorGridRangeCellState info;
 	FEditorGridRangeCellState* infoPtr;
+	UPROPERTY()
+	TArray<FIntPoint> SelectedCellIndexes;
 	UPROPERTY()
 	TMap<FIntPoint, FEditorGridRangeCellState> LevelGridData;
 	
@@ -60,8 +64,8 @@ protected:
 	FString PrevXSizeText = "N/A"; 
 	FString PrevYSizeText = "N/A"; 
 	FString PrevMagText = "N/A"; 
-	FString PrevGroupText = "N/A"; 
-	
+	FString PrevGroupText = "N/A";
+
 	#pragma region Buttons
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityButton* CreateGridButton;
@@ -178,5 +182,8 @@ protected:
 	int32 GetMagnitudeOfDirection();
 	inline void UnselectCell();
 	TArray<float> GetColour(EGridRangeBrushMode cellType);
+
+	void AddSelectCell(FIntPoint pos);
+	void RemoveSelectedCells();
 	#pragma endregion
 };

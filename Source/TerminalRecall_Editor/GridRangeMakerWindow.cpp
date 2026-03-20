@@ -114,7 +114,7 @@ void UGridRangeMakerWindow::OnCreateGrid()
 
 	DirectionCanvas->SetIsEnabled(false);
 	CellNameLabel->SetText(FText::FromString("Selected Cell: N/A"));
-	LastClickIndex = -1;
+	WasClicked = false;
 	infoPtr = nullptr;
 	GridSize = FIntPoint(x,y);
 	ResetAndPopulateGridArray();
@@ -530,21 +530,22 @@ void UGridRangeMakerWindow::TrackMouse()
 				}
 				LastHoverIndex = hitIndex;
 				LastHoverPos = gridPos;
+				WasClicked = false;
 				ISMC->SetCustomData(hitIndex, { 1.0f, 0.8f, 0.0f, 1.0f }, false);
 			}
 			if (CentrePoint == gridPos && CurrentModeSelected != EGridRangeBrushMode::Erase)
 				return;
 			
 			if (clientViewpoint.Viewport->KeyState(EKeys::LeftMouseButton))
-			{ 
-				if (LastClickIndex == hitIndex && CurrentModeSelected != EGridRangeBrushMode::None && CurrentModeSelected != EGridRangeBrushMode::Erase)
+			{
+				if (WasClicked && CurrentModeSelected != EGridRangeBrushMode::None)
 					return;
-				if (MouseDownForSelect)
+				if (MouseDownForSelect && WasClicked)
 					return;
 				/*FScopedTransaction Transaction(FText::FromString("Grid Edit"));
 				this->Modify();
 				ISMC->Modify();*/
-				LastClickIndex = hitIndex;
+				WasClicked = true;
 				if (FEditorGridRangeCellState* CellData = LevelGridData.Find(LastHoverPos))
 				{
 					switch (CurrentModeSelected)
@@ -567,25 +568,15 @@ void UGridRangeMakerWindow::TrackMouse()
 						}
 						CellData->CellType = EGridRangeBrushMode::None;
 						CellData->ClearModifier();
-						LastClickIndex = -1;
 						break;
 					case EGridRangeBrushMode::Slot:
 						if (CellData->CellType == EGridRangeBrushMode::Slot)
-						{
-							LastClickIndex = -1;
 							return;
-						}
-						if (LastSelectedIndex != -1)
-						{
-							infoPtr->CellType = EGridRangeBrushMode::Slot;
-							ISMC->SetCustomData(LastSelectedIndex, GetColour(infoPtr->CellType), true);
-						}
+						RemoveSelectedCells();
 						CellData->CellType = EGridRangeBrushMode::Select;
 						LastSelectedIndex = hitIndex;
-						CurrentDirSelected = ECompassDirection::None;
 						infoPtr = CellData;
-						LoadDirectionsOnCell(gridPos);
-						
+						AddSelectCell(gridPos);
 						break;
 					case EGridRangeBrushMode::Centre:
 						CellData->CellType = EGridRangeBrushMode::Centre;
@@ -600,7 +591,7 @@ void UGridRangeMakerWindow::TrackMouse()
 					case EGridRangeBrushMode::None:
 						if (CellData->CellType != EGridRangeBrushMode::Slot && CellData->CellType != EGridRangeBrushMode::Select)
 						{
-							LastClickIndex = -1;
+							MouseDownForSelect = true;
 							return;
 						}
 						if (CellData->CellType == EGridRangeBrushMode::Select)
@@ -615,18 +606,14 @@ void UGridRangeMakerWindow::TrackMouse()
 							return;
 						}
 						//info = *CellData;
-						
-						if (LastSelectedIndex != -1)
+						if (!MouseDownForSelect)
 						{
-							if (infoPtr)
-								infoPtr->CellType = EGridRangeBrushMode::Slot;
-							ISMC->SetCustomData(LastSelectedIndex, GetColour(CellData->CellType), false);
+							RemoveSelectedCells();
 						}
 						CellData->CellType = EGridRangeBrushMode::Select;
 						infoPtr = CellData;
 						LastSelectedIndex = hitIndex;
-						CurrentDirSelected = ECompassDirection::None;
-						LoadDirectionsOnCell(gridPos);
+						AddSelectCell(gridPos);
 						MouseDownForSelect = true;
 						break;
 					default:
@@ -664,7 +651,7 @@ void UGridRangeMakerWindow::ResetAndPopulateGridArray()
 	CentreButton->SetIsEnabled(true);
 	LastHoverPos = FIntPoint(-1, -1);
 	LastHoverIndex = -1;
-	LastClickIndex = -1;
+	WasClicked = false;
 	LastSelectedIndex = -1;
 	LevelGridData.Empty();
 	for (int x = 0; x < GridSize.X; x++)
@@ -938,4 +925,36 @@ TArray<float> UGridRangeMakerWindow::GetColour(EGridRangeBrushMode cellType)
 		default:
 			return {1.0f, 1.0f, 1.0f, 1.0f};
 	}
+}
+
+void UGridRangeMakerWindow::AddSelectCell(FIntPoint pos)
+{
+	if (CurrentDirSelected != ECompassDirection::None)
+		UnselectDirectionButton();
+	CurrentDirSelected = ECompassDirection::None;
+	SelectedCellIndexes.AddUnique(pos);
+	if (SelectedCellIndexes.Num() == 1)
+	{
+		LoadDirectionsOnCell(pos);
+	}
+	else
+	{
+		CellNameLabel->SetText(FText::FromString("Multiple Cells Selected"));
+	}
+}
+
+void UGridRangeMakerWindow::RemoveSelectedCells()
+{
+	if (SelectedCellIndexes.IsEmpty())
+		return;
+	for (auto pos : SelectedCellIndexes)
+	{
+		if (FEditorGridRangeCellState* CellData = LevelGridData.Find(pos))
+		{
+			CellData->CellType = EGridRangeBrushMode::Slot;
+			int32 ismIndex = (pos.Y * GridSize.X) + pos.X;
+			LevelGridVisualISM->SetCustomData(ismIndex, GetColour(EGridRangeBrushMode::Slot), false);
+		}
+	}
+	SelectedCellIndexes.Empty();
 }
