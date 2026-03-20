@@ -148,7 +148,7 @@ void UEncounterLevelMakerWindow::OnCreateGridPressed()
 	// get the new state for undo and add undo session to list
 	newInfo.NewGridData = ConvertToExportData();
 	// no need to save undo if it nothing changed
-	if (newInfo.OldGridData.GridCells.Num() == 0 && newInfo.NewGridData.GridSize == newInfo.OldGridData.GridSize)
+	if (newInfo.NewGridData == newInfo.OldGridData)
 		return;
 	CurrentUndoSession.UndoInfo.Add(newInfo);
 	AddUndoSession();
@@ -290,7 +290,6 @@ void UEncounterLevelMakerWindow::OnLoadFilePressed()
 		// if selected a file
 		if (bOpened && OutFileNames.Num() > 0)
 		{
-			
 			FString SelectedFilePath = OutFileNames[0];
 			FString jsonData;
 			// fetch file data and shove it into "jsonData"
@@ -634,12 +633,6 @@ void UEncounterLevelMakerWindow::EnableMouseTrack()
 				if (!CursorDown)
 				{
 					CursorDown = true;
-					// clears the redo when a new action is done
-					if (UndoIndex < UndoList.Num())
-					{
-						int32 ElementsToRemove = UndoList.Num() - UndoIndex;
-						UndoList.RemoveAt(UndoIndex, ElementsToRemove);
-					}
 				}
 				LastClickIndex = hitIndex;
 				if (FLevelCellData* CellData = LevelGridData.Find(gridPos))
@@ -727,6 +720,10 @@ void UEncounterLevelMakerWindow::ProcessExportData(FLevelExportStruct exportData
 			{
 				UE_LOG(LogTemp, Log, TEXT("Why is there another player spawn point? Oh well, cell (%d, %d) IGNORED!"), cellData.Position.X, cellData.Position.Y);
 				continue;
+			}
+			if (cellData.CellType == ECellBrushMode::Walkable)
+			{
+				LastClickIndex = -1;
 			}
 			int32 ismIndex = (cellData.Position.Y * GridSize.X) + cellData.Position.X;
 			FLevelCellData oldType = *cellInfo;
@@ -999,7 +996,14 @@ void UEncounterLevelMakerWindow::AddUndoSession()
 	UndoIndex++;
 	UndoList.Add(CurrentUndoSession);
 	CurrentUndoSession.UndoInfo.Empty();
+	// clears the redo when a new action is done
+	if (UndoIndex + 1 < UndoList.Num())
+	{
+		int32 ElementsToRemove = UndoList.Num() - UndoIndex;
+		UndoList.RemoveAt(UndoIndex + 1, ElementsToRemove);
+	}
 }
+
 bool UEncounterLevelMakerWindow::ActualUndo()
 {
 	if (!UndoList.IsValidIndex(UndoIndex - 1))
@@ -1044,6 +1048,7 @@ bool UEncounterLevelMakerWindow::ActualRedo()
 {
 	if (!UndoList.IsValidIndex(UndoIndex))
 		return false;
+	UE_LOG(LogTemp, Warning, TEXT("Undo Index: %d"), UndoIndex);
 	for (const auto& UndoAction : UndoList[UndoIndex].UndoInfo)
 	{
 		if (UndoAction.IsGridSizeChanged)

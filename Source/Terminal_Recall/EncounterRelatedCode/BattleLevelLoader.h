@@ -41,6 +41,10 @@ protected:
 	UMaterialInterface* CheckBoardMat1;
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	UMaterialInterface* CheckBoardMat2;
+	
+	FString OverwriteLevelPath = "";
+	TMap<FIntPoint, TObjectPtr<ABattleGridCell>> TempGridMap;
+	TArray<AActor*> TempActors;
 protected:
 	virtual void BeginPlay() override;
 	void LoadLevel(FString levelPath);

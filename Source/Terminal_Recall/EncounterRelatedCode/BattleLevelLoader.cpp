@@ -20,9 +20,29 @@ ABattleLevelLoader::ABattleLevelLoader()
 void ABattleLevelLoader::BeginPlay()
 {
 	Super::BeginPlay();
+	for (auto& It : TempGridMap)
+	{
+		if (It.Value)
+		{
+			It.Value->Destroy();
+		}
+	}
+	TempGridMap.Empty();
+	for (AActor* Actor : TempActors)
+	{
+		if (Actor)
+		{
+			Actor->Destroy();
+		}
+	}
+	TempActors.Empty();
 	// get level to load
 	UDefaultInstance* gameInstance = Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	LoadLevel(FPaths::ProjectContentDir() + gameInstance->Map);
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *OverwriteLevelPath);
+	if (OverwriteLevelPath != "")
+		LoadLevel(OverwriteLevelPath);
+	else
+		LoadLevel(FPaths::ProjectContentDir() + gameInstance->Map);
 }
 void ABattleLevelLoader::LoadLevel(FString levelPath)
 {
@@ -133,6 +153,29 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 // same thing as load level but not setting up for battle
 void ABattleLevelLoader::EditorLoadLevel()
 {
+	for (auto& It : TempGridMap)
+	{
+		if (It.Value)
+		{
+			It.Value->Destroy();
+		}
+	}
+	TempGridMap.Empty();
+	for (AActor* Actor : TempActors)
+	{
+		if (Actor)
+		{
+			Actor->Destroy();
+		}
+	}
+	TempActors.Empty();
+	UWorld* world = GetWorld();
+	if (world)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Editor Load Level"));
+		world->SetFlags(RF_Transient);
+	}
+	
 	// set up to grab file for the file explorer
 	if (IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get())
 	{
@@ -150,17 +193,16 @@ void ABattleLevelLoader::EditorLoadLevel()
 		// if selected a file
 		if (bOpened && OutFileNames.Num() > 0)
 		{
-			FString SelectedFilePath = OutFileNames[0];
+			OverwriteLevelPath = OutFileNames[0];
 			FString jsonData;
 			// fetch file data and shove it into "jsonData"
-			if (FFileHelper::LoadFileToString(jsonData, *SelectedFilePath))
+			if (FFileHelper::LoadFileToString(jsonData, *OverwriteLevelPath))
 			{
 				// Convert JSON to struct
 				FLevelExportStruct levelData;
 				if (FJsonObjectConverter::JsonObjectStringToUStruct(jsonData, &levelData, 0, 0))
 				{
 					// The modified load function 
-					TMap<FIntPoint, TObjectPtr<ABattleGridCell>> gridMap;
 					AActor* player = nullptr; 
 					FActorSpawnParameters spawnParams;
 					spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -168,7 +210,7 @@ void ABattleLevelLoader::EditorLoadLevel()
 					{
 						for (int y = 0; y < levelData.GridSize.Y; y++)
 						{
-							FVector spawnPos = FVector(100 * x, 100 * y, 0.0f) + FVector(50.0f, 1050.0f, 0.0f);				
+							FVector spawnPos = FVector(100 * x, 100 * y, 0.0f) + FVector(50.0f, 10550.0f, 0.0f);				
 							ABattleGridCell* newCell = GetWorld()->SpawnActor<ABattleGridCell>(BattleGridClass, spawnPos, FRotator::ZeroRotator, spawnParams);
 							newCell->SetFlags(RF_Transient);
 							#if WITH_EDITOR
@@ -183,7 +225,7 @@ void ABattleLevelLoader::EditorLoadLevel()
 							{
 								newCell->MeshComponent->SetMaterial(0, CheckBoardMat2);
 							}
-							gridMap.Add(FIntPoint(x,y), newCell);
+							TempGridMap.Add(FIntPoint(x,y), newCell);
 						}
 					}
 					for (const auto& cellData : levelData.GridCells)
@@ -192,7 +234,7 @@ void ABattleLevelLoader::EditorLoadLevel()
 						switch (cellData.CellType)
 						{
 						case ECellBrushMode::Wall:
-							if (TObjectPtr<ABattleGridCell>* newCell = gridMap.Find(cellData.Position))
+							if (TObjectPtr<ABattleGridCell>* newCell = TempGridMap.Find(cellData.Position))
 							{
 								FString stringConvert = FString::FromInt(cellData.IdForCellContent);
 								if (FAssetLookUpTable* propInfo = PropDataTable->FindRow<FAssetLookUpTable>(FName(*stringConvert), TEXT("Level Loader")))
@@ -202,21 +244,25 @@ void ABattleLevelLoader::EditorLoadLevel()
 									wall->SetFlags(RF_Transient);
 									#if WITH_EDITOR
 									wall->SetLockLocation(true);
+									wall->SetFolderPath(FName("Stuff from battle level"));
 									#endif
+									TempActors.Add(wall);
 								}
 							}
 							break;
 						case ECellBrushMode::PlayerSpawn:
 							if (player == nullptr)
 							{
-								if (TObjectPtr<ABattleGridCell>* newCell = gridMap.Find(cellData.Position))
+								if (TObjectPtr<ABattleGridCell>* newCell = TempGridMap.Find(cellData.Position))
 								{
 									propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
 									player = GetWorld()->SpawnActor<ABattlePlayerEntity>(PlayerEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
 									player->SetFlags(RF_Transient);
 									#if WITH_EDITOR
 									player->SetLockLocation(true);
+									player->SetFolderPath(FName("Stuff from battle level"));
 									#endif
+									TempActors.Add(player);
 								}
 							}
 							else
@@ -225,7 +271,7 @@ void ABattleLevelLoader::EditorLoadLevel()
 							}
 							break;
 						case ECellBrushMode::EnemySpawn:
-							if (TObjectPtr<ABattleGridCell>* newCell = gridMap.Find(cellData.Position))
+							if (TObjectPtr<ABattleGridCell>* newCell = TempGridMap.Find(cellData.Position))
 							{
 								FString stringConvert = FString::FromInt(cellData.IdForCellContent);
 								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
@@ -233,7 +279,9 @@ void ABattleLevelLoader::EditorLoadLevel()
 								enemyChar->SetFlags(RF_Transient);
 								#if WITH_EDITOR
 								enemyChar->SetLockLocation(true);
+								enemyChar->SetFolderPath(FName("Stuff from battle level"));
 								#endif
+								TempActors.Add(enemyChar);
 							}
 							break;
 						default:
@@ -241,6 +289,11 @@ void ABattleLevelLoader::EditorLoadLevel()
 						}
 					}
 				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Unable to load \"%s\""), *OverwriteLevelPath)
+				OverwriteLevelPath = "";
 			}
 		}
 	}

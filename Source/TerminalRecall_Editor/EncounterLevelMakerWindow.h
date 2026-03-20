@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 // So we can build the game, using "Blutility", "UMGEditor" will not build properly 
 
-#include "Terminal_Recall/StructsAndEnums/LevelEditorBrushEnum.h"
 #include "Terminal_Recall/StructsAndEnums/LevelEditorUndoStruct.h"
 #include "Terminal_Recall/StructsAndEnums/For2dArray/LevelCellData.h"
 #include "EditorUtilityWidget.h"
@@ -172,7 +171,6 @@ protected:
 	FIntPoint GetGroupSize(ECellBrushMode type, int32 id = -1, bool isSelectMode = true);
 	
 	inline void AddUndoSession();
-	
 public:
 	bool ActualUndo();
 	bool ActualRedo();
