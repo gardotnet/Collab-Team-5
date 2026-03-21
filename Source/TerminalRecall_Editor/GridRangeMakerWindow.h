@@ -18,11 +18,9 @@ UCLASS()
 class TERMINALRECALL_EDITOR_API UGridRangeMakerWindow : public UEditorUtilityWidget
 {
 	GENERATED_BODY()
-
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	TSubclassOf<AGridVisualiser> VisualiserClass;
-	
 	UPROPERTY()
 	TObjectPtr<UWorld> World;
 	UPROPERTY()
@@ -35,7 +33,6 @@ protected:
 	FTimerManager* TimerManager;
 	UPROPERTY()
 	FIntPoint GridSize;
-	
 	UPROPERTY()
 	FIntPoint LastHoverPos = FIntPoint(-1, -1);
 	UPROPERTY()
@@ -43,29 +40,21 @@ protected:
 	UPROPERTY()
 	bool WasClicked = false;
 	UPROPERTY()
-	int32 LastSelectedIndex = -1;
-
-	
-	UPROPERTY()
 	bool MouseDownForSelect = false;
-	//UPROPERTY()
-	//FEditorGridRangeCellState info;
-	FEditorGridRangeCellState* infoPtr;
 	UPROPERTY()
 	TArray<FIntPoint> SelectedCellIndexes;
 	UPROPERTY()
 	TMap<FIntPoint, FEditorGridRangeCellState> LevelGridData;
-	
 	UPROPERTY()
 	bool CentrePlaced = false;
 	UPROPERTY()
 	FIntPoint CentrePoint = FIntPoint(-1, -1);
-	
 	FString PrevXSizeText = "N/A"; 
 	FString PrevYSizeText = "N/A"; 
 	FString PrevMagText = "N/A"; 
 	FString PrevGroupText = "N/A";
-
+	UPROPERTY()
+	TMap<ECompassDirection, UEditorUtilityButton*> DirButtons;
 	#pragma region Buttons
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityButton* CreateGridButton;
@@ -100,7 +89,7 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityButton* RedoButton;*/
 	#pragma endregion
-	#pragma region Editable Text Boxes
+	#pragma region Other UI Stuff
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityEditableTextBox* InputGridSizeX;
 	UPROPERTY(meta = (BindWidget))
@@ -109,8 +98,6 @@ protected:
 	UEditorUtilityEditableTextBox* InputDirMag;
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityEditableTextBox* InputGroupId;
-	#pragma endregion
-
 	UPROPERTY(meta = (BindWidget))
 	UCanvasPanel* DirectionCanvas;
 	UPROPERTY(meta = (BindWidget))
@@ -121,10 +108,9 @@ protected:
 	UTextBlock* GroupLabel;
 	UPROPERTY(meta = (BindWidget))
 	UEditorUtilityCheckBox* OneGroup;
-	
+	#pragma endregion
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-	
 	#pragma region Link Functions
 	UFUNCTION()
 	void OnCreateGrid();
@@ -154,8 +140,6 @@ protected:
 	void OnLoadLevelFileButtonClicked();
 	UFUNCTION()
 	void OnExportButtonClicked();
-
-	
 	UFUNCTION()
 	void OnGridTextXChange(const FText& NewText);
 	UFUNCTION()
@@ -164,7 +148,6 @@ protected:
 	void OnDirMagChange(const FText& NewText);
 	UFUNCTION()
 	void OnGroupChange(const FText& NewText);
-	
 	UFUNCTION()
 	void OnCheckOneGroup(bool isChecked);
 	#pragma endregion
@@ -173,16 +156,14 @@ protected:
 	void TrackMouse();
 	void ResetAndPopulateGridArray();
 	void UnselectCurrentButton();
+	inline void UnselectCell();
+	TArray<float> GetColour(EGridRangeBrushMode cellType);
 	void UnselectDirectionButton();
 	inline void HideInputsForCell();
 	void LoadDirectionsOnCell(FIntPoint pos);
-	void SelectDirectionsButton(UEditorUtilityButton* button, ECompassDirection dir);
+	void SelectDirectionsButton(ECompassDirection dir);
 	void RefreshInputForGroup();
 	void SetDirectionMag(int32 mag);
-	int32 GetMagnitudeOfDirection();
-	inline void UnselectCell();
-	TArray<float> GetColour(EGridRangeBrushMode cellType);
-
 	void AddSelectCell(FIntPoint pos);
 	void RemoveSelectedCells();
 	#pragma endregion

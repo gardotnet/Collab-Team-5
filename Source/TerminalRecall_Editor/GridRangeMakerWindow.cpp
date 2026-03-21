@@ -10,7 +10,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/TextBlock.h"
-
+// A modified and IMPROVED VERSION(maybe) of "Battle Level Editor"
 void UGridRangeMakerWindow::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -59,16 +59,22 @@ void UGridRangeMakerWindow::NativeConstruct()
 	if (OneGroup)
 		OneGroup->OnCheckStateChanged.AddDynamic(this, &UGridRangeMakerWindow::OnCheckOneGroup);
 	#pragma endregion 
-	
-	if (!World)
-	{
-		World = GEditor->GetEditorWorldContext().World();
-		TimerManager = &World->GetTimerManager();
-	}
+	// to reference easily throughout this script
+	#pragma region Button Mapping
+	DirButtons.Add(ECompassDirection::N ,NorthButton);
+	DirButtons.Add(ECompassDirection::NE ,NorthEastButton);
+	DirButtons.Add(ECompassDirection::E ,EastButton);
+	DirButtons.Add(ECompassDirection::SE ,SouthEastButton);
+	DirButtons.Add(ECompassDirection::S ,SouthButton);
+	DirButtons.Add(ECompassDirection::SW ,SouthWestButton);
+	DirButtons.Add(ECompassDirection::W ,WestButton);
+	DirButtons.Add(ECompassDirection::NW ,NorthWestButton);
+	#pragma endregion
+	World = GEditor->GetEditorWorldContext().World();
+	TimerManager = &World->GetTimerManager();
 	// start mouse track
 	TimerManager->SetTimer(HoverTimerHandle, this, &UGridRangeMakerWindow::TrackMouse, 0.01f, true);
 }
-
 void UGridRangeMakerWindow::NativeDestruct()
 {
 	Super::NativeDestruct();
@@ -77,21 +83,15 @@ void UGridRangeMakerWindow::NativeDestruct()
 		VisualiserObject->Destroy();
 }
 #pragma region Bind Functions
-
 void UGridRangeMakerWindow::OnCreateGrid()
 {
 	FScopedTransaction Transaction(FText::FromString("Grid Create"));
 	this->Modify();
 	// Converting to int and checking if it is valid
-	FString xString =  InputGridSizeX->GetText().ToString();
-	FString yString =  InputGridSizeY->GetText().ToString();
-	int32 x = FCString::Atoi(*xString);
-	int32 y = FCString::Atoi(*yString);
-	if (xString == "" || yString == "" || xString == "0" || yString == "0")
-	{
-		x = 3;
-		y = 3;
-	}
+	int32 x = FCString::Atoi(*InputGridSizeX->GetText().ToString());
+	int32 y = FCString::Atoi(*InputGridSizeY->GetText().ToString());
+	if (x <= 0) x = 3;
+	if (y <= 0) y = 3;
 	// Create grid or just reset it
 	if (!World)
 	{
@@ -111,16 +111,14 @@ void UGridRangeMakerWindow::OnCreateGrid()
 	}
 	if (!LevelGridVisualISM)
 		LevelGridVisualISM = VisualiserObject->GridVisualComp;
-
 	DirectionCanvas->SetIsEnabled(false);
 	CellNameLabel->SetText(FText::FromString("Selected Cell: N/A"));
 	WasClicked = false;
-	infoPtr = nullptr;
+	SelectedCellIndexes.Empty();
 	GridSize = FIntPoint(x,y);
 	ResetAndPopulateGridArray();
 	VisualiserObject->RegenerateGrid(GridSize);
 }
-
 void UGridRangeMakerWindow::OnEraseButtonClicked()
 {
 	UnselectCurrentButton();
@@ -160,42 +158,17 @@ void UGridRangeMakerWindow::SetCentrePoint()
 		CentreButton->SetBackgroundColor(FLinearColor::Green);
 	}
 }
-
-void UGridRangeMakerWindow::OnNorthButtonClicked()
-{
-	SelectDirectionsButton(NorthButton, ECompassDirection::N);
-}
-void UGridRangeMakerWindow::OnNorthEastButtonClicked()
-{
-	SelectDirectionsButton(NorthEastButton, ECompassDirection::NE);
-}
-void UGridRangeMakerWindow::OnEastButtonClicked()
-{
-	SelectDirectionsButton(EastButton, ECompassDirection::E);
-}
-void UGridRangeMakerWindow::OnSouthEastButtonClicked()
-{
-	SelectDirectionsButton(SouthEastButton, ECompassDirection::SE);
-}
-void UGridRangeMakerWindow::OnSouthButtonClicked()
-{
-	SelectDirectionsButton(SouthButton, ECompassDirection::S);
-}
-void UGridRangeMakerWindow::OnSouthWestButtonClicked()
-{
-	SelectDirectionsButton(SouthWestButton, ECompassDirection::SW);
-}
-void UGridRangeMakerWindow::OnWestButtonClicked()
-{
-	SelectDirectionsButton(WestButton, ECompassDirection::W);
-}
-void UGridRangeMakerWindow::OnNorthWestButtonClicked()
-{
-	SelectDirectionsButton(NorthWestButton, ECompassDirection::NW);
-}
-
+void UGridRangeMakerWindow::OnNorthButtonClicked() { SelectDirectionsButton(ECompassDirection::N);}
+void UGridRangeMakerWindow::OnNorthEastButtonClicked() { SelectDirectionsButton(ECompassDirection::NE);}
+void UGridRangeMakerWindow::OnEastButtonClicked() { SelectDirectionsButton(ECompassDirection::E);}
+void UGridRangeMakerWindow::OnSouthEastButtonClicked() { SelectDirectionsButton(ECompassDirection::SE);}
+void UGridRangeMakerWindow::OnSouthButtonClicked(){SelectDirectionsButton(ECompassDirection::S);}
+void UGridRangeMakerWindow::OnSouthWestButtonClicked(){SelectDirectionsButton(ECompassDirection::SW);}
+void UGridRangeMakerWindow::OnWestButtonClicked(){SelectDirectionsButton(ECompassDirection::W);}
+void UGridRangeMakerWindow::OnNorthWestButtonClicked(){SelectDirectionsButton(ECompassDirection::NW);}
 void UGridRangeMakerWindow::OnLoadLevelFileButtonClicked()
 {
+	// making sure there is something to load into
 	if (!VisualiserObject)
 	{
 		VisualiserObject = Cast<AGridVisualiser>(UGameplayStatics::GetActorOfClass(World, AGridVisualiser::StaticClass()));
@@ -236,7 +209,7 @@ void UGridRangeMakerWindow::OnLoadLevelFileButtonClicked()
 				FGridRangeExport exportData;
 				if (FJsonObjectConverter::JsonObjectStringToUStruct(jsonData, &exportData, 0, 0))
 				{
-					GridSize = exportData.GridSize;
+					GridSize = GridSize.ComponentMax(exportData.GridSize);
 					ResetAndPopulateGridArray();
 					VisualiserObject->RegenerateGrid(GridSize);
 					for (auto info : exportData.Cells)
@@ -248,22 +221,7 @@ void UGridRangeMakerWindow::OnLoadLevelFileButtonClicked()
 							cellInfo->GroupID = info.GroupID;
 							for (auto modifiers : info.DirectionModifier)
 							{
-								if (modifiers.Direction == ECompassDirection::N)
-									cellInfo->N = modifiers.Magnitude;
-								if (modifiers.Direction == ECompassDirection::NE)
-									cellInfo->NE = modifiers.Magnitude;
-								if (modifiers.Direction == ECompassDirection::E)
-									cellInfo->E = modifiers.Magnitude;
-								if (modifiers.Direction == ECompassDirection::SE)
-									cellInfo->SE = modifiers.Magnitude;
-								if (modifiers.Direction == ECompassDirection::S)
-									cellInfo->S = modifiers.Magnitude;
-								if (modifiers.Direction == ECompassDirection::SW)
-									cellInfo->SW = modifiers.Magnitude;
-								if (modifiers.Direction == ECompassDirection::W)
-									cellInfo->W = modifiers.Magnitude;
-								if (modifiers.Direction == ECompassDirection::NW)
-									cellInfo->NW = modifiers.Magnitude;
+								modifiers.Magnitude = cellInfo->DirectionMags[modifiers.Direction];
 							}
 							int32 ismIndex = (origPos.Y * GridSize.X) + origPos.X;
 							LevelGridVisualISM->SetCustomData(ismIndex, GetColour(cellInfo->CellType), true);
@@ -292,10 +250,9 @@ void UGridRangeMakerWindow::OnLoadLevelFileButtonClicked()
 		}
 	}
 }
-
 void UGridRangeMakerWindow::OnExportButtonClicked()
 {
-	if (CentrePoint == FIntPoint(-1, -1))
+	if (!CentrePlaced)
 		return;
 	if (IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get())
 	{
@@ -325,28 +282,19 @@ void UGridRangeMakerWindow::OnExportButtonClicked()
 					continue;
 				FGridRangeCellInfo newInfo;
 				newInfo.GridPos = gridPos - CentrePoint;
+				// calculation to find what the minimum grid size should be at the end
 				highestX = FMath::Max(highestX, gridPos.X);
 				highestY = FMath::Max(highestY, gridPos.Y);
+				// make every cell's group ID to be the same
 				if (OneGroup->GetCheckedState() == ECheckBoxState::Checked)
 					newInfo.GroupID = 0;
 				else
 					newInfo.GroupID = data.GroupID;
-				if (data.N > -1)
-					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::N, data.N));
-				if (data.NE > -1)
-					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::NE, data.NE));
-				if (data.E > -1)
-					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::E, data.E));
-				if (data.SE > -1)
-					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::SE, data.SE));
-				if (data.S > -1)
-					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::S, data.S));
-				if (data.SW > -1)
-					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::SW, data.SW));
-				if (data.W > -1)
-					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::W, data.W));
-				if (data.NW > -1)
-					newInfo.DirectionModifier.Add(FDirectionAndMag(ECompassDirection::NW, data.NW));
+				// adding direction modifiers
+				for (auto dirInfo : data.DirectionMags)
+				{
+					newInfo.DirectionModifier.Add(FDirectionAndMag(dirInfo.Key, dirInfo.Value));
+				}
 				newExportStruct.Cells.Add(newInfo);
 			}
 			newExportStruct.GridSize = FIntPoint(highestX + 1, highestY + 1);
@@ -356,18 +304,13 @@ void UGridRangeMakerWindow::OnExportButtonClicked()
 			// turns struct into JSON
 			FJsonObjectConverter::UStructToJsonObjectString(newExportStruct, jsonData);
 			// Add it to user's files
-			if (FFileHelper::SaveStringToFile(jsonData, *OutFiles[0]))
-			{
-				UE_LOG(LogTemp, Log, TEXT("Export Successful: %s"), *OutFiles[0]);
-			}
-			else
+			if (!FFileHelper::SaveStringToFile(jsonData, *OutFiles[0]))
 			{
 				UE_LOG(LogTemp, Error, TEXT("Failed to save file to: %s"), *OutFiles[0]);
 			}
 		}
 	}
 }
-
 void UGridRangeMakerWindow::OnGridTextXChange(const FText& NewText)
 {
 	FString stringText = NewText.ToString();
@@ -406,6 +349,8 @@ void UGridRangeMakerWindow::OnDirMagChange(const FText& NewText)
 	}
 	else if (stringText == "-" || stringText == "-1")
 	{
+		// so we don't load a "-", when wrong input is given
+		stringText = "";
 		InputDirMag->SetText(FText::FromString("N/A"));
 		SetDirectionMag(-1);
 	}
@@ -424,24 +369,22 @@ void UGridRangeMakerWindow::OnDirMagChange(const FText& NewText)
 	{
 		SetDirectionMag(FCString::Atoi(*stringText));
 	}
-	//*infoPtr = info;
 	PrevMagText = stringText;
 }
-
 void UGridRangeMakerWindow::OnGroupChange(const FText& NewText)
 {
 	FString stringText = NewText.ToString();
+	int32 groupID = -1;
 	if (stringText == "-" || stringText == "-1")
 	{
+		stringText = "";
 		InputGroupId->SetText(FText::FromString("N/A"));
 		GroupLabel->SetIsEnabled(false);
-		infoPtr->GroupID = -1;
 	}
 	else if (stringText == "")
 	{
 		InputGroupId->SetText(FText::FromString(stringText));
 		GroupLabel->SetIsEnabled(false);
-		infoPtr->GroupID = -1;
 	}
 	else if (!stringText.IsNumeric())
 	{
@@ -450,12 +393,18 @@ void UGridRangeMakerWindow::OnGroupChange(const FText& NewText)
 	}
 	else
 	{
-		infoPtr->GroupID = FCString::Atoi(*stringText);
+		groupID = FCString::Atoi(*stringText);
 		GroupLabel->SetIsEnabled(true);
+	}
+	for (auto pos : SelectedCellIndexes)
+	{
+		if (FEditorGridRangeCellState* CellData = LevelGridData.Find(pos))
+		{
+			CellData->GroupID = groupID;
+		}
 	}
 	PrevGroupText = stringText;
 }
-
 void UGridRangeMakerWindow::OnCheckOneGroup(bool isChecked)
 {
 	if (!isChecked)
@@ -470,7 +419,6 @@ void UGridRangeMakerWindow::OnCheckOneGroup(bool isChecked)
 	}
 }
 #pragma endregion
-
 void UGridRangeMakerWindow::TrackMouse()
 {
 	// checks
@@ -481,16 +429,13 @@ void UGridRangeMakerWindow::TrackMouse()
 			World = GEditor->GetEditorWorldContext().World();
 			TimerManager = &World->GetTimerManager();
 		}
-			
-		if (!LevelGridVisualISM)
-		{
-			if (VisualiserObject)
-				LevelGridVisualISM = VisualiserObject->GridVisualComp;
-		}
+		if (LevelGridVisualISM)
+			return;
+		if (VisualiserObject)
+			LevelGridVisualISM = VisualiserObject->GridVisualComp;
 		return;
 	}
-	FLevelEditorModule& LEModule = FModuleManager::GetModuleChecked<FLevelEditorModule>("LevelEditor");
-	TSharedPtr<SLevelViewport> ActiveViewport = LEModule.GetFirstActiveLevelViewport();
+	TSharedPtr<SLevelViewport> ActiveViewport = FModuleManager::GetModuleChecked<FLevelEditorModule>("LevelEditor").GetFirstActiveLevelViewport();
 	if (!ActiveViewport.IsValid())
 		return;
 	FLevelEditorViewportClient& clientViewpoint = ActiveViewport->GetLevelViewportClient();
@@ -535,16 +480,13 @@ void UGridRangeMakerWindow::TrackMouse()
 			}
 			if (CentrePoint == gridPos && CurrentModeSelected != EGridRangeBrushMode::Erase)
 				return;
-			
 			if (clientViewpoint.Viewport->KeyState(EKeys::LeftMouseButton))
 			{
 				if (WasClicked && CurrentModeSelected != EGridRangeBrushMode::None)
 					return;
 				if (MouseDownForSelect && WasClicked)
 					return;
-				/*FScopedTransaction Transaction(FText::FromString("Grid Edit"));
-				this->Modify();
-				ISMC->Modify();*/
+				bool ctrlDown = clientViewpoint.Viewport->KeyState(EKeys::LeftControl) || clientViewpoint.Viewport->KeyState(EKeys::RightControl);
 				WasClicked = true;
 				if (FEditorGridRangeCellState* CellData = LevelGridData.Find(LastHoverPos))
 				{
@@ -561,10 +503,13 @@ void UGridRangeMakerWindow::TrackMouse()
 						}
 						else if (CellData->CellType == EGridRangeBrushMode::Select)
 						{
-							DirectionCanvas->SetIsEnabled(false);
-							CellNameLabel->SetText(FText::FromString("Selected Cell: N/A"));
-							LastSelectedIndex = -1;
-							infoPtr = nullptr;
+							UnselectDirectionButton();
+							SelectedCellIndexes.Remove(gridPos);
+							if (SelectedCellIndexes.IsEmpty())
+							{
+								DirectionCanvas->SetIsEnabled(false);
+								CellNameLabel->SetText(FText::FromString("Selected Cell: N/A"));
+							}
 						}
 						CellData->CellType = EGridRangeBrushMode::None;
 						CellData->ClearModifier();
@@ -574,8 +519,6 @@ void UGridRangeMakerWindow::TrackMouse()
 							return;
 						RemoveSelectedCells();
 						CellData->CellType = EGridRangeBrushMode::Select;
-						LastSelectedIndex = hitIndex;
-						infoPtr = CellData;
 						AddSelectCell(gridPos);
 						break;
 					case EGridRangeBrushMode::Centre:
@@ -596,23 +539,27 @@ void UGridRangeMakerWindow::TrackMouse()
 						}
 						if (CellData->CellType == EGridRangeBrushMode::Select)
 						{
-							DirectionCanvas->SetIsEnabled(false);
-							CellNameLabel->SetText(FText::FromString("Selected Cell: N/A"));
 							CellData->CellType = EGridRangeBrushMode::Slot;
-							ISMC->SetCustomData(LastSelectedIndex, GetColour(CellData->CellType), false);
-							LastSelectedIndex = -1;
-							infoPtr = nullptr;
-							MouseDownForSelect = true;
-							return;
+							ISMC->SetCustomData(hitIndex, GetColour(CellData->CellType), false);
+							SelectedCellIndexes.Remove(gridPos);
+							if (SelectedCellIndexes.IsEmpty())
+							{
+								DirectionCanvas->SetIsEnabled(false);
+								CellNameLabel->SetText(FText::FromString("Selected Cell: N/A"));
+								MouseDownForSelect = true;
+								return;
+							}
+							if (ctrlDown)
+							{
+								MouseDownForSelect = true;
+								return;
+							}
 						}
-						//info = *CellData;
-						if (!MouseDownForSelect)
+						if (!MouseDownForSelect && !ctrlDown)
 						{
 							RemoveSelectedCells();
 						}
 						CellData->CellType = EGridRangeBrushMode::Select;
-						infoPtr = CellData;
-						LastSelectedIndex = hitIndex;
 						AddSelectCell(gridPos);
 						MouseDownForSelect = true;
 						break;
@@ -621,29 +568,18 @@ void UGridRangeMakerWindow::TrackMouse()
 					}
 					ISMC->SetCustomData(hitIndex, GetColour(CellData->CellType), false);
 				}
+				return;
 			}
-			else
-			{
-				MouseDownForSelect = false;
-			}
+			MouseDownForSelect = false;
+			return;
 		}
-		else
-		{
-			if (LastHoverIndex != -1)
-			{
-				UnselectCell();
-			}
-		}
+		return;
 	}
-	else
+	if (LastHoverIndex != -1)
 	{
-		if (LastHoverIndex != -1)
-		{
-			UnselectCell();
-		}
+		UnselectCell();
 	}
 }
-
 void UGridRangeMakerWindow::ResetAndPopulateGridArray()
 {
 	CentrePlaced = false;
@@ -652,8 +588,8 @@ void UGridRangeMakerWindow::ResetAndPopulateGridArray()
 	LastHoverPos = FIntPoint(-1, -1);
 	LastHoverIndex = -1;
 	WasClicked = false;
-	LastSelectedIndex = -1;
 	LevelGridData.Empty();
+	RemoveSelectedCells();
 	for (int x = 0; x < GridSize.X; x++)
 	{
 		for (int y = 0; y < GridSize.Y; y++)
@@ -662,7 +598,6 @@ void UGridRangeMakerWindow::ResetAndPopulateGridArray()
 		}
 	}
 }
-
 void UGridRangeMakerWindow::UnselectCurrentButton()
 {
 	switch (CurrentModeSelected)
@@ -680,230 +615,6 @@ void UGridRangeMakerWindow::UnselectCurrentButton()
 		break;
 	}
 }
-
-void UGridRangeMakerWindow::UnselectDirectionButton()
-{
-	switch (CurrentDirSelected)
-	{
-		case ECompassDirection::N:
-			//if (info.N > -1)
-			if (infoPtr->N > -1)
-				NorthButton->SetBackgroundColor(FLinearColor::Green);
-			else
-				NorthButton->SetBackgroundColor(FLinearColor::White);
-			break;
-		case ECompassDirection::NE:
-			//if (info.NE > -1)
-			if (infoPtr->NE > -1)
-				NorthEastButton->SetBackgroundColor(FLinearColor::Green);
-			else
-				NorthEastButton->SetBackgroundColor(FLinearColor::White);
-			break;
-		case ECompassDirection::E:
-			//if (info.E > -1)
-			if (infoPtr->E > -1)
-				EastButton->SetBackgroundColor(FLinearColor::Green);
-			else
-				EastButton->SetBackgroundColor(FLinearColor::White);
-			break;
-		case ECompassDirection::SE:
-			//if (info.SE > -1)
-			if (infoPtr->SE > -1)
-				SouthEastButton->SetBackgroundColor(FLinearColor::Green);
-			else
-				SouthEastButton->SetBackgroundColor(FLinearColor::White);
-			break;
-		case ECompassDirection::S:
-			//if (info.S > -1)
-			if (infoPtr->S > -1)
-				SouthButton->SetBackgroundColor(FLinearColor::Green);
-			else
-				SouthButton->SetBackgroundColor(FLinearColor::White);
-			break;
-		case ECompassDirection::SW:
-			//if (info.SW > -1)
-			if (infoPtr->SW > -1)
-				SouthWestButton->SetBackgroundColor(FLinearColor::Green);
-			else
-				SouthWestButton->SetBackgroundColor(FLinearColor::White);
-			break;
-		case ECompassDirection::W:
-			//if (info.W > -1)
-			if (infoPtr->W > -1)
-				WestButton->SetBackgroundColor(FLinearColor::Green);
-			else
-				WestButton->SetBackgroundColor(FLinearColor::White);
-			break;
-		case ECompassDirection::NW:
-			//if (info.NW > -1)
-			if (infoPtr->NW > -1)
-				NorthWestButton->SetBackgroundColor(FLinearColor::Green);
-			else
-				NorthWestButton->SetBackgroundColor(FLinearColor::White);
-			break;
-		default:
-		break;
-	}
-}
-
-void UGridRangeMakerWindow::HideInputsForCell()
-{
-	InputDirMag->SetText(FText::GetEmpty());
-	InputDirMag->SetIsEnabled(false);
-	DirLabel->SetIsEnabled(false);
-	DirectionCanvas->SetIsEnabled(true);
-}
-
-void UGridRangeMakerWindow::LoadDirectionsOnCell(FIntPoint pos)
-{
-	FString posString = "[ " + FString::FromInt(pos.X) + ", " + FString::FromInt(pos.Y) + " ]";
-	CellNameLabel->SetText(FText::FromString("Selected Cell: " + posString));
-	HideInputsForCell();
-	RefreshInputForGroup();
-	
-	NorthButton->SetBackgroundColor(FLinearColor::White);
-	NorthEastButton->SetBackgroundColor(FLinearColor::White);
-	EastButton->SetBackgroundColor(FLinearColor::White);
-	SouthEastButton->SetBackgroundColor(FLinearColor::White);
-	SouthButton->SetBackgroundColor(FLinearColor::White);
-	SouthWestButton->SetBackgroundColor(FLinearColor::White);
-	WestButton->SetBackgroundColor(FLinearColor::White);
-	NorthWestButton->SetBackgroundColor(FLinearColor::White);
-	//if (info.N > -1)
-	if (infoPtr->N > -1)
-		NorthButton->SetBackgroundColor(FLinearColor::Green);
-	//if (info.NE > -1)
-	if (infoPtr->NE > -1)
-		NorthEastButton->SetBackgroundColor(FLinearColor::Green);
-	//if (info.E > -1)
-	if (infoPtr->E > -1)
-		EastButton->SetBackgroundColor(FLinearColor::Green);
-	//if (info.SE > -1)
-	if (infoPtr->SE > -1)
-		SouthEastButton->SetBackgroundColor(FLinearColor::Green);
-	//if (info.S > -1)
-	if (infoPtr->S > -1)
-		SouthButton->SetBackgroundColor(FLinearColor::Green);
-	//if (info.SW > -1)
-	if (infoPtr->SW > -1)
-		SouthWestButton->SetBackgroundColor(FLinearColor::Green);
-	//if (info.W > -1)
-	if (infoPtr->W > -1)
-		WestButton->SetBackgroundColor(FLinearColor::Green);
-	//if (info.NW > -1)
-	if (infoPtr->NW > -1)
-		NorthWestButton->SetBackgroundColor(FLinearColor::Green);
-}
-void UGridRangeMakerWindow::SelectDirectionsButton(UEditorUtilityButton* button, ECompassDirection dir)
-{
-	UnselectDirectionButton();
-	if (CurrentDirSelected == dir)
-	{
-		HideInputsForCell();
-		CurrentDirSelected = ECompassDirection::None;
-	}
-	else
-	{
-		InputDirMag->SetIsEnabled(true);
-		DirLabel->SetIsEnabled(true);
-		CurrentDirSelected = dir;
-		button->SetBackgroundColor(FLinearColor::Yellow);
-		int32 magnitudeChanging = GetMagnitudeOfDirection();
-		if (magnitudeChanging == -1)
-		{
-			InputDirMag->SetText(FText::GetEmpty());
-		}
-		else if (magnitudeChanging == 0)
-		{
-			InputDirMag->SetText(FText::FromString("INF"));
-		}
-		else
-		{
-			InputDirMag->SetText(FText::AsNumber(magnitudeChanging));
-		}
-	}
-}
-
-void UGridRangeMakerWindow::RefreshInputForGroup()
-{
-	if (infoPtr->GroupID > -1)
-	{
-		InputGroupId->SetText(FText::AsNumber(infoPtr->GroupID));
-		GroupLabel->SetIsEnabled(true);
-	}
-	else
-	{
-		InputGroupId->SetText(FText::GetEmpty());
-		GroupLabel->SetIsEnabled(false);
-	}
-}
-
-void UGridRangeMakerWindow::SetDirectionMag(int32 mag)
-{
-	switch (CurrentDirSelected)
-	{
-	case ECompassDirection::N:
-		 infoPtr->N = mag;
-		break;
-	case ECompassDirection::NE:
-		infoPtr->NE = mag;
-		break;
-	case ECompassDirection::E:
-		infoPtr->E = mag;
-		break;
-	case ECompassDirection::SE:
-		infoPtr->SE = mag;
-		break;
-	case ECompassDirection::S:
-		infoPtr->S = mag;
-		break;
-	case ECompassDirection::SW:
-		infoPtr->SW = mag;
-		break;
-	case ECompassDirection::W:
-		infoPtr->W = mag;
-		break;
-	case ECompassDirection::NW:
-		infoPtr->NW = mag;
-		break;
-	default:
-		break;
-	}
-}
-
-int32 UGridRangeMakerWindow::GetMagnitudeOfDirection()
-{
-	switch (CurrentDirSelected)
-	{
-	case ECompassDirection::N:
-		//return &info.N;
-		return infoPtr->N;
-	case ECompassDirection::NE:
-		//return &info.NE;
-		return infoPtr->NE;
-	case ECompassDirection::E:
-		//return &info.E;
-		return infoPtr->E;
-	case ECompassDirection::SE:
-		//return &info.SE;
-		return infoPtr->SE;
-	case ECompassDirection::S:
-		//return &info.S;
-		return infoPtr->S;
-	case ECompassDirection::SW:
-		//return &info.SW;
-		return infoPtr->SW;
-	case ECompassDirection::W:
-		//return &info.W;
-		return infoPtr->W;
-	case ECompassDirection::NW:
-		//return &info.NW;
-		return infoPtr->NW;
-	default:
-		return -1;
-	}
-}
-
 void UGridRangeMakerWindow::UnselectCell()
 {
 	if (FEditorGridRangeCellState* CellData = LevelGridData.Find(LastHoverPos))
@@ -916,21 +627,166 @@ TArray<float> UGridRangeMakerWindow::GetColour(EGridRangeBrushMode cellType)
 {
 	switch (cellType)
 	{
-		case EGridRangeBrushMode::Slot:
-			return {0.0f, 0.0f, 0.0f, 1.0f};
-		case EGridRangeBrushMode::Centre:
-			return {0.0f, 1.0f, 0.0f, 1.0f};
-		case EGridRangeBrushMode::Select:
-			return {1.0f, 0.5f, 1.0f, 1.0f};
-		default:
-			return {1.0f, 1.0f, 1.0f, 1.0f};
+	case EGridRangeBrushMode::Slot:
+		return {0.0f, 0.0f, 0.0f, 1.0f};
+	case EGridRangeBrushMode::Centre:
+		return {0.0f, 1.0f, 0.0f, 1.0f};
+	case EGridRangeBrushMode::Select:
+		return {1.0f, 0.5f, 1.0f, 1.0f};
+	default:
+		return {1.0f, 1.0f, 1.0f, 1.0f};
 	}
 }
-
+void UGridRangeMakerWindow::UnselectDirectionButton()
+{
+	if (CurrentDirSelected == ECompassDirection::None)
+		return;
+	if (FEditorGridRangeCellState* firstSelectedData = LevelGridData.Find(SelectedCellIndexes[0]))
+	{
+		if (SelectedCellIndexes.Num() > 1)
+		{
+			bool sameValue = true;
+			for (auto selectedCellsPos : SelectedCellIndexes)
+			{
+				if (FEditorGridRangeCellState* selectedData = LevelGridData.Find(selectedCellsPos))
+				{
+					if (selectedData->DirectionMags[CurrentDirSelected] != firstSelectedData->DirectionMags[CurrentDirSelected])
+					{
+						sameValue = false;
+						break;
+					}
+				}
+			}
+			if (sameValue)
+				DirButtons[CurrentDirSelected]->SetBackgroundColor(FLinearColor(1.0f, 0.5f, 1.0f, 1.0f));
+			else
+				DirButtons[CurrentDirSelected]->SetBackgroundColor(FLinearColor::Green);
+		}
+		if (firstSelectedData->DirectionMags[CurrentDirSelected] > -1)
+			DirButtons[CurrentDirSelected]->SetBackgroundColor(FLinearColor::Green);
+		else
+		{
+			DirButtons[CurrentDirSelected]->SetBackgroundColor(FLinearColor::White);
+		}
+	}
+}
+void UGridRangeMakerWindow::HideInputsForCell()
+{
+	InputDirMag->SetText(FText::GetEmpty());
+	InputDirMag->SetIsEnabled(false);
+	DirLabel->SetIsEnabled(false);
+	DirectionCanvas->SetIsEnabled(true);
+}
+void UGridRangeMakerWindow::LoadDirectionsOnCell(FIntPoint pos)
+{
+	FString posString = "[ " + FString::FromInt(pos.X) + ", " + FString::FromInt(pos.Y) + " ]";
+	CellNameLabel->SetText(FText::FromString("Selected Cell: " + posString));
+	HideInputsForCell();
+	RefreshInputForGroup();
+	if (FEditorGridRangeCellState* CellData = LevelGridData.Find(pos))
+	{
+		for (auto dirInfo : CellData->DirectionMags)
+		{
+			if (dirInfo.Value > -1)
+				DirButtons[dirInfo.Key]->SetBackgroundColor(FLinearColor::Green);
+			else
+				DirButtons[dirInfo.Key]->SetBackgroundColor(FLinearColor::White);
+		}
+	}
+}
+void UGridRangeMakerWindow::SelectDirectionsButton(ECompassDirection dir)
+{
+	UnselectDirectionButton();
+	if (CurrentDirSelected == dir)
+	{
+		HideInputsForCell();
+		CurrentDirSelected = ECompassDirection::None;
+	}
+	else
+	{
+		InputDirMag->SetIsEnabled(true);
+		DirLabel->SetIsEnabled(true);
+		CurrentDirSelected = dir;
+		DirButtons[dir]->SetBackgroundColor(FLinearColor::Yellow);
+		if (FEditorGridRangeCellState* CellData = LevelGridData.Find(SelectedCellIndexes[0]))
+		{
+			if (SelectedCellIndexes.Num() > 1)
+			{
+				InputDirMag->SetText(FText::GetEmpty());
+				return;
+			}
+			int32 magnitudeChanging = CellData->DirectionMags[CurrentDirSelected];
+			if (magnitudeChanging == -1)
+			{
+				InputDirMag->SetText(FText::GetEmpty());
+			}
+			else if (magnitudeChanging == 0)
+			{
+				InputDirMag->SetText(FText::FromString("INF"));
+			}
+			else
+			{
+				InputDirMag->SetText(FText::AsNumber(magnitudeChanging));
+			}
+		}
+	}
+}
+void UGridRangeMakerWindow::RefreshInputForGroup()
+{
+	if (FEditorGridRangeCellState* CellData = LevelGridData.Find(SelectedCellIndexes[0]))
+	{
+		if (SelectedCellIndexes.Num() > 1)
+		{
+			bool sameValue = true;
+			for (auto selectedCellsPos : SelectedCellIndexes)
+			{
+				if (FEditorGridRangeCellState* selectedData = LevelGridData.Find(selectedCellsPos))
+				{
+					if (selectedData->GroupID != CellData->GroupID)
+					{
+						sameValue = false;
+						break;
+					}
+				}
+			}
+			if (sameValue)
+			{
+				InputGroupId->SetText(FText::AsNumber(CellData->GroupID));
+				GroupLabel->SetIsEnabled(true);
+			}
+			else
+			{
+				InputGroupId->SetText(FText::GetEmpty());
+				GroupLabel->SetIsEnabled(false);
+			}
+			return;
+		}
+		if (CellData->GroupID > -1)
+		{
+			InputGroupId->SetText(FText::AsNumber(CellData->GroupID));
+			GroupLabel->SetIsEnabled(true);
+		}
+		else
+		{
+			InputGroupId->SetText(FText::GetEmpty());
+			GroupLabel->SetIsEnabled(false);
+		}
+	}
+}
+void UGridRangeMakerWindow::SetDirectionMag(int32 mag)
+{
+	if (SelectedCellIndexes.IsEmpty())
+		return;
+	for (auto pos : SelectedCellIndexes)
+	{
+		if (FEditorGridRangeCellState* CellData = LevelGridData.Find(pos))
+		{
+			CellData->DirectionMags[CurrentDirSelected] = mag;
+		}
+	}
+}
 void UGridRangeMakerWindow::AddSelectCell(FIntPoint pos)
 {
-	if (CurrentDirSelected != ECompassDirection::None)
-		UnselectDirectionButton();
 	CurrentDirSelected = ECompassDirection::None;
 	SelectedCellIndexes.AddUnique(pos);
 	if (SelectedCellIndexes.Num() == 1)
@@ -940,9 +796,13 @@ void UGridRangeMakerWindow::AddSelectCell(FIntPoint pos)
 	else
 	{
 		CellNameLabel->SetText(FText::FromString("Multiple Cells Selected"));
+		for (auto buttons : DirButtons)
+		{
+			buttons.Value->SetBackgroundColor(FLinearColor(1.0f, 0.5f, 1.0f, 1.0f));
+		}
 	}
+	
 }
-
 void UGridRangeMakerWindow::RemoveSelectedCells()
 {
 	if (SelectedCellIndexes.IsEmpty())

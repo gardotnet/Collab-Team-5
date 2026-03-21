@@ -177,17 +177,9 @@ void UEncounterLevelMakerWindow::OnWallTogglePressed()
 	}
 	else
 	{
-		if (PropsComboBox->GetSelectedIndex() == 0)
-		{
-			CurrentModeSelected = ECellBrushMode::None;
-			HighlightComboBox(PropsComboBox);
-		}
-		else
-		{
-			CurrentModeSelected = ECellBrushMode::Wall;
-			WallToggleButton->SetBackgroundColor(FLinearColor::Green);
-			SetUpTrack();
-		}
+		CurrentModeSelected = ECellBrushMode::Wall;
+		WallToggleButton->SetBackgroundColor(FLinearColor::Green);
+		SetUpTrack();
 	}
 }
 void UEncounterLevelMakerWindow::OnPlayerTogglePressed()
@@ -453,22 +445,7 @@ void UEncounterLevelMakerWindow::OnInteractableSelectChange(FString SelectedItem
 
 void UEncounterLevelMakerWindow::OnPropSelectChange(FString SelectedItem, ESelectInfo::Type SelectionType)
 {
-	if (SelectedItem == "None" && (ESelectInfo::OnMouseClick == SelectionType || ESelectInfo::OnKeyPress == SelectionType))
-	{
-		if (CurrentModeSelected != ECellBrushMode::Wall)
-			return;
-		UnselectCurrentButton();
-		CurrentModeSelected = ECellBrushMode::None;
-		HighlightComboBox(PropsComboBox);
-	}
-	else
-	{
-		UnhighlightComboBox(PropsComboBox);
-		if (CurrentModeSelected == ECellBrushMode::Wall)
-		{
-			SelectSize = GetGroupSize(CurrentModeSelected);
-		}
-	}
+	SelectSize = GetGroupSize(CurrentModeSelected);
 }
 #pragma endregion
 #pragma region Utilities

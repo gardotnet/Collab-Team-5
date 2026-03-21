@@ -4,7 +4,7 @@
 #include "GridRangeExport.generated.h"
 
 UENUM()
-enum class EGridRangeBrushMode : int32
+enum class EGridRangeBrushMode : int8
 {
 	None,
 	Erase,
@@ -16,15 +16,15 @@ enum class EGridRangeBrushMode : int32
 UENUM()
 enum class ECompassDirection : int32
 {
-	None,
-	N,
-	NE,
-	E,
-	SE,
-	S,
-	SW,
-	W,
-	NW
+	None = -1,
+	N = 0,
+	NE = 1,
+	E = 2,
+	SE = 3,
+	S = 4,
+	SW = 5,
+	W = 6,
+	NW = 7
 };
 
 USTRUCT()
@@ -33,26 +33,27 @@ struct FEditorGridRangeCellState
 	GENERATED_BODY()
 	UPROPERTY()
 	EGridRangeBrushMode CellType = EGridRangeBrushMode::None;
-	int32 N = -1;
-	int32 NE = -1;
-	int32 E = -1;
-	int32 SE = -1;
-	int32 S = -1;
-	int32 SW = -1;
-	int32 W = -1;
-	int32 NW= -1;
-	
+	TMap<ECompassDirection, int32> DirectionMags;
 	int32 GroupID = -1;
+	FEditorGridRangeCellState()
+	{
+		GroupID = -1;
+		CellType = EGridRangeBrushMode::None;
+		DirectionMags.Add(ECompassDirection::N, -1);
+		DirectionMags.Add(ECompassDirection::NE, -1);
+		DirectionMags.Add(ECompassDirection::E, -1);
+		DirectionMags.Add(ECompassDirection::SE, -1);
+		DirectionMags.Add(ECompassDirection::S, -1);
+		DirectionMags.Add(ECompassDirection::SW, -1);
+		DirectionMags.Add(ECompassDirection::W, -1);
+		DirectionMags.Add(ECompassDirection::NW, -1);
+	}
 	void ClearModifier()
 	{
-		N = -1;
-		NE = -1;
-		E = -1;
-		SE = -1;
-		S = -1;
-		SW = -1;
-		W = -1;
-		NW= -1;
+		for (auto& direction : DirectionMags )
+		{
+			direction.Value = -1;
+		}
 	}
 };
 
