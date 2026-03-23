@@ -52,6 +52,28 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Traversal System | Actor Spawning", meta = (ToolTip = "Chance out of 100 to spawn exactly one actor on the path (if enabled)", EditCondition="bSpawnActorsOnPath"))
 	float SpawnChance = 100.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Traversal System | Actor Spawning", meta = (ToolTip = "Maximum number of actors that can spawn on a single path connection", EditCondition="bSpawnActorsOnPath", UIMin = "1"))
+	int32 MaxActorsToSpawn = 1;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Traversal System | Actor Spawning", meta = (ToolTip = "Minimum distance along the spline (0.0 to 1.0) where actors can spawn. E.g. 0.2 means no actors in the first 20% of the path.", EditCondition="bSpawnActorsOnPath", UIMin = "0.0", UIMax = "1.0"))
+	float MinSpawnDistancePercentage = 0.2f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Traversal System | Actor Spawning", meta = (ToolTip = "Maximum distance along the spline (0.0 to 1.0) where actors can spawn. E.g. 0.8 means no actors in the last 20% of the path.", EditCondition="bSpawnActorsOnPath", UIMin = "0.0", UIMax = "1.0"))
+	float MaxSpawnDistancePercentage = 0.8f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Traversal System | Actor Spawning", meta = (ToolTip = "If spawning multiple actors, randomizes the yaw (Z rotation) for each actor.", EditCondition="bSpawnActorsOnPath"))
+	bool bRandomizeActorYaw = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Traversal System | Actor Spawning", meta = (ToolTip = "Align the actor's forward axis to the spline's curve direction?", EditCondition="bSpawnActorsOnPath"))
+	bool bAlignActorsToSplineRotation = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Traversal System | Data Saving", meta = (ToolTip = "The name of the file to save/load spline data from (e.g. 'Level1_Splines')", GetOptions="GetAvailableSaveFiles"))
+	FString SaveFileName = "DefaultSplineData";
+
+	// List of found save files in the directory
+	UFUNCTION(CallInEditor)
+	TArray<FString> GetAvailableSaveFiles() const;
+
 	// Reset path for all traversal nodes
 	UFUNCTION(BlueprintCallable, CallInEditor, Category="Traversal System | Tools")
 	void ResetPathPosition();
@@ -67,6 +89,14 @@ public:
 	// Clear all paths
 	UFUNCTION(BlueprintCallable, CallInEditor, Category="Traversal System | Tools")
 	void ClearPaths();
+	
+	// Save spline data to JSON
+	UFUNCTION(BlueprintCallable, CallInEditor, Category="Traversal System | Data Saving")
+	void SaveSplineData();
+	
+	// Load spline data from JSON
+	UFUNCTION(BlueprintCallable, CallInEditor, Category="Traversal System | Data Saving")
+	void LoadSplineData();
 
 protected:
 	virtual void BeginPlay() override;

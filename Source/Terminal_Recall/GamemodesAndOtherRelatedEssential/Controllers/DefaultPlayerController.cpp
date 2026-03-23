@@ -58,7 +58,46 @@ void ADefaultPlayerController::MovePlayer()
 		PathIndex++;
 		if (PlayerEntity)
 		{
-			PlayerEntity->StartMove(ThePath[PathIndex]->GetActorLocation());
+			ATraversalNode* NextNode = ThePath[PathIndex];
+			
+			// Find the spline connection between CurrentCell and NextNode
+			USplineComponent* FoundSpline = nullptr;
+			bool bMovingForward = true;
+			
+			// Check if CurrentCell has a path to NextNode
+			for (const FWorldNeighbourStruct& Neighbour : CurrentCell->NeighbouringNodes)
+			{
+				if (Neighbour.Node == NextNode && Neighbour.PathSplineComponent)
+				{
+					FoundSpline = Neighbour.PathSplineComponent;
+					bMovingForward = true;
+					break;
+				}
+			}
+			
+			// If not found, check if NextNode has a path back to CurrentCell (means we travel backwards on the spline)
+			if (!FoundSpline)
+			{
+				for (const FWorldNeighbourStruct& Neighbour : NextNode->NeighbouringNodes)
+				{
+					if (Neighbour.Node == CurrentCell && Neighbour.PathSplineComponent)
+					{
+						FoundSpline = Neighbour.PathSplineComponent;
+						bMovingForward = false;
+						break;
+					}
+				}
+			}
+			
+			if (FoundSpline)
+			{
+				PlayerEntity->StartMoveAlongSpline(FoundSpline, bMovingForward);
+			}
+			else
+			{
+				// Fallback to straight-line if spline is missing
+				PlayerEntity->StartMove(NextNode->GetActorLocation());
+			}
 		}
 	}
 }
@@ -95,9 +134,47 @@ void ADefaultPlayerController::NavigateWorld(TObjectPtr<ATraversalNode> cell)
 		// Flips the array around
 		Algo::Reverse(ThePath);
 		// moves the player
-		if (PlayerEntity && ThePath.IsValidIndex(PathIndex))
+		if (PlayerEntity && ThePath.IsValidIndex(PathIndex + 1))
 		{
-			PlayerEntity->StartMove(ThePath[PathIndex]->GetActorLocation());
+			// Emulate the logic in MovePlayer to start the first step properly
+			ATraversalNode* NextNode = ThePath[PathIndex + 1];
+			
+			USplineComponent* FoundSpline = nullptr;
+			bool bMovingForward = true;
+			
+			for (const FWorldNeighbourStruct& Neighbour : CurrentCell->NeighbouringNodes)
+			{
+				if (Neighbour.Node == NextNode && Neighbour.PathSplineComponent)
+				{
+					FoundSpline = Neighbour.PathSplineComponent;
+					bMovingForward = true;
+					break;
+				}
+			}
+			
+			if (!FoundSpline)
+			{
+				for (const FWorldNeighbourStruct& Neighbour : NextNode->NeighbouringNodes)
+				{
+					if (Neighbour.Node == CurrentCell && Neighbour.PathSplineComponent)
+					{
+						FoundSpline = Neighbour.PathSplineComponent;
+						bMovingForward = false;
+						break;
+					}
+				}
+			}
+			
+			PathIndex++; // increment as we are leaving the starting node
+			
+			if (FoundSpline)
+			{
+				PlayerEntity->StartMoveAlongSpline(FoundSpline, bMovingForward);
+			}
+			else
+			{
+				PlayerEntity->StartMove(NextNode->GetActorLocation());
+			}
 		}
 	}
 	else

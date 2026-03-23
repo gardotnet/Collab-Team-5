@@ -6,6 +6,7 @@
 class AOurBasePlayerController;
 class ADefaultPlayerController;
 class UCapsuleComponent;
+class USplineComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveDone);
 
 UCLASS()
@@ -44,8 +45,16 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void OnMove();
 	
+	// Spline Movement Variables
+	UPROPERTY()
+	USplineComponent* CurrentPathSpline;
+	bool bIsMovingAlongSpline;
+	bool bMovingForwardOnSpline;
+
 public:
 	void StartMove(FVector position);
+	void StartMoveAlongSpline(USplineComponent* SplinePath, bool bForward);
+	
 	UFUNCTION()
 	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed);
 	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
