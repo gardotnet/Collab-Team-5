@@ -25,9 +25,15 @@ protected:
 	int32 EnemyMoveRange;
 	UPROPERTY()
 	TObjectPtr<ABattleGridCell> TargetCell;
+
 public:
 	ABattleEnemyEntity();
 	virtual void OnTurnGo() override;
 	virtual void StartMove(FVector position) override;
-	virtual void OnBattleStart(ABattleManager* battleManager, int32 enemyID) override;
+	virtual void OnMove() override;
+	virtual void OnBattleStart(ABattleManager* battleManager, int32 enemyID);
+
+protected:
+	void SetRandomTargetInList(TArray<ABattleGridCell*> list);
+	
 };

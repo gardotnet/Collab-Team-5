@@ -6,6 +6,8 @@
 #include "Terminal_Recall/StructsAndEnums/GridRangeExport.h"
 #include "BattleEntity.generated.h"
 
+class ABattleGridCell;
+
 USTRUCT()
 struct FMoveStruct
 {
@@ -50,14 +52,16 @@ protected:
 	UPROPERTY()
 	TArray<UActionButtonUI*> ItemActionsUI;
 	TArray<FMoveStruct> AttackInfoList; 
-	TArray<FMoveStruct> MoveInfoList; 
+	TArray<FMoveStruct> MoveInfoList;
+	UPROPERTY()
+	TObjectPtr<ABattleGridCell> CurrentCell;
 public:
 	ABattleEntity();
-	virtual void OnBattleStart(ABattleManager* battleManager, int32 enemyID = -1);
+	virtual void OnBattleStart(ABattleManager* battleManager);
 	virtual void OnTurnGo();
 	void ShowChoices();
 	void CustomTakeDamage(float damage);
-	void SetPos(FIntPoint newPos);
+	void SetPos(FIntPoint newPos, ABattleGridCell* cell);
 	FIntPoint GetPos() { return GridPos; }
 	
 	FGridRangeExport* GetActionInfo(EActionType type, int32 indexInList);

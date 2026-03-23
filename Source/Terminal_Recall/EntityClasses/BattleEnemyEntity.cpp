@@ -11,6 +11,7 @@ ABattleEnemyEntity::ABattleEnemyEntity()
 }
 void ABattleEnemyEntity::OnTurnGo()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Enemies turn"))
 	TArray<int32> attacksThatCanHit;
 	TMap<FVector, bool> searchedLoc;
 	PlayerRef = nullptr;
@@ -159,10 +160,7 @@ void ABattleEnemyEntity::StartMove(FVector position)
 	if (!IsValid(PlayerRef))
 		PlayerRef = BattleManager->PlayerRef;
 	FIntPoint playerPos = PlayerRef->GetPos();
-	UE_LOG(LogTemp, Warning, TEXT("Player pos = (%d, %d)"), playerPos.X, playerPos.Y);
-	UE_LOG(LogTemp, Warning, TEXT("Enemy pos = (%d, %d)"), GridPos.X, GridPos.Y);
 	FIntPoint direction = FIntPoint(FMath::Clamp( playerPos.X - GridPos.X, -1, 1),FMath::Clamp(playerPos.Y - GridPos.Y, -1, 1));
-	UE_LOG(LogTemp, Warning, TEXT("Player Dir = (%d, %d)"), direction.X, direction.Y);
 	TArray<ABattleGridCell*> importantCells;
 	TArray<ABattleGridCell*> offTargetCell;
 	TArray<FVector> searchedLoc;
@@ -172,7 +170,7 @@ void ABattleEnemyEntity::StartMove(FVector position)
 		for (const auto& cellInfo : moveActions.ActionRange.Cells)
 		{
 			// get pos, dir and set up raycasting
-			FIntPoint posDirection = FIntPoint(FMath::Clamp(cellInfo.GridPos.X, -1, 1),FMath::Clamp(cellInfo.GridPos.Y, -1, 1));
+			FIntPoint posDirection = FIntPoint(FMath::Clamp(-cellInfo.GridPos.X, -1, 1),FMath::Clamp(cellInfo.GridPos.Y, -1, 1));
 			FVector rayStartPos = GetActorLocation() + (FVector(cellInfo.GridPos.X, cellInfo.GridPos.Y, 1) * 100.0f);
 			FVector rayEndPos = rayStartPos + FVector(0.0f, 0.0f, -500.0f);
 			FHitResult hitResult;
@@ -187,16 +185,18 @@ void ABattleEnemyEntity::StartMove(FVector position)
 				{
 					if (ABattleGridCell* cellObject = Cast<ABattleGridCell>(hitResult.GetActor()))
 					{
-						// if not in player direction
-						if (posDirection != direction)
+						if (cellObject->CanMoveOnTo())
 						{
-							offTargetCell.Add(cellObject);
+							// if not in player direction
+							if (posDirection != direction)
+							{
+								offTargetCell.Add(cellObject);
+							}
+							else
+							{
+								importantCells.Add(cellObject);
+							}
 						}
-						else
-						{
-							importantCells.Add(cellObject);
-						}
-						searchedLoc.Add(rayStartPos);
 					}
 				}
 				// tells code this position has be checked
@@ -269,53 +269,79 @@ void ABattleEnemyEntity::StartMove(FVector position)
 						GetWorld()->LineTraceSingleByChannel(hitResult, prevPos, rayEndPos, ECC_GameTraceChannel1, params);
 						if (hitResult.bBlockingHit)
 						{
-							if (ABattleGridCell* cellObject = Cast<ABattleGridCell>(hitResult.GetActor()))
+							if (ABattleGridCell* followUpCellObject = Cast<ABattleGridCell>(hitResult.GetActor()))
 							{
-								if (posDirection != direction)
+								if (followUpCellObject->CanMoveOnTo())
 								{
-									offTargetCell.Add(cellObject);
+									if (posDirection != direction)
+									{
+										offTargetCell.Add(followUpCellObject);
+									}
+									else
+									{
+										importantCells.Add(followUpCellObject);
+									}
 								}
-								else
-								{
-									importantCells.Add(cellObject);
-								}
-								searchedLoc.Add(rayStartPos);
 							}
 						}
-						searchedLoc.Add(rayStartPos);
+						searchedLoc.Add(prevPos);
 					}
 				}
 			}
 		}
 	}
-	if (importantCells.Num() > 0 && offTargetCell.Num() > 0)
+	
+	if (importantCells.Num() == 0 && offTargetCell.Num() == 0)
 	{
-		int32 randomInt = FMath::RandRange(1, 100);
-		if (randomInt < 30)
-		{
-			randomInt = FMath::RandRange(0, offTargetCell.Num() - 1);
-			TargetCell = offTargetCell[randomInt];
-			TargetPosition = offTargetCell[randomInt]->GetActorLocation();
-			TargetPosition.Z = GetActorLocation().Z;
-		}
+		UE_LOG(LogTemp, Warning, TEXT("This enemy doesn't have a move action :c"));
+		OnActionDoneEvent.Broadcast();
+		return;
+	}
+	
+	int32 randomInt = FMath::RandRange(1, 100);
+	if (randomInt < 25)
+	{
+		if (offTargetCell.Num() > 0)
+			SetRandomTargetInList(offTargetCell);
 		else
-		{
-			randomInt = FMath::RandRange(0, importantCells.Num() - 1);
-			TargetCell = importantCells[randomInt];
-			TargetPosition = importantCells[randomInt]->GetActorLocation();
-			TargetPosition.Z = GetActorLocation().Z;
-		}
+			SetRandomTargetInList(importantCells);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("This enemy doesn't have a move action :c"));
-		return;
+		if (importantCells.Num() > 0)
+			SetRandomTargetInList(importantCells);
+		else
+			SetRandomTargetInList(offTargetCell);
 	}
+	
+	direction = FIntPoint(FMath::Clamp( TargetPosition.X - GetActorLocation().X, -1, 1),FMath::Clamp(TargetPosition.Y - GetActorLocation().Y, -1, 1));
 	float distance = FVector::Dist(GetActorLocation(), TargetPosition);
 	MoveTimer = 0;
 	DesiredMoveDuration = distance/Speed;
 	TimerManagerRef->ClearTimer(MoveTimerHandle);
 	TimerManagerRef->SetTimer(MoveTimerHandle, this, &ABattleEnemyEntity::OnMove, 0.01f, true);
+}
+
+void ABattleEnemyEntity::OnMove()
+{
+	MoveTimer += 0.01f;
+	FVector playerPos = GetActorLocation();
+	float distance = FVector::Dist(playerPos, TargetPosition);
+	
+	if (MoveTimer > DesiredMoveDuration || distance < 1)
+	{
+		TimerManagerRef->ClearTimer(MoveTimerHandle);
+		SetActorLocation(TargetPosition);
+		CurrentCell->EvictEntity();
+		TargetCell->HouseEntity(this);
+		CurrentCell = TargetCell;
+		GridPos = CurrentCell->GetGridPos();
+		OnActionDoneEvent.Broadcast();
+	}
+	else
+	{
+		SetActorLocation(FMath::Lerp(playerPos, TargetPosition, MoveTimer/DesiredMoveDuration));
+	}
 }
 
 void ABattleEnemyEntity::OnBattleStart(ABattleManager* battleManager, int32 enemyID)
@@ -334,4 +360,11 @@ void ABattleEnemyEntity::OnBattleStart(ABattleManager* battleManager, int32 enem
 		MaxHealth = enemyInfo->Health;
 		DamageMultiplier = 1;
 	}
+}
+void ABattleEnemyEntity::SetRandomTargetInList(TArray<ABattleGridCell*> list)
+{
+	int32 randomInt = FMath::RandRange(0, list.Num() - 1);
+	TargetCell = list[randomInt];
+	TargetPosition = list[randomInt]->GetActorLocation();
+	TargetPosition.Z = GetActorLocation().Z;
 }

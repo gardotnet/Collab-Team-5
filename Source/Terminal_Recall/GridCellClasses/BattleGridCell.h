@@ -60,9 +60,9 @@ public:
 
 	void CellSetUp(FIntPoint gridPos, ABattleManager* battleManager);
 	
-	FIntPoint GetGridPos() { return GridPos; };
+	FIntPoint GetGridPos() { return GridPos; }
 	void SetWalkable(bool walkable);
-	bool GetWalkable() { return Walkable; };
+	bool CanMoveOnTo();
 protected:
 	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 	UFUNCTION()

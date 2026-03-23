@@ -163,7 +163,7 @@ void ABattleManager::NextEntityTurn()
 		UE_LOG(LogTemp, Warning, TEXT("Player Won"));
 		return;
 	}
-	PlayerRef->OnTurnGo();
+	//PlayerRef->OnTurnGo();
 	// gets next entity's turn
 	EntityIndex++;
 	if (EntityIndex == EnemyArray.Num())
@@ -171,9 +171,11 @@ void ABattleManager::NextEntityTurn()
 		EntityIndex = -1;
 		SelectMode = false;
 		PlayerRef->OnTurnGo();
+		UE_LOG(LogTemp, Warning, TEXT("Loop to player"));
 	}
 	else
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Where enemy turn"));
 		EnemyArray[EntityIndex]->OnTurnGo();
 	}
 }

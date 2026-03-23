@@ -57,6 +57,7 @@ void ABattleGridCell::HouseEntity(ABattleEntity* entity)
 }
 void ABattleGridCell::EvictEntity()
 {
+	ResidingEntity->OnChangeCell.RemoveDynamic(this, &ABattleGridCell::EvictEntity);
 	ResidingEntity = nullptr;
 }
 void ABattleGridCell::CellSetUp(FIntPoint gridPos, ABattleManager* battleManager)
@@ -68,6 +69,14 @@ void ABattleGridCell::SetWalkable(bool walkable)
 {
 	Walkable = walkable;
 }
+
+bool ABattleGridCell::CanMoveOnTo()
+{
+	if (IsValid(ResidingEntity) || !Walkable)
+		return false;
+	return true;
+}
+
 void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
 	if (!Clickable)
@@ -83,7 +92,8 @@ void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 			
 		break;
 		case EActionType::Movement:
-			EntityCauserRef->SetPos(GridPos);
+			EntityCauserRef->SetPos(GridPos, this);
+			HouseEntity(EntityCauserRef);
 			EntityCauserRef->StartMove(GetActorLocation());
 			OnClickedCellEvent.Broadcast(nullptr, ActionType, false);
 		break;

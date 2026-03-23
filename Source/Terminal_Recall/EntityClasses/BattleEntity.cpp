@@ -13,7 +13,7 @@ ABattleEntity::ABattleEntity()
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
-void ABattleEntity::OnBattleStart(ABattleManager* battleManager, int32 enemyID)
+void ABattleEntity::OnBattleStart(ABattleManager* battleManager)
 {
 	BattleManager = battleManager;
 }
@@ -27,9 +27,10 @@ void ABattleEntity::ShowChoices()
 	// add all buttons to the UI
 	PlayerBattleController->BattleChoiceUIWidget->AddActionButton(MovementActionsUI, AttackActionsUI, ItemActionsUI);
 }
-void ABattleEntity::SetPos(FIntPoint newPos)
+void ABattleEntity::SetPos(FIntPoint newPos, ABattleGridCell* cell)
 {
 	OnChangeCell.Broadcast();
+	CurrentCell = cell;
 	GridPos = newPos;
 }
 FGridRangeExport* ABattleEntity::GetActionInfo(EActionType type, int32 indexInList)
@@ -63,9 +64,9 @@ void ABattleEntity::OnMove()
 	
 	if (MoveTimer > DesiredMoveDuration || distance < 1)
 	{
-		OnActionDoneEvent.Broadcast();
 		TimerManagerRef->ClearTimer(MoveTimerHandle);
 		SetActorLocation(TargetPosition);
+		OnActionDoneEvent.Broadcast();
 	}
 	else
 	{

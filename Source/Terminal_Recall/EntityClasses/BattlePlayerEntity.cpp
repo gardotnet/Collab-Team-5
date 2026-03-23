@@ -9,7 +9,7 @@ ABattlePlayerEntity::ABattlePlayerEntity()
 	PrimaryActorTick.bCanEverTick = true;
 	MeshComponent->SetCollisionProfileName("Player");
 }
-void ABattlePlayerEntity::OnBattleStart(ABattleManager* battleManager, int32 enemyID)
+void ABattlePlayerEntity::OnBattleStart(ABattleManager* battleManager)
 {
 	BattleManager = battleManager;
 	if (UDefaultInstance* gameInstance =  Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld())))

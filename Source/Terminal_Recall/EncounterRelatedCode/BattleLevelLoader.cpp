@@ -119,7 +119,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 							{
 								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
 								battleManager->PlayerRef = GetWorld()->SpawnActor<ABattlePlayerEntity>(PlayerEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
-								battleManager->PlayerRef->SetPos(cellData.Position);
+								battleManager->PlayerRef->SetPos(cellData.Position, *newCell);
 								battleManager->PlayerRef->OnBattleStart(battleManager);
 								battleManager->PlayerRef->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
 								(*newCell)->HouseEntity(battleManager->PlayerRef);
@@ -144,7 +144,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 								battleManager->EnemyArray.Add(newEnemy);
 								newEnemy->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
 								newEnemy->OnBattleStart(battleManager, cellData.IdForCellContent);
-								newEnemy->SetPos(cellData.Position);
+								newEnemy->SetPos(cellData.Position, *newCell);
 								(*newCell)->HouseEntity(newEnemy);
 							}
 						}
