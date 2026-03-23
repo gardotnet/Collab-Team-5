@@ -64,7 +64,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 			{
 				for (int y = 0; y < levelData.GridSize.Y; y++)
 				{
-					FVector spawnPos = FVector(100 * x, 100 * y, 0.0f);				
+					FVector spawnPos = FVector(-100 * x, 100 * y, 0.0f);				
 					ABattleGridCell* newCell = GetWorld()->SpawnActor<ABattleGridCell>(BattleGridClass, spawnPos, FRotator::ZeroRotator, spawnParams);
 					#if WITH_EDITOR
 					newCell->SetFolderPath(FName("GridCells"));
@@ -137,7 +137,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 								// [NOTE] Pass data to enemy
 								battleManager->EnemyArray.Add(newEnemy);
 								newEnemy->OnMoveDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
-								newEnemy->OnBattleStart(battleManager, 1, 1);
+								newEnemy->OnBattleStart(battleManager, cellData.IdForCellContent);
 								newEnemy->SetPos(cellData.Position);
 								(*newCell)->HouseEntity(newEnemy);
 							}
@@ -225,7 +225,7 @@ void ABattleLevelLoader::EditorLoadLevel()
 							{
 								newCell->MeshComponent->SetMaterial(0, CheckBoardMat2);
 							}
-							TempGridMap.Add(FIntPoint(x,y), newCell);
+							TempGridMap.Add(FIntPoint(y,x), newCell);
 						}
 					}
 					for (const auto& cellData : levelData.GridCells)

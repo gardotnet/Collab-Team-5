@@ -24,7 +24,7 @@ protected:
 	ABaseGridCell();
 	virtual void BeginPlay() override;
 public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Stuff For Designers | Functions")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Stuff For Designers | Functions")
 	void OnUnitArrive();
 	virtual void OnUnitArrive_Implementation();
 private:

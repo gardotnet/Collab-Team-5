@@ -6,7 +6,7 @@
 #include "BattleGridCell.generated.h"
 
 class ABattleManager;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnClickedCell, ABattleEntity*, target, EActionType, type, bool, mainCell);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnClickedCell, ABattleEntity*, target, EActionType, type, bool, mainAttackCell);
 
 class APlayerBattleController;
 class ABattleEntity;
@@ -57,6 +57,7 @@ public:
 	void HouseEntity(ABattleEntity* entity);
 	UFUNCTION()
 	void EvictEntity();
+	ABattleEntity* GetEntity() { return ResidingEntity; }
 
 	void CellSetUp(FIntPoint gridPos, ABattleManager* battleManager);
 	

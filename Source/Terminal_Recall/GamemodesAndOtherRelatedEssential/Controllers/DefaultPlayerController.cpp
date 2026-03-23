@@ -2,6 +2,7 @@
 #include "Algo/Reverse.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputSubsystems.h"
+#include "Terminal_Recall/EntityClasses/WorldTraversalEntity.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GridCellClasses/NodeInfoForCellSearch.h"
 #include "Terminal_Recall/GridCellClasses/WorldGridCell.h"
@@ -17,7 +18,7 @@ void ADefaultPlayerController::BeginPlay()
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		FRotator Rotation(0,0,0);
-		PlayerEntity = GetWorld()->SpawnActor<ABaseEntity>(PlayerChar, gameInstance->PlayerSpawnPos, Rotation, SpawnParams);
+		PlayerEntity = GetWorld()->SpawnActor<AWorldTraversalEntity>(PlayerChar, gameInstance->PlayerSpawnPos, Rotation, SpawnParams);
 	}
 	// raycast to get the cell that player spawn on
 	FVector endTracePos = PlayerEntity->GetActorLocation() + FVector(0,0, -1000);
@@ -27,10 +28,9 @@ void ADefaultPlayerController::BeginPlay()
 	if (hitResult.GetActor())
 	{
 		CurrentCell = Cast<AWorldGridCell>(hitResult.GetActor());
-		CurrentCell->OnUnitArrive();
+		CurrentCell->OnUnitArrive_Implementation();
 	}
 }
-
 void ADefaultPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -38,21 +38,6 @@ void ADefaultPlayerController::SetupInputComponent()
 	{
 		if (MappingContext)
 			subsystem->AddMappingContext(MappingContext, 0);
-	}
-}
-
-void ADefaultPlayerController::MovePlayer()
-{
-	CurrentCell = ThePath[PathIndex];
-	if (ThePath[PathIndex] == DestinationCell)
-	{
-		ThePath.Empty();
-		DestinationCell->OnUnitArrive();
-	}
-	else
-	{
-		PathIndex++;
-		PlayerEntity->StartMove(ThePath[PathIndex]->GetActorLocation());
 	}
 }
 void ADefaultPlayerController::NavigateWorld(TObjectPtr<AWorldGridCell> cell)
@@ -69,14 +54,12 @@ void ADefaultPlayerController::NavigateWorld(TObjectPtr<AWorldGridCell> cell)
 	ThePath.Empty();
 	OpenList.Empty();
 	CloseList.Empty();
-	
 	TObjectPtr<UNodeInfoForCellSearch> newInfo = NewObject<UNodeInfoForCellSearch>();
 	newInfo->Cell = CurrentCell;
 	newInfo->ParentCell = nullptr;
 	newInfo->GCost = 0;
 	newInfo->HCost = Heuristic_Manhattan(cell->GetActorLocation(), DestinationCell->GetActorLocation());
 	OpenList.Add(newInfo);
-	
 	if (FindCell(newInfo))
 	{
 		TObjectPtr<UNodeInfoForCellSearch> current = CloseList.Last();
@@ -88,12 +71,16 @@ void ADefaultPlayerController::NavigateWorld(TObjectPtr<AWorldGridCell> cell)
 		// Flips the array around
 		Algo::Reverse(ThePath);
 		// moves the player
-		PlayerEntity->StartMove(ThePath[PathIndex]->GetActorLocation());
+		PlayerEntity->StartMove(ThePath);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Cell Does Not Exist"));
 	}
+}
+void ADefaultPlayerController::UpdatePlayerPos(TObjectPtr<AWorldGridCell> cell)
+{
+	CurrentCell = cell;
 }
 // A* algorithm to find the destination
 bool ADefaultPlayerController::FindCell(TObjectPtr<UNodeInfoForCellSearch> cellInfo)
@@ -106,7 +93,6 @@ bool ADefaultPlayerController::FindCell(TObjectPtr<UNodeInfoForCellSearch> cellI
 			CloseList.Add(currentInfo);
 			return true;
 		}
-		
 		for (auto neighbour : currentInfo->Cell->NeighbouringCells)
 		{
 			float neighbourGCost = currentInfo->GCost + neighbour.Length;
@@ -136,19 +122,15 @@ bool ADefaultPlayerController::FindCell(TObjectPtr<UNodeInfoForCellSearch> cellI
 				OpenList.Add(newInfo);
 			}
 		}
-		
 		OpenList.Remove(currentInfo);
 		CloseList.Add(currentInfo);
-		
 		if (OpenList.IsEmpty())
 			break;
-		
 		// sorts it smallest to biggest
 		Algo::Sort(OpenList, [](const UNodeInfoForCellSearch* A, const UNodeInfoForCellSearch* B)
 		{
 			return A->FCost < B->FCost; 
 		});
-		
 		currentInfo = OpenList[0];
 	}
 	return false;
@@ -157,4 +139,6 @@ float ADefaultPlayerController::Heuristic_Manhattan(FVector start, FVector end)
 {
 	return FMath::Abs(start.X - end.X) + FMath::Abs(start.Y - end.Y);
 }
+
+
 

@@ -43,7 +43,7 @@ protected:
 	TArray<FGridRangeExport> MoveInfoList; 
 public:
 	ABattleEntity();
-	virtual void OnBattleStart(ABattleManager* battleManager, float health, float damageMultiplier);
+	virtual void OnBattleStart(ABattleManager* battleManager, int32 enemyID = -1);
 	virtual void OnTurnGo();
 	void ShowChoices();
 	void CustomTakeDamage(float damage);
@@ -54,6 +54,7 @@ public:
 	virtual void OnMove() override;
 	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 protected:
+	virtual void FindAndSaveActions(const TArray<int32>& attackArray, const TArray<int32>& moveArray, bool isEnemy = true);
 	TOptional<FGridRangeExport> LoadActionInfoFromPath(FString path);
 };
 

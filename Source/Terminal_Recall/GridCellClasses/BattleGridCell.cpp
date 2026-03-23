@@ -1,7 +1,5 @@
 ﻿#include "BattleGridCell.h"
 
-#include <ThirdParty/ShaderConductor/ShaderConductor/External/DirectXShaderCompiler/include/dxc/DXIL/DxilConstants.h>
-
 #include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
 #include "Terminal_Recall/EntityClasses/BattleEntity.h"
 
@@ -16,9 +14,9 @@ void ABattleGridCell::AssignTrap(TObjectPtr<ABaseTrap> trap)
 {
 	//TrapRef = trap;
 }
-bool ABattleGridCell::EnableCell(EActionType actionType,  ABattleEntity* causer, int32 groupID)
+bool ABattleGridCell::EnableCell(EActionType actionType, ABattleEntity* causer, int32 groupID)
 {
-	if (ResidingEntity && actionType != EActionType::Attack)
+	if (ResidingEntity && !(actionType == EActionType::Attack || actionType == EActionType::EnemyAttack))
 		return false;
 	if (!Walkable || Clickable)
 		return false;
@@ -75,6 +73,7 @@ void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 	if (!Clickable)
 		return;
 	Clickable = false;
+	
 	switch (ActionType)
 	{
 		case EActionType::Attack:
@@ -88,6 +87,10 @@ void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 			EntityCauserRef->StartMove(GetActorLocation());
 			OnClickedCellEvent.Broadcast(nullptr, ActionType, false);
 		break;
+		case EActionType::EnemyAttack:
+			OnClickedCellEvent.Broadcast(nullptr, ActionType, true);
+		case EActionType::EnemyMove:
+			OnClickedCellEvent.Broadcast(nullptr, ActionType, false);
 		default:
 		break;
 	}

@@ -19,6 +19,7 @@ void ABaseGridCell::BeginPlay()
 }
 void ABaseGridCell::OnUnitArrive_Implementation()
 {
+	OnUnitArrive();
 	UE_LOG(LogTemp, Warning, TEXT("Now the party can start"));
 }
 void ABaseGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)

@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "BaseEntity.generated.h"
 
+class AWorldGridCell;
 class AOurBasePlayerController;
 class ADefaultPlayerController;
 class UCapsuleComponent;
@@ -32,9 +33,6 @@ public:
 	float DesiredMoveDuration = 0;
 	float MoveTimer;
 	FVector TargetPosition;
-	UPROPERTY()
-	TObjectPtr<AOurBasePlayerController> PlayerController;
-
 	UPROPERTY(BlueprintReadOnly, Category="Stuff For Designers | Variables")
 	FTimerHandle MoveTimerHandle;
 	FTimerManager* TimerManagerRef;
@@ -43,9 +41,10 @@ protected:
 	ABaseEntity();
 	virtual void BeginPlay() override;
 	virtual void OnMove();
-	
 public:
-	void StartMove(FVector position);
+	UFUNCTION(BlueprintCallable, Category = "Stuff For Designers | Functions")
+	virtual void StartMove(FVector position);
+	virtual void StartMove(TArray<TObjectPtr<AWorldGridCell>> path);
 	UFUNCTION()
 	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed);
 	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

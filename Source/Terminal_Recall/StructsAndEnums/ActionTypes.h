@@ -11,5 +11,7 @@ enum class EActionType : uint8
 	None UMETA(DisplayName = "None"),
 	Movement UMETA(DisplayName = "Movement"),
 	Attack UMETA(DisplayName = "Attack"),
-	Item UMETA(DisplayName = "Item")
+	Item UMETA(DisplayName = "Item"),
+	EnemyAttack UMETA (DisplayName = "EnemyAttack"),
+	EnemyMove UMETA(DisplayName = "EnemyMove")
 };

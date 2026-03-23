@@ -2,7 +2,7 @@
 	"centrePoint":
 	{
 		"x": 2,
-		"y": 2
+		"y": 0
 	},
 	"cells": [
 		{
@@ -11,13 +11,8 @@
 				"x": -2,
 				"y": 0
 			},
-			"directionModifier": [
-				{
-					"direction": "NW",
-					"magnitude": 1
-				}
-			],
-			"groupId": -1
+			"directionModifier": [],
+			"groupId": 0
 		},
 		{
 			"gridPos":
@@ -26,21 +21,16 @@
 				"y": 1
 			},
 			"directionModifier": [],
-			"groupId": -1
+			"groupId": 0
 		},
 		{
 			"gridPos":
 			{
 				"x": 0,
-				"y": 1
+				"y": 2
 			},
-			"directionModifier": [
-				{
-					"direction": "N",
-					"magnitude": 0
-				}
-			],
-			"groupId": -1
+			"directionModifier": [],
+			"groupId": 0
 		},
 		{
 			"gridPos":
@@ -48,13 +38,8 @@
 				"x": 1,
 				"y": 1
 			},
-			"directionModifier": [
-				{
-					"direction": "N",
-					"magnitude": 2
-				}
-			],
-			"groupId": -1
+			"directionModifier": [],
+			"groupId": 0
 		},
 		{
 			"gridPos":
@@ -62,19 +47,14 @@
 				"x": 2,
 				"y": 0
 			},
-			"directionModifier": [
-				{
-					"direction": "NE",
-					"magnitude": 1
-				}
-			],
-			"groupId": -1
+			"directionModifier": [],
+			"groupId": 0
 		}
 	],
 	"gridSize":
 	{
 		"x": 5,
-		"y": 4
+		"y": 3
 	},
-	"oneGroup": false
+	"oneGroup": true
 }

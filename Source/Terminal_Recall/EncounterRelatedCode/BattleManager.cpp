@@ -34,11 +34,12 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 	// for each cell required for the action
 	for (auto cellInfo : gridRange->Cells)
 	{
+		FIntPoint attackPos = entityPos + cellInfo.GridPos;
 		// find the action
-		if (TObjectPtr<ABattleGridCell>* cell = GridMap.Find(entityPos + cellInfo.GridPos))
+		if (TObjectPtr<ABattleGridCell>* cell = GridMap.Find(attackPos))
 		{
 			// if it can't be an option (e.g. cell is a wall)
-			 if (!(*cell)->EnableCell(selectedButton->ActionType, entityRef, cellInfo.GroupID))
+			if (!(*cell)->EnableCell(selectedButton->ActionType, entityRef, cellInfo.GroupID))
 				continue;
 			// linking events
 			CellSelectedEvent.AddDynamic(*cell, &ABattleGridCell::DisableCell);
@@ -82,14 +83,12 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 					default:
 					break;
 				}
-				UE_LOG(LogTemp, Warning, TEXT("We got a modifier"))
-				FIntPoint prevPos = entityPos + cellInfo.GridPos;
+				FIntPoint prevPos = attackPos;
 				// until it cant continue in that direction or maximum range reached
 				int32 totalFollowUp = 0;
 				// get follow-up cell
 				while (true)
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Checking mag"))
 					// if it reached its range limit
 					if (directionFollowUp.Magnitude != 0 && totalFollowUp >= directionFollowUp.Magnitude)
 						break;
@@ -120,10 +119,10 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 		
 	}*/
 }
-void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, bool mainCell)
+void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, bool mainAttackCell)
 {
 	// so attack follow-ups do not trigger this
-	if (mainCell || type != EActionType::Attack)
+	if (mainAttackCell || type != EActionType::Attack)
 	{
 		// stops player raycast as no longer needed for now
 		PlayerBattleController->bEnableMouseOverEvents = false;
@@ -136,14 +135,9 @@ void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, boo
 		CallGroupAttackEvent.Clear();
 	}
 	// if there is a target to attack
-	if (target == nullptr)
-	{
-		if (mainCell)
-			NextEntityTurn();
-		return;
-	}
-	target->CustomTakeDamage(1.0f);
-	if (mainCell)
+	if (type == EActionType::Attack)
+		target->CustomTakeDamage(1.0f);
+	if (mainAttackCell && !(type == EActionType::EnemyAttack || type == EActionType::EnemyMove))
 		NextEntityTurn();
 }
 void ABattleManager::NextEntityTurn()
@@ -167,7 +161,7 @@ void ABattleManager::NextEntityTurn()
 	}
 	PlayerRef->OnTurnGo();
 	// gets next entity's turn
-	/*EntityIndex++;
+	EntityIndex++;
 	if (EntityIndex == EnemyArray.Num())
 	{
 		EntityIndex = -1;
@@ -177,7 +171,7 @@ void ABattleManager::NextEntityTurn()
 	else
 	{
 		EnemyArray[EntityIndex]->OnTurnGo();
-	}*/
+	}
 }
 void ABattleManager::BeginPlay()
 {

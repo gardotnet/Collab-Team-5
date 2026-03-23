@@ -23,6 +23,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | Player Variables")
 	float Health = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | Player Variables")
+	float MaxHealth = 10.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | Player Variables")
 	float DamageMultiplier = 1.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | Player Variables")
 	TArray<int> AttackList;

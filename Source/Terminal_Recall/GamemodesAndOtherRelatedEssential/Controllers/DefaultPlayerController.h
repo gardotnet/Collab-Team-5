@@ -4,6 +4,7 @@
 #include "OurBasePlayerController.h"
 #include "DefaultPlayerController.generated.h"
 
+class AWorldTraversalEntity;
 class UInputMappingContext;
 class AAIController;
 class ABaseEntity;
@@ -19,14 +20,14 @@ class TERMINAL_RECALL_API ADefaultPlayerController : public AOurBasePlayerContro
 	
 public:
 	UPROPERTY(EditAnywhere, Category="Stuff For Designers | General Stuff")
-	TSubclassOf<ABaseEntity> PlayerChar;
+	TSubclassOf<AWorldTraversalEntity> PlayerChar;
 	UPROPERTY(EditAnywhere, Category="Stuff For Designers | General Stuff")
 	float PlayerSpeed = 100;
 	UPROPERTY(EditAnywhere, Category="Input Stuff")
 	TObjectPtr<UInputMappingContext> MappingContext;
 protected:
 	UPROPERTY()
-	TObjectPtr<ABaseEntity> PlayerEntity;
+	TObjectPtr<AWorldTraversalEntity> PlayerEntity;
 	UPROPERTY()
 	TObjectPtr<AWorldGridCell> CurrentCell;
 	UPROPERTY()
@@ -41,9 +42,8 @@ protected:
 	float MoveTimer = 0.0f;
 	float DesiredMoveDuration = 0.0f;
 public:
-	UFUNCTION()
-	virtual void MovePlayer() override;
 	void NavigateWorld(TObjectPtr<AWorldGridCell> cell);
+	void UpdatePlayerPos(TObjectPtr<AWorldGridCell> cell);
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 protected:

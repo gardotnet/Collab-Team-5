@@ -47,7 +47,7 @@ public:
 	UFUNCTION()
 	void ActionChoiceSelected(UActionButtonUI* selectedButton);
 	UFUNCTION()
-	void OnCellSelected(ABattleEntity* target, EActionType type, bool mainCell);
+	void OnCellSelected(ABattleEntity* target, EActionType type, bool mainAttackCell);
 	UFUNCTION(BlueprintCallable, Category = "For Designers | Variables")
 	void NextEntityTurn();
 protected:

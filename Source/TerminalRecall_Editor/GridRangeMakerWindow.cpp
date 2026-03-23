@@ -210,28 +210,29 @@ void UGridRangeMakerWindow::OnLoadLevelFileButtonClicked()
 				if (FJsonObjectConverter::JsonObjectStringToUStruct(jsonData, &exportData, 0, 0))
 				{
 					GridSize = GridSize.ComponentMax(exportData.GridSize);
+					FIntPoint newCentre =  exportData.CentrePoint + ((GridSize - exportData.GridSize)/2);
 					ResetAndPopulateGridArray();
 					VisualiserObject->RegenerateGrid(GridSize);
 					for (auto info : exportData.Cells)
 					{
-						FIntPoint origPos = info.GridPos + exportData.CentrePoint;
+						FIntPoint origPos = info.GridPos + newCentre;
 						if (FEditorGridRangeCellState* cellInfo = LevelGridData.Find(origPos))
 						{
 							cellInfo->CellType = EGridRangeBrushMode::Slot;
 							cellInfo->GroupID = info.GroupID;
 							for (auto modifiers : info.DirectionModifier)
 							{
-								modifiers.Magnitude = cellInfo->DirectionMags[modifiers.Direction];
+								cellInfo->DirectionMags[modifiers.Direction] = modifiers.Magnitude;
 							}
 							int32 ismIndex = (origPos.Y * GridSize.X) + origPos.X;
 							LevelGridVisualISM->SetCustomData(ismIndex, GetColour(cellInfo->CellType), true);
 						}
 					}
-					if (FEditorGridRangeCellState* centreInfo = LevelGridData.Find(exportData.CentrePoint))
+					if (FEditorGridRangeCellState* centreInfo = LevelGridData.Find(newCentre))
 					{
 						centreInfo->CellType = EGridRangeBrushMode::Centre;
 						CentrePlaced = true;
-						CentrePoint = exportData.CentrePoint;
+						CentrePoint = newCentre;
 						int32 ismIndex = (CentrePoint.Y * GridSize.X) + CentrePoint.X;
 						LevelGridVisualISM->SetCustomData(ismIndex, GetColour(centreInfo->CellType), true);
 					}
@@ -293,7 +294,8 @@ void UGridRangeMakerWindow::OnExportButtonClicked()
 				// adding direction modifiers
 				for (auto dirInfo : data.DirectionMags)
 				{
-					newInfo.DirectionModifier.Add(FDirectionAndMag(dirInfo.Key, dirInfo.Value));
+					if (dirInfo.Value > -1)
+						newInfo.DirectionModifier.Add(FDirectionAndMag(dirInfo.Key, dirInfo.Value));
 				}
 				newExportStruct.Cells.Add(newInfo);
 			}
@@ -344,6 +346,7 @@ void UGridRangeMakerWindow::OnDirMagChange(const FText& NewText)
 	FString stringText = NewText.ToString();
 	if (stringText == "0" || stringText == "INF")
 	{
+		stringText = "";
 		InputDirMag->SetText(FText::FromString("INF"));
 		SetDirectionMag(0);
 	}
@@ -383,7 +386,6 @@ void UGridRangeMakerWindow::OnGroupChange(const FText& NewText)
 	}
 	else if (stringText == "")
 	{
-		InputGroupId->SetText(FText::FromString(stringText));
 		GroupLabel->SetIsEnabled(false);
 	}
 	else if (!stringText.IsNumeric())
@@ -668,6 +670,11 @@ void UGridRangeMakerWindow::UnselectDirectionButton()
 		{
 			DirButtons[CurrentDirSelected]->SetBackgroundColor(FLinearColor::White);
 		}
+		return;
+	}
+	for (auto button : DirButtons)
+	{
+		button.Value->SetBackgroundColor(FLinearColor::White);
 	}
 }
 void UGridRangeMakerWindow::HideInputsForCell()
@@ -676,6 +683,7 @@ void UGridRangeMakerWindow::HideInputsForCell()
 	InputDirMag->SetIsEnabled(false);
 	DirLabel->SetIsEnabled(false);
 	DirectionCanvas->SetIsEnabled(true);
+	UnselectDirectionButton();
 }
 void UGridRangeMakerWindow::LoadDirectionsOnCell(FIntPoint pos)
 {

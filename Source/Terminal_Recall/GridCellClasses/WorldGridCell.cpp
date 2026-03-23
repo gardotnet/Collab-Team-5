@@ -70,6 +70,7 @@ void AWorldGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 void AWorldGridCell::OnUnitArrive_Implementation()
 {
 	Super::OnUnitArrive_Implementation();
+	// unhides the clouds
 	if (!Visited)
 	{
 		Visited = true;
@@ -90,7 +91,6 @@ void AWorldGridCell::ActualPathCreation(FWorldNeighbourStruct* neighbour)
 	{
 		return item.Cell == this;
 	});
-	
 	if (foundSelf)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Wow already prepared are we?"));
@@ -110,11 +110,9 @@ void AWorldGridCell::ActualPathCreation(FWorldNeighbourStruct* neighbour)
 		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		AActor* newPath = GetWorld()->SpawnActor<AActor>(PathBpClass, spawnPoint, rotation, spawnParams);
 		newPath->SetActorScale3D(FVector(dist/100, 0.9f , 1));
-		
 		// updating info
 		neighbour->PathObject = newPath;
 		neighbour->Length = dist/100;
-		
 		FWorldNeighbourStruct newStruct;
 		newStruct.Cell = this;
 		newStruct.Length = dist/100;
