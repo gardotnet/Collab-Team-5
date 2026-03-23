@@ -4,6 +4,7 @@
 #include "BattleEntity.h"
 #include "BattleEnemyEntity.generated.h"
 
+class ABattleGridCell;
 class ABattlePlayerEntity;
 class APlayerBattleController;
 
@@ -20,6 +21,10 @@ protected:
 	TObjectPtr<UWorld> WorldRef;
 	UPROPERTY()
 	TObjectPtr<ABattlePlayerEntity> PlayerRef;
+	UPROPERTY()
+	int32 EnemyMoveRange;
+	UPROPERTY()
+	TObjectPtr<ABattleGridCell> TargetCell;
 public:
 	ABattleEnemyEntity();
 	virtual void OnTurnGo() override;

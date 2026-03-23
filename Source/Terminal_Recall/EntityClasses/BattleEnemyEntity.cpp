@@ -98,6 +98,12 @@ void ABattleEnemyEntity::OnTurnGo()
 						break;
 					prevPos += nextDir;
 					rayEndPos = prevPos + FVector(0.0f, 0.0f, -500.0f);
+					if (bool* playerFoundOnThatCell = searchedLoc.Find(prevPos))
+					{
+						if (*playerFoundOnThatCell)
+							attacksThatCanHit.Add(i);
+						break;
+					}
 					GetWorld()->LineTraceSingleByChannel(hitResult, prevPos, rayEndPos, ECC_GameTraceChannel2, params);
 					if (hitResult.bBlockingHit)
 					{
@@ -157,7 +163,159 @@ void ABattleEnemyEntity::StartMove(FVector position)
 	UE_LOG(LogTemp, Warning, TEXT("Enemy pos = (%d, %d)"), GridPos.X, GridPos.Y);
 	FIntPoint direction = FIntPoint(FMath::Clamp( playerPos.X - GridPos.X, -1, 1),FMath::Clamp(playerPos.Y - GridPos.Y, -1, 1));
 	UE_LOG(LogTemp, Warning, TEXT("Player Dir = (%d, %d)"), direction.X, direction.Y);
-	OnActionDoneEvent.Broadcast();
+	TArray<ABattleGridCell*> importantCells;
+	TArray<ABattleGridCell*> offTargetCell;
+	TArray<FVector> searchedLoc;
+	
+	for (const auto& moveActions : MoveInfoList)
+	{
+		for (const auto& cellInfo : moveActions.ActionRange.Cells)
+		{
+			// get pos, dir and set up raycasting
+			FIntPoint posDirection = FIntPoint(FMath::Clamp(cellInfo.GridPos.X, -1, 1),FMath::Clamp(cellInfo.GridPos.Y, -1, 1));
+			FVector rayStartPos = GetActorLocation() + (FVector(cellInfo.GridPos.X, cellInfo.GridPos.Y, 1) * 100.0f);
+			FVector rayEndPos = rayStartPos + FVector(0.0f, 0.0f, -500.0f);
+			FHitResult hitResult;
+			FCollisionQueryParams params;
+			// checks if already checked
+			bool playerFoundOnThatCell = searchedLoc.Contains(rayStartPos);
+			if (!playerFoundOnThatCell)
+			{
+				// gets grid cell
+				GetWorld()->LineTraceSingleByChannel(hitResult, rayStartPos, rayEndPos, ECC_GameTraceChannel1, params);
+				if (hitResult.bBlockingHit)
+				{
+					if (ABattleGridCell* cellObject = Cast<ABattleGridCell>(hitResult.GetActor()))
+					{
+						// if not in player direction
+						if (posDirection != direction)
+						{
+							offTargetCell.Add(cellObject);
+						}
+						else
+						{
+							importantCells.Add(cellObject);
+						}
+						searchedLoc.Add(rayStartPos);
+					}
+				}
+				// tells code this position has be checked
+				searchedLoc.Add(rayStartPos);
+			}
+			// for every follow up
+			for (const auto& followUpDirInfo : cellInfo.DirectionModifier)
+			{
+				FVector nextDir = FVector(0, 0, 0);
+				// gets direction for follow-up cells
+				switch (followUpDirInfo.Direction)
+				{
+				case ECompassDirection::N:
+					nextDir = FVector(0, 100, 0);
+					direction = FIntPoint(0, 1);
+					UE_LOG(LogTemp, Warning, TEXT("North"));
+					break;
+				case ECompassDirection::NE:
+					nextDir = FVector(100, 100, 0);
+					direction = FIntPoint(1, 1);
+					UE_LOG(LogTemp, Warning, TEXT("North East"));
+					break;
+				case ECompassDirection::E:
+					nextDir = FVector(100, 0, 0);
+					direction = FIntPoint(1, 0);
+					UE_LOG(LogTemp, Warning, TEXT("E"));
+					break;
+				case ECompassDirection::SE:
+					nextDir = FVector(100, -100, 0);
+					direction = FIntPoint(1, -1);
+					UE_LOG(LogTemp, Warning, TEXT("SE"));
+					break;
+				case ECompassDirection::S:
+					nextDir = FVector(0, -100, 0);
+					direction = FIntPoint(0, -1);
+					UE_LOG(LogTemp, Warning, TEXT("S"));
+					break;
+				case ECompassDirection::SW:
+					nextDir = FVector(-100, -100, 0);
+					direction = FIntPoint(-1, -1);
+					UE_LOG(LogTemp, Warning, TEXT("SW"));
+					break;
+				case ECompassDirection::W:
+					nextDir = FVector(-100, 0, 0);
+					direction = FIntPoint(-1, 0);
+					UE_LOG(LogTemp, Warning, TEXT("W"));
+					break;
+				case ECompassDirection::NW:
+					nextDir = FVector(-100, 100, 0);
+					direction = FIntPoint(-1, 1);
+					UE_LOG(LogTemp, Warning, TEXT("NW"));
+					break;
+				default:
+					continue;
+				}
+				FVector prevPos = rayStartPos;
+				// until it cant continue in that direction or maximum range reached
+				int32 totalFollowUp = 0;
+				// get follow-up cell
+				while (true)
+				{
+					// if it reached its range limit
+					if (followUpDirInfo.Magnitude != 0 && totalFollowUp >= followUpDirInfo.Magnitude)
+						break;
+					prevPos += nextDir;
+					rayEndPos = prevPos + FVector(0.0f, 0.0f, -500.0f);
+					playerFoundOnThatCell = searchedLoc.Contains(prevPos);
+					if (!playerFoundOnThatCell)
+					{
+						GetWorld()->LineTraceSingleByChannel(hitResult, prevPos, rayEndPos, ECC_GameTraceChannel1, params);
+						if (hitResult.bBlockingHit)
+						{
+							if (ABattleGridCell* cellObject = Cast<ABattleGridCell>(hitResult.GetActor()))
+							{
+								if (posDirection != direction)
+								{
+									offTargetCell.Add(cellObject);
+								}
+								else
+								{
+									importantCells.Add(cellObject);
+								}
+								searchedLoc.Add(rayStartPos);
+							}
+						}
+						searchedLoc.Add(rayStartPos);
+					}
+				}
+			}
+		}
+	}
+	if (importantCells.Num() > 0 && offTargetCell.Num() > 0)
+	{
+		int32 randomInt = FMath::RandRange(1, 100);
+		if (randomInt < 30)
+		{
+			randomInt = FMath::RandRange(0, offTargetCell.Num() - 1);
+			TargetCell = offTargetCell[randomInt];
+			TargetPosition = offTargetCell[randomInt]->GetActorLocation();
+			TargetPosition.Z = GetActorLocation().Z;
+		}
+		else
+		{
+			randomInt = FMath::RandRange(0, importantCells.Num() - 1);
+			TargetCell = importantCells[randomInt];
+			TargetPosition = importantCells[randomInt]->GetActorLocation();
+			TargetPosition.Z = GetActorLocation().Z;
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("This enemy doesn't have a move action :c"));
+		return;
+	}
+	float distance = FVector::Dist(GetActorLocation(), TargetPosition);
+	MoveTimer = 0;
+	DesiredMoveDuration = distance/Speed;
+	TimerManagerRef->ClearTimer(MoveTimerHandle);
+	TimerManagerRef->SetTimer(MoveTimerHandle, this, &ABattleEnemyEntity::OnMove, 0.01f, true);
 }
 
 void ABattleEnemyEntity::OnBattleStart(ABattleManager* battleManager, int32 enemyID)

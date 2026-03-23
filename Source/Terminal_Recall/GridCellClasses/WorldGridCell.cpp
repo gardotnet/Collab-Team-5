@@ -1,6 +1,7 @@
 ﻿#include "WorldGridCell.h"
 
 #include "Kismet/KismetMathLibrary.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/DefaultPlayerController.h"
 
 AWorldGridCell::AWorldGridCell()
@@ -10,6 +11,8 @@ AWorldGridCell::AWorldGridCell()
 void AWorldGridCell::LoadLevel()
 {
 	// [NOTE] Will update game mode and to load the level assign to this cell.
+	Cast<UDefaultInstance>(GetGameInstance())->Map = LevelFilePath;
+	// move to Battle scene
 }
 void AWorldGridCell::CreatePath()
 {

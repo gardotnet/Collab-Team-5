@@ -94,7 +94,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 					case ECellBrushMode::Wall:
 						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 						{
-							if (cellData.IdForCellContent == -1)
+							if (cellData.IdForCellContent == 0)
 							{
 								(*newCell)->Destroy();
 								battleManager->GridMap.Remove(cellData.Position);
