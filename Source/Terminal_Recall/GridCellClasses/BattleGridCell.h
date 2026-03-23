@@ -17,7 +17,6 @@ UCLASS()
 class TERMINAL_RECALL_API ABattleGridCell : public ABaseGridCell
 {
 	GENERATED_BODY()
-
 public:
 	UPROPERTY(BlueprintReadWrite, Category="For Designers | Delegates")
 	FOnClickedCell OnClickedCellEvent;

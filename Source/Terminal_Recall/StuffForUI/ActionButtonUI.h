@@ -33,4 +33,7 @@ protected:
 	virtual void NativeDestruct() override;
 	UFUNCTION()
 	void OnButtonClicked();
+public:
+	UFUNCTION()
+	void RemoveForChoices();
 };

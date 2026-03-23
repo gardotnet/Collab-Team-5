@@ -4,6 +4,8 @@
 #include "Blueprint/UserWidget.h"
 #include "BattleChoiceSelectUI.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRemoveChoicesDelegate);
+
 class UActionButtonUI;
 class UScrollBox;
 class UButton;
@@ -22,6 +24,8 @@ protected:
 	UButton* AttackTabButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* ItemTabButton;
+
+	FRemoveChoicesDelegate OnRemoveChoices;
 public:
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Customisation")
 	FLinearColor SelectColour = FLinearColor(0.426f, 0.426f, 0.426f, 1.0f);
@@ -44,7 +48,6 @@ protected:
 	UFUNCTION()
 	void OnItemTabButtonClicked();
 	void UnselectTab();
-	void RemoveChoices();
 public:
 	UFUNCTION()
 	void OnCloseButtonClicked();

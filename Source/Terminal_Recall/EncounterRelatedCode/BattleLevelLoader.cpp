@@ -64,7 +64,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 			{
 				for (int y = 0; y < levelData.GridSize.Y; y++)
 				{
-					FVector spawnPos = FVector(-100 * x, 100 * y, 0.0f);				
+					FVector spawnPos = FVector(-100 * x, 100 * y, 0.0f);
 					ABattleGridCell* newCell = GetWorld()->SpawnActor<ABattleGridCell>(BattleGridClass, spawnPos, FRotator::ZeroRotator, spawnParams);
 					#if WITH_EDITOR
 					newCell->SetFolderPath(FName("GridCells"));
@@ -94,6 +94,12 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 					case ECellBrushMode::Wall:
 						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 						{
+							if (cellData.IdForCellContent == -1)
+							{
+								(*newCell)->Destroy();
+								battleManager->GridMap.Remove(cellData.Position);
+								continue;
+							}
 							FString stringConvert = FString::FromInt(cellData.IdForCellContent);
 							// look for prop info using ID given
 							if (FAssetLookUpTable* propInfo = PropDataTable->FindRow<FAssetLookUpTable>(FName(*stringConvert), TEXT("Level Loader")))
@@ -115,7 +121,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 								battleManager->PlayerRef = GetWorld()->SpawnActor<ABattlePlayerEntity>(PlayerEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
 								battleManager->PlayerRef->SetPos(cellData.Position);
 								battleManager->PlayerRef->OnBattleStart(battleManager);
-								battleManager->PlayerRef->OnMoveDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
+								battleManager->PlayerRef->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
 								(*newCell)->HouseEntity(battleManager->PlayerRef);
 							}
 						}
@@ -136,7 +142,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 								ABattleEnemyEntity* newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
 								// [NOTE] Pass data to enemy
 								battleManager->EnemyArray.Add(newEnemy);
-								newEnemy->OnMoveDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
+								newEnemy->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
 								newEnemy->OnBattleStart(battleManager, cellData.IdForCellContent);
 								newEnemy->SetPos(cellData.Position);
 								(*newCell)->HouseEntity(newEnemy);

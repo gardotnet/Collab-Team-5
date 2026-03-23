@@ -35,9 +35,9 @@ void ABattleEntity::SetPos(FIntPoint newPos)
 FGridRangeExport* ABattleEntity::GetActionInfo(EActionType type, int32 indexInList)
 {
 	if (type == EActionType::Attack || type == EActionType::EnemyAttack)
-		return &AttackInfoList[indexInList];
+		return &AttackInfoList[indexInList].ActionRange;
 	if (type == EActionType::Movement || type == EActionType::EnemyMove)
-		return &MoveInfoList[indexInList];
+		return &MoveInfoList[indexInList].ActionRange;
 	return nullptr;
 }
 void ABattleEntity::CustomTakeDamage(float damage)
@@ -63,7 +63,7 @@ void ABattleEntity::OnMove()
 	
 	if (MoveTimer > DesiredMoveDuration || distance < 1)
 	{
-		OnMoveDoneEvent.Broadcast();
+		OnActionDoneEvent.Broadcast();
 		TimerManagerRef->ClearTimer(MoveTimerHandle);
 		SetActorLocation(TargetPosition);
 	}
@@ -95,7 +95,7 @@ void ABattleEntity::FindAndSaveActions(const TArray<int32>& attackArray, const T
 			auto extractedData = LoadActionInfoFromPath(FPaths::ProjectContentDir() + attackInfo->GridRangeFilePath);
 			if (!extractedData.IsSet())
 				continue;
-			AttackInfoList.Add(extractedData.GetValue());
+			AttackInfoList.Add(FMoveStruct(extractedData.GetValue(), 0));
 			// create button and set it up
 			if (UActionButtonUI* newAttackButton =Cast<UActionButtonUI>(CreateWidget(GetWorld()->GetFirstPlayerController(), ActionButtonClass)))
 			{
@@ -118,7 +118,7 @@ void ABattleEntity::FindAndSaveActions(const TArray<int32>& attackArray, const T
 			auto extractedData = LoadActionInfoFromPath(FPaths::ProjectContentDir() + moveInfo->GridRangeFilePath);
 			if (!extractedData.IsSet())
 				continue;
-			MoveInfoList.Add(extractedData.GetValue());
+			MoveInfoList.Add(FMoveStruct(extractedData.GetValue(), 0));
 			if (UActionButtonUI* newMoveButton =Cast<UActionButtonUI>(CreateWidget(GetWorld()->GetFirstPlayerController(), ActionButtonClass)))
 			{
 				newMoveButton->Entity = this;

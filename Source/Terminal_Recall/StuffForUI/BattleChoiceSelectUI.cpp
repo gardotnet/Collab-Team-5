@@ -65,33 +65,18 @@ void UBattleChoiceSelectUI::UnselectTab()
 	AttacksScrollBox->SetVisibility(ESlateVisibility::Hidden);
 	ItemsScrollBox->SetVisibility(ESlateVisibility::Hidden);
 }
-
-void UBattleChoiceSelectUI::RemoveChoices()
-{
-	for (int i = 0; i < MovesScrollBox->GetChildrenCount(); i++)
-	{
-		MovesScrollBox->RemoveChild(MovesScrollBox->GetChildAt(0));
-	}
-	for (int i = 0; i < AttacksScrollBox->GetChildrenCount(); i++)
-	{
-		AttacksScrollBox->RemoveChild(AttacksScrollBox->GetChildAt(0));
-	}
-	for (int i = 0; i < ItemsScrollBox->GetChildrenCount(); i++)
-	{
-		ItemsScrollBox->RemoveChild(ItemsScrollBox->GetChildAt(0));
-	}
-}
-
 void UBattleChoiceSelectUI::AddActionButton(TArray<UActionButtonUI*>& movementList,
                                             TArray<UActionButtonUI*>& attackList, TArray<UActionButtonUI*>& itemList)
 {
 	if (!IsInViewport())
 		AddToViewport();
-	RemoveChoices();
+	OnRemoveChoices.Broadcast();
+	OnRemoveChoices.Clear();
 	if (movementList.Num() > 0)
 	{
 		for (UActionButtonUI* moveAction : movementList)
 		{
+			OnRemoveChoices.AddDynamic(moveAction, &UActionButtonUI::RemoveForChoices);
 			if (UUserWidget* parentConversion = Cast<UUserWidget>(moveAction))
 				MovesScrollBox->AddChild(parentConversion);
 		}
@@ -100,6 +85,7 @@ void UBattleChoiceSelectUI::AddActionButton(TArray<UActionButtonUI*>& movementLi
 	{
 		for (UActionButtonUI* attackAction : attackList)
 		{
+			OnRemoveChoices.AddDynamic(attackAction, &UActionButtonUI::RemoveForChoices);
 			if (UUserWidget* parentConversion = Cast<UUserWidget>(attackAction))
 				AttacksScrollBox->AddChild(parentConversion);
 		}
@@ -108,6 +94,7 @@ void UBattleChoiceSelectUI::AddActionButton(TArray<UActionButtonUI*>& movementLi
 	{
 		for (UActionButtonUI* itemAction : itemList)
 		{
+			OnRemoveChoices.AddDynamic(itemAction, &UActionButtonUI::RemoveForChoices);
 			if (UUserWidget* parentConversion = Cast<UUserWidget>(itemAction))
 				ItemsScrollBox->AddChild(parentConversion);
 		}

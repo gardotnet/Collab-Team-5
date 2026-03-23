@@ -21,7 +21,7 @@ public:
 	TObjectPtr<UStaticMeshComponent> MeshComponent;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Events For Designers || Delegates")
-	FOnMoveDone OnMoveDoneEvent; // [NOTE] Make sure to use this event when player reached destination
+	FOnMoveDone OnActionDoneEvent; // [NOTE] Make sure to use this event when player reached destination
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Entity Info | General Stuff")
 	float MaxHealth = 100;

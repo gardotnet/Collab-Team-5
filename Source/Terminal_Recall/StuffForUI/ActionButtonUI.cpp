@@ -18,3 +18,8 @@ void UActionButtonUI::OnButtonClicked()
 {
 	OnActionSelected.Broadcast(this);
 }
+
+void UActionButtonUI::RemoveForChoices()
+{
+	RemoveFromParent();
+}

@@ -122,7 +122,7 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, bool mainAttackCell)
 {
 	// so attack follow-ups do not trigger this
-	if (mainAttackCell || type != EActionType::Attack)
+	if (mainAttackCell || (type != EActionType::Attack && type != EActionType::EnemyAttack))
 	{
 		// stops player raycast as no longer needed for now
 		PlayerBattleController->bEnableMouseOverEvents = false;
@@ -135,15 +135,19 @@ void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, boo
 		CallGroupAttackEvent.Clear();
 	}
 	// if there is a target to attack
-	if (type == EActionType::Attack)
+	if (IsValid(target) && type == EActionType::Attack)
 		target->CustomTakeDamage(1.0f);
 	if (mainAttackCell && !(type == EActionType::EnemyAttack || type == EActionType::EnemyMove))
+	{
 		NextEntityTurn();
+		return;
+	}
+	SelectMode = false;
 }
 void ABattleManager::NextEntityTurn()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Next turn"));
-	if (!PlayerRef)
+	if (!IsValid(PlayerRef))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Player Lost"));
 		return;

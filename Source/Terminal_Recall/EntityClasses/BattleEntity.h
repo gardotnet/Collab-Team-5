@@ -6,6 +6,16 @@
 #include "Terminal_Recall/StructsAndEnums/GridRangeExport.h"
 #include "BattleEntity.generated.h"
 
+USTRUCT()
+struct FMoveStruct
+{
+	GENERATED_BODY()
+	UPROPERTY()
+	FGridRangeExport ActionRange;
+	UPROPERTY()
+	int32 Cooldown = 0;
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FChangeCell);
 
 class UActionButtonUI;
@@ -39,8 +49,8 @@ protected:
 	TArray<UActionButtonUI*> AttackActionsUI;
 	UPROPERTY()
 	TArray<UActionButtonUI*> ItemActionsUI;
-	TArray<FGridRangeExport> AttackInfoList; 
-	TArray<FGridRangeExport> MoveInfoList; 
+	TArray<FMoveStruct> AttackInfoList; 
+	TArray<FMoveStruct> MoveInfoList; 
 public:
 	ABattleEntity();
 	virtual void OnBattleStart(ABattleManager* battleManager, int32 enemyID = -1);
@@ -49,6 +59,7 @@ public:
 	void CustomTakeDamage(float damage);
 	void SetPos(FIntPoint newPos);
 	FIntPoint GetPos() { return GridPos; }
+	
 	FGridRangeExport* GetActionInfo(EActionType type, int32 indexInList);
 	virtual void BeginPlay() override;
 	virtual void OnMove() override;
@@ -57,5 +68,3 @@ protected:
 	virtual void FindAndSaveActions(const TArray<int32>& attackArray, const TArray<int32>& moveArray, bool isEnemy = true);
 	TOptional<FGridRangeExport> LoadActionInfoFromPath(FString path);
 };
-
-
