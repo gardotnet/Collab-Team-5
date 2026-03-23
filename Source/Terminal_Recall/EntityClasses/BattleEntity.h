@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseEntity.h"
+#include "Terminal_Recall/Interfaces/IHealthInteractable.h"
 #include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
 #include "Terminal_Recall/StructsAndEnums/GridRangeExport.h"
 #include "BattleEntity.generated.h"
@@ -13,7 +14,7 @@ class APlayerBattleController;
 class ABattleManager;
 
 UCLASS()
-class TERMINAL_RECALL_API ABattleEntity : public ABaseEntity
+class TERMINAL_RECALL_API ABattleEntity : public ABaseEntity, public IHealthInteractable
 {
 	GENERATED_BODY()
 
@@ -53,8 +54,8 @@ public:
 	virtual void BeginPlay() override;
 	virtual void OnMove() override;
 	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed) override;
+	
+	virtual void TakeCustomDamage_Implementation(float damageTaken) override;
 protected:
 	TOptional<FGridRangeExport> LoadActionInfoFromPath(FString path);
 };
-
-

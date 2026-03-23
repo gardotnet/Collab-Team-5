@@ -4,18 +4,28 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "InteractablBaseClass.generated.h"
+#include "Engine/DataTable.h"
+#include "Terminal_Recall/StructsAndEnums/ForDataTable/TrapInfoStruct.h"
+#include "Terminal_Recall/Interfaces/IHealthInteractable.h"
+#include "BaseInteractableObj.generated.h"
 
-// Making this class Blueprintable so Designers can derive Blueprint classes from it.
-// Abstract prevents spawning the base C++ class directly if it's only meant to be a parent.
 UCLASS(Abstract, Blueprintable)
-class TERMINAL_RECALL_API AInteractablBaseClass : public AActor
+class TERMINAL_RECALL_API ABaseInteractableObj : public AActor
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	AInteractablBaseClass();
+	ABaseInteractableObj();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "For Designers | Necessities")
+	TObjectPtr<UDataTable> TrapDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "For Designers | Necessities")
+	FName TrapRowName;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "For Designers | Necessities")
+	FTrapInfoStruct TrapData;
 
 protected:
 	// Called when the game starts or when spawned
@@ -24,6 +34,12 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable, Category = "Trap Events")
+	virtual void FetchTrapData();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Trap Events")
+	void OnUnitArrive();
 
 	// Basic information for the interactable object, exposed to Blueprints
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Info")
@@ -43,6 +59,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interactable|Interaction")
 	void PickUp();
 	virtual void PickUp_Implementation();
+
+	UFUNCTION(BlueprintCallable, Category = "Interactable|Interaction")
+	void DamageEntity(AActor* InteractedActor, float amount);
 
 	// Function to pass info (name and description)
 	// BlueprintPure makes it a green node in Blueprints (no execution pins needed)
