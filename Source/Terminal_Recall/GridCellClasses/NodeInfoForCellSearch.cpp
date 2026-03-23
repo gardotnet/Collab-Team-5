@@ -1,11 +1,11 @@
 ﻿#include "NodeInfoForCellSearch.h"
-#include "WorldGridCell.h"
+#include "Terminal_Recall/GridCellClasses/Harry/Nodes/TraversalNode.h"
 
 UNodeInfoForCellSearch::UNodeInfoForCellSearch()
 {
 	
 }
-UNodeInfoForCellSearch::UNodeInfoForCellSearch(TObjectPtr<AWorldGridCell> cell, TObjectPtr<UNodeInfoForCellSearch> parent,
+UNodeInfoForCellSearch::UNodeInfoForCellSearch(TObjectPtr<ATraversalNode> cell, TObjectPtr<UNodeInfoForCellSearch> parent,
                                                float gCost, float hCost)
 {
 	this->Cell = cell;

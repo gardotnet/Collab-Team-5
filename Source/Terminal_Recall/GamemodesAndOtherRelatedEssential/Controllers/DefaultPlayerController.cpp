@@ -4,7 +4,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GridCellClasses/NodeInfoForCellSearch.h"
-#include "Terminal_Recall/GridCellClasses/WorldGridCell.h"
+#include "Terminal_Recall/GridCellClasses/Harry/Nodes/TraversalNode.h"
+#include "Terminal_Recall/EntityClasses/BaseEntity.h"
 
 void ADefaultPlayerController::BeginPlay()
 {
@@ -20,14 +21,17 @@ void ADefaultPlayerController::BeginPlay()
 		PlayerEntity = GetWorld()->SpawnActor<ABaseEntity>(PlayerChar, gameInstance->PlayerSpawnPos, Rotation, SpawnParams);
 	}
 	// raycast to get the cell that player spawn on
-	FVector endTracePos = PlayerEntity->GetActorLocation() + FVector(0,0, -1000);
-	FCollisionQueryParams collisionParams;
-	FHitResult hitResult;
-	GetWorld()->LineTraceSingleByChannel(hitResult, PlayerEntity->GetActorLocation(), endTracePos, ECC_GameTraceChannel1, collisionParams);
-	if (hitResult.GetActor())
+	if (PlayerEntity)
 	{
-		CurrentCell = Cast<AWorldGridCell>(hitResult.GetActor());
-		CurrentCell->OnUnitArrive();
+		FVector endTracePos = PlayerEntity->GetActorLocation() + FVector(0,0, -1000);
+		FCollisionQueryParams collisionParams;
+		FHitResult hitResult;
+		GetWorld()->LineTraceSingleByChannel(hitResult, PlayerEntity->GetActorLocation(), endTracePos, ECC_GameTraceChannel1, collisionParams);
+		if (hitResult.GetActor())
+		{
+			CurrentCell = Cast<ATraversalNode>(hitResult.GetActor());
+			// CurrentCell->OnUnitArrive(); // ATraversalNode doesn't have OnUnitArrive currently, you can migrate it or handle it.
+		}
 	}
 }
 
@@ -47,15 +51,18 @@ void ADefaultPlayerController::MovePlayer()
 	if (ThePath[PathIndex] == DestinationCell)
 	{
 		ThePath.Empty();
-		DestinationCell->OnUnitArrive();
+		// DestinationCell->OnUnitArrive();
 	}
 	else
 	{
 		PathIndex++;
-		PlayerEntity->StartMove(ThePath[PathIndex]->GetActorLocation());
+		if (PlayerEntity)
+		{
+			PlayerEntity->StartMove(ThePath[PathIndex]->GetActorLocation());
+		}
 	}
 }
-void ADefaultPlayerController::NavigateWorld(TObjectPtr<AWorldGridCell> cell)
+void ADefaultPlayerController::NavigateWorld(TObjectPtr<ATraversalNode> cell)
 {
 	if (DestinationCell == cell)
 		return;
@@ -88,7 +95,10 @@ void ADefaultPlayerController::NavigateWorld(TObjectPtr<AWorldGridCell> cell)
 		// Flips the array around
 		Algo::Reverse(ThePath);
 		// moves the player
-		PlayerEntity->StartMove(ThePath[PathIndex]->GetActorLocation());
+		if (PlayerEntity && ThePath.IsValidIndex(PathIndex))
+		{
+			PlayerEntity->StartMove(ThePath[PathIndex]->GetActorLocation());
+		}
 	}
 	else
 	{
@@ -107,33 +117,37 @@ bool ADefaultPlayerController::FindCell(TObjectPtr<UNodeInfoForCellSearch> cellI
 			return true;
 		}
 		
-		for (auto neighbour : currentInfo->Cell->NeighbouringCells)
+		if (currentInfo->Cell)
 		{
-			float neighbourGCost = currentInfo->GCost + neighbour.Length;
-			float distTillDestination = Heuristic_Manhattan(neighbour.Cell->GetActorLocation(), DestinationCell->GetActorLocation());
-			
-			bool found = false;
-			for (auto info : OpenList)
+			for (auto neighbour : currentInfo->Cell->NeighbouringNodes)
 			{
-				if (info->Cell == neighbour.Cell)
+				if (!neighbour.Node) continue;
+				float neighbourGCost = currentInfo->GCost + neighbour.Length;
+				float distTillDestination = Heuristic_Manhattan(neighbour.Node->GetActorLocation(), DestinationCell->GetActorLocation());
+				
+				bool found = false;
+				for (auto info : OpenList)
 				{
-					if (info->FCost > neighbourGCost + distTillDestination)
+					if (info->Cell == neighbour.Node)
 					{
-						info->UpdateNodeInfo(currentInfo, neighbourGCost, distTillDestination);	
+						if (info->FCost > neighbourGCost + distTillDestination)
+						{
+							info->UpdateNodeInfo(currentInfo, neighbourGCost, distTillDestination);	
+						}
+						found = true;
+						break;
 					}
-					found = true;
-					break;
 				}
-			}
-			
-			if (!found)
-			{
-				TObjectPtr<UNodeInfoForCellSearch> newInfo = NewObject<UNodeInfoForCellSearch>();
-				newInfo->Cell = neighbour.Cell;
-				newInfo->ParentCell = currentInfo;
-				newInfo->GCost = neighbourGCost;
-				newInfo->HCost = distTillDestination;
-				OpenList.Add(newInfo);
+				
+				if (!found)
+				{
+					TObjectPtr<UNodeInfoForCellSearch> newInfo = NewObject<UNodeInfoForCellSearch>();
+					newInfo->Cell = neighbour.Node;
+					newInfo->ParentCell = currentInfo;
+					newInfo->GCost = neighbourGCost;
+					newInfo->HCost = distTillDestination;
+					OpenList.Add(newInfo);
+				}
 			}
 		}
 		
@@ -157,4 +171,3 @@ float ADefaultPlayerController::Heuristic_Manhattan(FVector start, FVector end)
 {
 	return FMath::Abs(start.X - end.X) + FMath::Abs(start.Y - end.Y);
 }
-
