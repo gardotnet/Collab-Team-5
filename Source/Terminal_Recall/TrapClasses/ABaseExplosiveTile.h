@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "BaseInteractableObj.h"
+#include "BaseClassInteractables/BaseInteractableObj.h"
 #include "ABaseExplosiveTile.generated.h"
 
 UCLASS()
@@ -17,9 +17,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosive")
 	float ExplosionRadius;
-
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-
+	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Explosive")
 	void Explode();
 };

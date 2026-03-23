@@ -95,7 +95,7 @@ TOptional<FGridRangeExport> ABattleEntity::LoadActionInfoFromPath(FString path)
 	return TOptional<FGridRangeExport>();
 }
 
-void ABattleEntity::TakeCustomDamage_Implementation(float damageTaken)
+void ABattleEntity::TakeCustomDamage_Implementation(float DamageAmount, AActor* DamageCauser)
 {
-	CustomTakeDamage(damageTaken);
+	CustomTakeDamage(DamageAmount);
 }

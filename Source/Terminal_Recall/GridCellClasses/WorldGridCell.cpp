@@ -82,10 +82,12 @@ void AWorldGridCell::OnUnitArrive_Implementation()
 }
 void AWorldGridCell::ActualPathCreation(FWorldNeighbourStruct* neighbour)
 {
-	if (neighbour->HasPathConnected)
+	if (neighbour->HasPathConnected) // Checks if the chosen neighbour has already been connected, if so, return
 			return;
-	neighbour->HasPathConnected = true;
+	neighbour->HasPathConnected = true; // sets the connected path status to true if not already listed as connected
+	
 	// finding itself to see if it is in its neighbour's list
+	
 	FWorldNeighbourStruct* foundSelf = neighbour->Cell->NeighbouringCells.FindByPredicate([this](const FWorldNeighbourStruct& item)
 	{
 		return item.Cell == this;
@@ -98,11 +100,15 @@ void AWorldGridCell::ActualPathCreation(FWorldNeighbourStruct* neighbour)
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Adding Path"));
+		
 		// Calculate the position and rotation of the path
 		FVector currentPos = GetActorLocation();
 		FVector neighbourPos = neighbour->Cell->GetActorLocation();
-		neighbourPos.Z = currentPos.Z;
-		float dist = FVector::Dist(currentPos, neighbourPos);
+		
+		neighbourPos.Z = currentPos.Z; // sets same height for current position to neighbour position
+		
+		float dist = FVector::Dist(currentPos, neighbourPos); // gets the distance between the two points
+		
 		// half-way between 2 points
 		FVector spawnPoint = (currentPos + neighbourPos) * 0.5f;
 		FRotator rotation = UKismetMathLibrary::FindLookAtRotation(spawnPoint, neighbourPos);

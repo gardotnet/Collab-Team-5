@@ -55,7 +55,9 @@ public:
 	virtual void OnMove() override;
 	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 	
-	virtual void TakeCustomDamage_Implementation(float damageTaken) override;
+	virtual void TakeCustomDamage_Implementation(float DamageAmount, AActor* DamageCauser) override;
+	
 protected:
+	
 	TOptional<FGridRangeExport> LoadActionInfoFromPath(FString path);
 };

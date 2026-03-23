@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "BaseInteractableObj.h"
+#include "BaseClassInteractables/BaseInteractableObj.h"
 #include "ABaseQuicksandTile.generated.h"
 
 UCLASS()

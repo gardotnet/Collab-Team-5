@@ -19,5 +19,5 @@ class TERMINAL_RECALL_API IHealthInteractable
 public:
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Health")
-	void TakeCustomDamage(float damageTaken);
+	void TakeCustomDamage(float DamageAmount, AActor* DamageCauser);
 };

@@ -62,6 +62,6 @@ void ABaseInteractableObj::DamageEntity(AActor* interactedActor, float amount)
 {
 	if (interactedActor && interactedActor->Implements<UHealthInteractable>())
 	{
-		IHealthInteractable::Execute_TakeCustomDamage(interactedActor, amount);
+		IHealthInteractable::Execute_TakeCustomDamage(this, amount, interactedActor);
 	}
 }
