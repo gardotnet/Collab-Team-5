@@ -15,7 +15,7 @@ struct FWorldNeighbourStruct : public FTableRowBase
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<AWorldGridCell> Cell;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(tooltip = "Scaled by 1 Block (100 Units)"))
 	int32 Length = 1;
