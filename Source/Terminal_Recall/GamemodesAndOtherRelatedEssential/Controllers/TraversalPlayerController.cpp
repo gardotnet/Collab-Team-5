@@ -17,20 +17,10 @@ void ATraversalPlayerController::OpenLevelSelect(int32 difficulty, const TArray<
 
 void ATraversalPlayerController::NavigateWorld(TObjectPtr<AHarryWorldTraversalNode> cell)
 {
-	if (DestinationNode == cell)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Same dest"));
-	}
-	if (ScreenOn)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Screen on"));
+	UE_LOG(LogTemp, Warning, TEXT("Current: %s vs Dest: %s"), *CurrentNode->GetActorNameOrLabel(), *cell->GetActorNameOrLabel());
+	if (DestinationNode == cell || ScreenOn || cell == CurrentNode)
 		return;
-	}
-	if (cell == CurrentNode)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("IDIOT, You are standing on it"));
-		return;
-	}
+	
 	DestinationNode = cell;
 	PathIndex = 0;
 	ThePath.Empty();
@@ -96,8 +86,8 @@ void ATraversalPlayerController::NavigateOneSpaceBack()
 
 bool ATraversalPlayerController::FindCell(TObjectPtr<UNodeInfoForCellSearch> currentInfo)
 {
-	// 
 	TObjectPtr<UNodeInfoForCellSearch> cellInfo = currentInfo;
+	FString name = cellInfo->Node->GetActorNameOrLabel();
 	int32 iterations = 0;
 	while (OpenList.Num() > 0)
 	{
@@ -111,7 +101,7 @@ bool ATraversalPlayerController::FindCell(TObjectPtr<UNodeInfoForCellSearch> cur
 		}
 		for (auto neighbour : cellInfo->Node->NeighbouringNodes)
 		{
-			
+			FString neighbourName = neighbour.Node->GetActorNameOrLabel();
 			float neighbourGCost = cellInfo->GCost + neighbour.Length;
 			float distTillDestination = Heuristic_Manhattan(neighbour.Node->GetActorLocation(), DestinationNode->GetActorLocation());
 			
@@ -126,7 +116,7 @@ bool ATraversalPlayerController::FindCell(TObjectPtr<UNodeInfoForCellSearch> cur
 				}
 			}
 			if (found)
-				break;
+				continue;
 			
 			for (const auto& info : OpenList)
 			{
@@ -161,6 +151,7 @@ bool ATraversalPlayerController::FindCell(TObjectPtr<UNodeInfoForCellSearch> cur
 			return A->FCost < B->FCost; 
 		});
 		cellInfo = OpenList[0];
+		name = cellInfo->Node->GetActorNameOrLabel();
 	}
 	return false;
 }
