@@ -47,7 +47,6 @@ protected:
 	TArray<AActor*> TempActors;
 protected:
 	virtual void BeginPlay() override;
-	virtual void OnConstruction(const FTransform& Transform) override;
 	void LoadLevel(FString levelPath);
 	UFUNCTION(CallInEditor, BlueprintCallable, Category = "For Designers | Functions")
 	void EditorLoadLevel();

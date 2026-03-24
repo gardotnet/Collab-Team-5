@@ -11,9 +11,7 @@ class AHarryWorldTraversalNode;
 class ULevelSelectWindow;
 class UInputMappingContext;
 class AWorldTraversingEntityV2;
-/**
- * 
- */
+
 UCLASS()
 class TERMINAL_RECALL_API ATraversalPlayerController : public AOurBasePlayerController
 {
@@ -26,6 +24,8 @@ public:
 	float PlayerSpeed = 100;
 	UPROPERTY(EditAnywhere, Category="Input Stuff")
 	TObjectPtr<UInputMappingContext> MappingContext;
+
+	bool ScreenOn = false;
 	
 protected:
 	
@@ -59,8 +59,12 @@ public:
 	
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
+	
+	void NavigateOneSpaceBack();
 protected:
 	bool FindCell(TObjectPtr<UNodeInfoForCellSearch> currentInfo);
 	// Utilities
 	float Heuristic_Manhattan(FVector start, FVector end);
+	UFUNCTION()
+	void DelayedBeginPlay();
 };

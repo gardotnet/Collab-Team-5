@@ -28,9 +28,11 @@ protected:
 public:
 	virtual void StartMove(TArray<TObjectPtr<AHarryWorldTraversalNode>> path) override;
 
+
 protected:
 	
 	virtual void BeginPlay() override;
+	virtual void OnMove() override;
 
 	
 };

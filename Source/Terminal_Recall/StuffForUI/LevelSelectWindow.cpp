@@ -5,6 +5,7 @@
 #include "Components/HorizontalBox.h"
 #include "Components/Image.h"
 #include "Kismet/GameplayStatics.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/TraversalPlayerController.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/EnemyInfoStruct.h"
 
 void ULevelSelectWindow::NativeConstruct()
@@ -35,6 +36,7 @@ void ULevelSelectWindow::NativeConstruct()
 			}
 		}
 	}
+	PlayerController = Cast<ATraversalPlayerController>(GetWorld()->GetFirstPlayerController());
 }
 
 void ULevelSelectWindow::NativeDestruct()
@@ -48,6 +50,7 @@ void ULevelSelectWindow::NativeDestruct()
 
 void ULevelSelectWindow::OnCloseButtonPressed()
 {
+	PlayerController->NavigateOneSpaceBack();
 	RemoveFromParent();
 	ClearUIEvent.Broadcast();
 	ClearUIEvent.Clear();

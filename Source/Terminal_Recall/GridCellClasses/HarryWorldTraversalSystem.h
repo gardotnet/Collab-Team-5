@@ -89,8 +89,6 @@ public:
 	void LoadSplineData();*/
 
 protected:
-	virtual void BeginPlay() override;
-
 	void ActualPathCreation(AHarryWorldTraversalNode* NodeA, FHarryNeighbourStruct* NeighbourInfo);
 	// Update spline meshes along the splines
 	void RebuildMeshesForPath(FHarryNeighbourStruct* NeighbourInfo);

@@ -3,7 +3,7 @@
 
 bool UTraversalFunctionLibrary::EvaluateSplineMovement(USplineComponent* Spline, float Progress, bool bForward, FVector& OutLocation, FRotator& OutRotation)
 {
-	if (!Spline)
+	if (IsValid(Spline))
 	{
 		return false;
 	}
@@ -29,7 +29,7 @@ bool UTraversalFunctionLibrary::EvaluateSplineMovement(USplineComponent* Spline,
 
 void UTraversalFunctionLibrary::CalculateSplineMoveDuration(USplineComponent* Spline, float Speed, float& OutDuration)
 {
-	if (!Spline || Speed <= 0.0f)
+	if (IsValid(Spline) || Speed <= 0.0f)
 	{
 		OutDuration = 0.0f;
 		return;

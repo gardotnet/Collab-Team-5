@@ -4,6 +4,7 @@
 #include "Blueprint/UserWidget.h"
 #include "LevelSelectWindow.generated.h"
 
+class ATraversalPlayerController;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FClearLevelSelectInfoDelegate);
 
 class ULevelSelectIconWidget;
@@ -30,6 +31,9 @@ protected:
 	TArray<ULevelSelectIconWidget*> DifficultWidgetHolder;
 	UPROPERTY()
 	TArray<ULevelSelectIconWidget*> EnemyIconWidgetHolder;
+
+	UPROPERTY()
+	TObjectPtr<ATraversalPlayerController> PlayerController;
 	
 public:
 	

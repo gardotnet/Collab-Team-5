@@ -30,7 +30,7 @@ void ABattleLevelLoader::BeginPlay()
 	TempGridMap.Empty();
 	for (AActor* Actor : TempActors)
 	{
-		if (Actor)
+		if (IsValid(Actor))
 		{
 			Actor->Destroy();
 		}
@@ -47,12 +47,6 @@ void ABattleLevelLoader::BeginPlay()
 	}
 }
 
-void ABattleLevelLoader::OnConstruction(const FTransform& Transform)
-{
-	Super::OnConstruction(Transform);
-	UE_LOG(LogTemp, Warning, TEXT("Construct this"), *OverwriteLevelPath);
-}
-
 void ABattleLevelLoader::LoadLevel(FString levelPath)
 {
 	// load the json file 
@@ -63,8 +57,8 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 		if (FJsonObjectConverter::JsonObjectStringToUStruct(content, &levelData, 0, 0))
 		{
 			// battle manager for game
-			ABattleManager* battleManager =  Cast<ABattleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ABattleManager::StaticClass()));
-			if (!battleManager)
+			ABattleManager* battleManager = Cast<ABattleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ABattleManager::StaticClass()));
+			if (!IsValid(battleManager))
 				battleManager = GetWorld()->SpawnActor<ABattleManager>(BattleManagerClass);
 			FActorSpawnParameters spawnParams;
 			spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -122,7 +116,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 					// if it is player spawn
 					case ECellBrushMode::PlayerSpawn:
 						// Check if player is already spawned
-						if (battleManager->PlayerRef == nullptr)
+						if (!IsValid(battleManager->PlayerRef))
 						{
 							if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 							{
@@ -178,14 +172,14 @@ void ABattleLevelLoader::EditorLoadLevel()
 	TempGridMap.Empty();
 	for (AActor* Actor : TempActors)
 	{
-		if (Actor)
+		if (IsValid(Actor))
 		{
 			Actor->Destroy();
 		}
 	}
 	TempActors.Empty();
 	UWorld* world = GetWorld();
-	if (world)
+	if (IsValid(world))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Editor Load Level"));
 		world->SetFlags(RF_Transient);

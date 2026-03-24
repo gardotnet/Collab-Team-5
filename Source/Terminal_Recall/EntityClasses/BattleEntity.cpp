@@ -17,6 +17,12 @@ void ABattleEntity::OnBattleStart(ABattleManager* battleManager)
 {
 	BattleManager = battleManager;
 }
+
+void ABattleEntity::OnBattleStart(ABattleManager* battleManager, int32 enemyID )
+{
+	BattleManager = battleManager;
+}
+
 void ABattleEntity::OnTurnGo()
 {
 	// Decrement all cooldowns by 1

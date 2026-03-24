@@ -115,11 +115,6 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 			}
 		}
 	}
-	// if for player then enable the ability to do move and attack when cell is clicked
-	/*if (selectedButton->Entity == PlayerRef)
-	{
-		
-	}*/
 }
 void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, bool mainAttackCell)
 {
@@ -188,4 +183,13 @@ void ABattleManager::BeginPlay()
 {
 	Super::BeginPlay();
 	PlayerBattleController = Cast<APlayerBattleController>(GetWorld()->GetFirstPlayerController());
+}
+
+void ABattleManager::BeginDestroy()
+{
+	Super::BeginDestroy();
+	CellSelectedEvent.Clear();
+	CallGroupHoverEvent.Clear();
+	CallGroupHoverEndEvent.Clear();
+	CallGroupAttackEvent.Clear();
 }

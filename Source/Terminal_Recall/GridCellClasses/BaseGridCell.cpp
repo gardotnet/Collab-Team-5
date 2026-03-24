@@ -17,6 +17,14 @@ void ABaseGridCell::BeginPlay()
 	Super::BeginPlay();
 	OnClicked.AddDynamic(this, &ABaseGridCell::OnCellClicked);
 }
+
+void ABaseGridCell::BeginDestroy()
+{
+	Super::BeginDestroy();
+	UE_LOG(LogTemp, Warning, TEXT("Bye bye party"));
+	OnClicked.RemoveDynamic(this, &ABaseGridCell::OnCellClicked);
+}
+
 void ABaseGridCell::OnUnitArrive_Implementation()
 {
 	OnUnitArrive();

@@ -58,6 +58,7 @@ protected:
 public:
 	ABattleEntity();
 	virtual void OnBattleStart(ABattleManager* battleManager);
+	virtual void OnBattleStart(ABattleManager* battleManager, int32 enemyID);
 	virtual void OnTurnGo();
 	void ShowChoices();
 	void CustomTakeDamage(float damage);

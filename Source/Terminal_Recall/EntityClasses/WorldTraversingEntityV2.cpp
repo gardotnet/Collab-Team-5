@@ -15,7 +15,7 @@ void AWorldTraversingEntityV2::BeginPlay()
 	PlayerController = Cast<ATraversalPlayerController>(GetWorld()->GetFirstPlayerController());
 }
 
-void AWorldTraversingEntityV2::StartMove(TArray<TObjectPtr<AHarryWorldTraversalNode>> path)
+void AWorldTraversingEntityV2::OnMove()
 {
 	MoveTimer += 0.01f;
 	FVector playerPos = GetActorLocation();
@@ -45,4 +45,18 @@ void AWorldTraversingEntityV2::StartMove(TArray<TObjectPtr<AHarryWorldTraversalN
 	{
 		SetActorLocation(FMath::Lerp(playerPos, TargetPosition, MoveTimer/DesiredMoveDuration));
 	}
+}
+
+
+void AWorldTraversingEntityV2::StartMove(TArray<TObjectPtr<AHarryWorldTraversalNode>> path)
+{
+	PathIndex = 0;
+	MoveTimer = 0;
+	TheNodePath = path;
+	TargetPosition = path[0]->GetActorLocation();
+	TargetPosition.Z = GetActorLocation().Z;
+	float distance = FVector::Dist(GetActorLocation(), TargetPosition);
+	DesiredMoveDuration = distance/Speed;
+	TimerManagerRef->ClearTimer(MoveTimerHandle);
+	TimerManagerRef->SetTimer(MoveTimerHandle, this, &AWorldTraversingEntityV2::OnMove, 0.01f, true);
 }
