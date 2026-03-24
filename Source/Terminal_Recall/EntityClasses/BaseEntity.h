@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "BaseEntity.generated.h"
 
+class AHarryWorldTraversalNode;
 class AWorldGridCell;
 class AOurBasePlayerController;
 class ADefaultPlayerController;
@@ -45,6 +46,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Stuff For Designers | Functions")
 	virtual void StartMove(FVector position);
 	virtual void StartMove(TArray<TObjectPtr<AWorldGridCell>> path);
+	virtual void StartMove(TArray<TObjectPtr<AHarryWorldTraversalNode>> path);
 	UFUNCTION()
 	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed);
 	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

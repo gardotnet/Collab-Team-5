@@ -6,6 +6,7 @@
 #include "UObject/Object.h"
 #include "NodeInfoForCellSearch.generated.h"
 
+class AHarryWorldTraversalNode;
 class AWorldGridCell;
 /**
  * 
@@ -16,7 +17,11 @@ class TERMINAL_RECALL_API UNodeInfoForCellSearch : public UObject
 	GENERATED_BODY()
 	
 public:
+	UPROPERTY()
 	TObjectPtr<AWorldGridCell> Cell;
+	UPROPERTY()
+	TObjectPtr<AHarryWorldTraversalNode> Node;
+	UPROPERTY()
 	TObjectPtr<UNodeInfoForCellSearch> ParentCell;
 	float GCost;
 	float HCost;

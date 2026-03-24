@@ -33,6 +33,10 @@ void ABaseEntity::StartMove(TArray<TObjectPtr<AWorldGridCell>> path)
 {
 }
 
+void ABaseEntity::StartMove(TArray<TObjectPtr<AHarryWorldTraversalNode>> path)
+{
+}
+
 void ABaseEntity::OnMove()
 {
 }
