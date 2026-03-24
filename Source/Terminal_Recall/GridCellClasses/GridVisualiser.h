@@ -11,22 +11,22 @@ UCLASS()
 class TERMINAL_RECALL_API AGridVisualiser : public AActor
 {
 	GENERATED_BODY()
-
 public:
-	AGridVisualiser();
-	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UInstancedStaticMeshComponent> GridVisualComp;
-
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | General Info")
 	float GridWidth = 1;
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | General Info")
 	float GridHeight = 1;
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | General Info")
 	float TileSize = 100;
-	
 	TMap<int32, TObjectPtr<UTextRenderComponent>> TextComponentList;
-
+protected:
+	AGridVisualiser();
+	#if WITH_EDITOR
+	virtual bool IsSelectable() const override { return false; }
+	#endif
+public:
 	void RegenerateGrid(FIntPoint gridSize);
 	void AddText(int32 ismIndex, FText text, FIntPoint groupSize);
 	void SetText(int32 ismIndex, FText text, FIntPoint groupSize);

@@ -12,18 +12,15 @@ ABaseGridCell::ABaseGridCell()
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetCollisionProfileName("NoCollision");
 }
-
 void ABaseGridCell::BeginPlay()
 {
 	Super::BeginPlay();
 	OnClicked.AddDynamic(this, &ABaseGridCell::OnCellClicked);
 }
-
 void ABaseGridCell::OnUnitArrive_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Now the party can start"));
 }
-
 void ABaseGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
 	if (UnitRef)

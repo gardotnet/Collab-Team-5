@@ -6,37 +6,35 @@
 AGridVisualiser::AGridVisualiser()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	
 	USceneComponent* DummyRoot = CreateDefaultSubobject<USceneComponent>(TEXT("RootComp"));
 	RootComponent = DummyRoot;
 	GridVisualComp = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Grid Visual");
 	GridVisualComp->SetupAttachment(DummyRoot);
+	// cant save this lol
+	SetFlags(RF_Transient);
 }
-
+// clears grids and re-make it
 void AGridVisualiser::RegenerateGrid(FIntPoint gridSize)
 {
 	if (!GridVisualComp || !GridVisualComp->GetStaticMesh())
 		return;
-	
 	auto color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	ClearText();
 	GridVisualComp->ClearInstances();
-	for (int x = 0; x < gridSize.X; x++)
+	for (int y = 0; y < gridSize.Y; y++)
 	{
-		for (int y = 0; y < gridSize.Y; y++)
+		for (int x = 0; x < gridSize.X; x++)
 		{
-			FVector relativeLoc = FVector(x * TileSize, y * TileSize, 0.0f);
+			FVector relativeLoc = FVector(y * TileSize, x * TileSize, 0.0f);
 			FTransform instanceTransform = FTransform(relativeLoc);
 			int32 instanceIndex =  GridVisualComp->AddInstance(instanceTransform);
 			GridVisualComp->SetCustomData(instanceIndex, color, false);
 		}
 	}
 }
-
 void AGridVisualiser::AddText(int32 ismIndex, FText text, FIntPoint groupSize)
 {
 	FTransform childTransform;
-	UE_LOG(LogTemp, Warning, TEXT("Group Size: ( %d, %d)"), groupSize.X, groupSize.Y);
 	if (GridVisualComp->GetInstanceTransform(ismIndex, childTransform, true))
 	{
 		FVector newLoc = childTransform.GetLocation() - FVector(50.0f, 50.0f, -0.1f);
@@ -50,17 +48,11 @@ void AGridVisualiser::AddText(int32 ismIndex, FText text, FIntPoint groupSize)
 		newTextComp->SetHorizontalAlignment(EHTA_Center);
 		newTextComp->VerticalAlignment = EVRTA_TextCenter;
 		newTextComp->SetRelativeRotation(FRotator(90.0f, 180.0f, 0.0f)); 
-		TextComponentList.Add(ismIndex, *newTextComp);
+		TextComponentList.Add(ismIndex, newTextComp);
 	}
 }
-
 void AGridVisualiser::SetText(int32 ismIndex, FText text, FIntPoint groupSize)
 {
-	/*if (auto* textComp = TextComponentList.Find(ismIndex))
-	{
-		(*textComp)->SetText(text);
-	}*/
-	UE_LOG(LogTemp, Warning, TEXT("Group Size: ( %d, %d)"), groupSize.X, groupSize.Y);
 	FTransform childTransform;
 	if (GridVisualComp->GetInstanceTransform(ismIndex, childTransform, true))
 	{
@@ -74,7 +66,6 @@ void AGridVisualiser::SetText(int32 ismIndex, FText text, FIntPoint groupSize)
 		}
 	}
 }
-
 void AGridVisualiser::DeleteText(int32 ismIndex)
 {
 	TObjectPtr<UTextRenderComponent> outComponent;
@@ -86,7 +77,6 @@ void AGridVisualiser::DeleteText(int32 ismIndex)
 		}
 	}
 }
-
 void AGridVisualiser::ClearText()
 {
 	for (auto& pair : TextComponentList)

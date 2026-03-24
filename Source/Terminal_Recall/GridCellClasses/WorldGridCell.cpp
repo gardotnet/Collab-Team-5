@@ -1,37 +1,35 @@
 ﻿#include "WorldGridCell.h"
 
 #include "Kismet/KismetMathLibrary.h"
-#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/DefaultPlayerController.h"
+#include "Terminal_Recall/GridCellClasses/Harry/Nodes/TraversalNode.h"
 
 AWorldGridCell::AWorldGridCell()
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
-
 void AWorldGridCell::LoadLevel()
 {
-	// [NOTE] Will tell encounter "level loader" to load the level assign to this cell.
+	
 }
 
 void AWorldGridCell::CreatePath()
 {
 	for (auto& neighbour : NeighbouringCells)
 	{
-		if (neighbour.Cell != nullptr)
+		if (neighbour.Node != nullptr)
 			ActualPathCreation(&neighbour);
 	}
 }
-
 void AWorldGridCell::ResetPathPosition()
 {
 	for (auto& neighbour : NeighbouringCells)
 	{
-		if (neighbour.Cell == nullptr)
+		if (neighbour.Node == nullptr)
 			continue;		
 		
 		// Calculate the position, rotation and scale of the path
 		FVector currentPos = GetActorLocation();
-		FVector neighbourPos = neighbour.Cell->GetActorLocation();
+		FVector neighbourPos = neighbour.Node->GetActorLocation();
 		neighbourPos.Z = currentPos.Z;
 		float dist = FVector::Dist(currentPos, neighbourPos);
 		// half-way between 2 points
@@ -55,83 +53,59 @@ void AWorldGridCell::ResetPathPosition()
 		}
 	}
 }
-
 void AWorldGridCell::BeginPlay()
 {
 	Super::BeginPlay();
-	PlayerController = Cast<ADefaultPlayerController>(GetWorld()->GetFirstPlayerController());
+	//PlayerController = Cast<ADefaultPlayerController>(GetWorld()->GetFirstPlayerController());
 }
-
 void AWorldGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
 	if (PlayerController)
 	{
 		if (Clickable)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Controller ready and passing cell"));
-			PlayerController->NavigateWorld(this);
+			// PlayerController->NavigateWorld(this);
 		}
 	}
 }
-
 void AWorldGridCell::OnUnitArrive_Implementation()
 {
 	Super::OnUnitArrive_Implementation();
 	if (!Visited)
 	{
 		Visited = true;
-		for (auto& neighbour : NeighbouringCells)
-		{
-			if (neighbour.Cell->CoverObject)
-				neighbour.Cell->CoverObject->Destroy();
-		}
 	}
 }
-
 void AWorldGridCell::ActualPathCreation(FWorldNeighbourStruct* neighbour)
 {
-	if (neighbour->HasPathConnected)
+	if (neighbour->HasPathConnected) // Checks if the chosen neighbour has already been connected, if so, return
 			return;
-	neighbour->HasPathConnected = true;
-	// finding itself to see if it is in its neighbour's list
-	FWorldNeighbourStruct* foundSelf = neighbour->Cell->NeighbouringCells.FindByPredicate([this](const FWorldNeighbourStruct& item)
-	{
-		return item.Cell == this;
-	});
+	neighbour->HasPathConnected = true; // sets the connected path status to true if not already listed as connected
 	
-	if (foundSelf)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Wow already prepared are we?"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Adding Path"));
-		// Calculate the position and rotation of the path
-		FVector currentPos = GetActorLocation();
-		FVector neighbourPos = neighbour->Cell->GetActorLocation();
-		neighbourPos.Z = currentPos.Z;
-		float dist = FVector::Dist(currentPos, neighbourPos);
-		// half-way between 2 points
-		FVector spawnPoint = (currentPos + neighbourPos) * 0.5f;
-		FRotator rotation = UKismetMathLibrary::FindLookAtRotation(spawnPoint, neighbourPos);
-		FActorSpawnParameters spawnParams;
-		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		AActor* newPath = GetWorld()->SpawnActor<AActor>(PathBpClass, spawnPoint, rotation, spawnParams);
-		newPath->SetActorScale3D(FVector(dist/100, 0.9f , 1));
-		
-		// updating info
-		neighbour->PathObject = newPath;
-		neighbour->Length = dist/100;
-		
-		FWorldNeighbourStruct newStruct;
-		newStruct.Cell = this;
-		newStruct.Length = dist/100;
-		newStruct.HasPathConnected = true;
-		newStruct.PathObject = newPath;
-		neighbour->Cell->NeighbouringCells.Add(newStruct);
-	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("Adding Path"));
+	
+	// Calculate the position and rotation of the path
+	FVector currentPos = GetActorLocation();
+	FVector neighbourPos = neighbour->Node->GetActorLocation();
+	
+	neighbourPos.Z = currentPos.Z; // sets same height for current position to neighbour position
+	
+	float dist = FVector::Dist(currentPos, neighbourPos); // gets the distance between the two points
+	
+	// half-way between 2 points
+	FVector spawnPoint = (currentPos + neighbourPos) * 0.5f;
+	FRotator rotation = UKismetMathLibrary::FindLookAtRotation(spawnPoint, neighbourPos);
+	FActorSpawnParameters spawnParams;
+	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	AActor* newPath = GetWorld()->SpawnActor<AActor>(PathBpClass, spawnPoint, rotation, spawnParams);
+	newPath->SetActorScale3D(FVector(dist/100, 0.9f , 1));
+	
+	// updating info
+	neighbour->PathObject = newPath;
+	neighbour->Length = dist/100;
 }
-
+#if WITH_EDITOR
 void AWorldGridCell::PreEditChange(FProperty* PropertyAboutToChange)
 {
 	Super::PreEditChange(PropertyAboutToChange);
@@ -143,14 +117,11 @@ void AWorldGridCell::PreEditChange(FProperty* PropertyAboutToChange)
 		OldNeighbouringCells.Append(NeighbouringCells); 
 	}
 }
-
 void AWorldGridCell::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
     Super::PostEditChangeChainProperty(PropertyChangedEvent);
-
     FEditPropertyChain::TDoubleLinkedListNode* MemberNode = PropertyChangedEvent.PropertyChain.GetActiveMemberNode();
     FName MemberName = (MemberNode != nullptr) ? MemberNode->GetValue()->GetFName() : NAME_None;
-
 	// if the neighbour list is being changed
     if (MemberName == GET_MEMBER_NAME_CHECKED(AWorldGridCell, NeighbouringCells))
     {
@@ -165,22 +136,14 @@ void AWorldGridCell::PostEditChangeChainProperty(FPropertyChangedChainEvent& Pro
             {
             	// check if it was the one removed
                 bool bStillExists = NeighbouringCells.ContainsByPredicate([&oldNeighbourRef](const FWorldNeighbourStruct& Current) {
-                    return oldNeighbourRef.Cell == Current.Cell;
+                    return oldNeighbourRef.Node == Current.Node;
                 });
             	// if it has been removed
-                if (!bStillExists && oldNeighbourRef.Cell)
+                if (!bStillExists && oldNeighbourRef.Node)
                 {
                 	// delete path
                     if (oldNeighbourRef.PathObject) { oldNeighbourRef.PathObject->Destroy(); }
                 	// remove itself for neighbour's list
-                    int32 indexFoundAt = oldNeighbourRef.Cell->NeighbouringCells.IndexOfByPredicate([this](const FWorldNeighbourStruct& Item) {
-                        return Item.Cell == this;
-                    });
-                    if (indexFoundAt != INDEX_NONE)
-                    {
-                        oldNeighbourRef.Cell->Modify();
-                        oldNeighbourRef.Cell->NeighbouringCells.RemoveAt(indexFoundAt);
-                    }
                 }
             }
         }
@@ -191,16 +154,6 @@ void AWorldGridCell::PostEditChangeChainProperty(FPropertyChangedChainEvent& Pro
     		for (auto& oldNeighbourRef : OldNeighbouringCells)
     		{
     			if (oldNeighbourRef.PathObject) { oldNeighbourRef.PathObject->Destroy(); }
-
-    			int32 indexFoundAt = oldNeighbourRef.Cell->NeighbouringCells.IndexOfByPredicate([this](const FWorldNeighbourStruct& Item) {
-					return Item.Cell == this;
-				});
-
-    			if (indexFoundAt != INDEX_NONE)
-    			{
-    				oldNeighbourRef.Cell->Modify();
-    				oldNeighbourRef.Cell->NeighbouringCells.RemoveAt(indexFoundAt);
-    			}
     		}
     	}
         else if (NeighbouringCells.IsValidIndex(index))
@@ -209,7 +162,7 @@ void AWorldGridCell::PostEditChangeChainProperty(FPropertyChangedChainEvent& Pro
 				? PropertyChangedEvent.Property->GetFName() : NAME_None;
         	FWorldNeighbourStruct* neighbour = &NeighbouringCells[index];
 			// if what was changed was the cell/ref to other neighbour
-        	if (propertyName == FName("Cell"))
+        	if (propertyName == FName("Node"))
         	{
         		// if it was previously linked to another cell
         		if (neighbour->PathObject != nullptr)
@@ -218,18 +171,9 @@ void AWorldGridCell::PostEditChangeChainProperty(FPropertyChangedChainEvent& Pro
         			neighbour->PathObject->Destroy();
         			neighbour->PathObject = nullptr;
         			neighbour->HasPathConnected = false;
-        			int32 indexFoundAt = neighbour->Cell->NeighbouringCells.IndexOfByPredicate([this](const FWorldNeighbourStruct& Item) {
-						return Item.Cell == this;
-					});
-        			// remove itself from disconnected neighbour's list
-        			if (indexFoundAt != INDEX_NONE)
-        			{
-        				neighbour->Cell->Modify();
-        				neighbour->Cell->NeighbouringCells.RemoveAt(indexFoundAt);
-        			}
         		}
         		// if chosen a valid ref to another cell 
-        		if (neighbour->Cell != nullptr)
+        		if (neighbour->Node != nullptr)
         		{
         			ActualPathCreation(neighbour);
         		}
@@ -281,3 +225,4 @@ void AWorldGridCell::PostEditChangeChainProperty(FPropertyChangedChainEvent& Pro
 		CoverObject->SetActorLocation(coverLoc);
 	}
 }
+#endif

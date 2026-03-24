@@ -10,31 +10,27 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionSelected, UActionButtonUI*,
 class ABattleEntity;
 class UScrollBox;
 class UButton;
+class UTextBlock;
 
 UCLASS()
 class TERMINAL_RECALL_API UActionButtonUI : public UUserWidget
 {
 	GENERATED_BODY()
-	
-
+protected:
+	UPROPERTY(meta = (BindWidget))
+	UButton* ActionButton;
 public:
 	UPROPERTY()
 	TObjectPtr<ABattleEntity> Entity;
 	FString ActionName;
 	EActionType ActionType;
 	int32 IndexInOwningEntityArray = -1;
-	
 	FOnActionSelected OnActionSelected;
-	
-protected:
 	UPROPERTY(meta = (BindWidget))
-	UButton* ActionButton;
-
+	UTextBlock* NameLabel;
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-	
 	UFUNCTION()
 	void OnButtonClicked();
-	
 };

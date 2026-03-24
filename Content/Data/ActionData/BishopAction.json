@@ -1,0 +1,71 @@
+{
+	"centrePoint":
+	{
+		"x": 1,
+		"y": 1
+	},
+	"cells": [
+		{
+			"gridPos":
+			{
+				"x": -1,
+				"y": -1
+			},
+			"directionModifier": [
+				{
+					"direction": "SW",
+					"magnitude": 0
+				}
+			],
+			"groupId": 0
+		},
+		{
+			"gridPos":
+			{
+				"x": -1,
+				"y": 1
+			},
+			"directionModifier": [
+				{
+					"direction": "NW",
+					"magnitude": 0
+				}
+			],
+			"groupId": 0
+		},
+		{
+			"gridPos":
+			{
+				"x": 1,
+				"y": -1
+			},
+			"directionModifier": [
+				{
+					"direction": "SE",
+					"magnitude": 0
+				}
+			],
+			"groupId": 0
+		},
+		{
+			"gridPos":
+			{
+				"x": 1,
+				"y": 1
+			},
+			"directionModifier": [
+				{
+					"direction": "NE",
+					"magnitude": 0
+				}
+			],
+			"groupId": 0
+		}
+	],
+	"gridSize":
+	{
+		"x": 3,
+		"y": 3
+	},
+	"oneGroup": true
+}

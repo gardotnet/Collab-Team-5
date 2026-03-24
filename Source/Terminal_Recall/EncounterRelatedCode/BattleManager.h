@@ -1,11 +1,13 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
 #include "Terminal_Recall/StructsAndEnums/For2dArray/FGridRowCell.h"
 #include "BattleManager.generated.h"
 
 class APlayerBattleController;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCellSelected);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGroupCellDelegate, int32, groupID);
 
 class UActionButtonUI;
 class ABattleEntity;
@@ -18,36 +20,36 @@ class TERMINAL_RECALL_API ABattleManager : public AActor
 	GENERATED_BODY()
 
 public:
+	FGroupCellDelegate CallGroupHoverEvent;
+	FGroupCellDelegate CallGroupHoverEndEvent;
+	FGroupCellDelegate CallGroupAttackEvent;
 	
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
 	TObjectPtr<ABattlePlayerEntity> PlayerRef;
+	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
 	TArray<TObjectPtr<ABattleEnemyEntity>> EnemyArray;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
 	TMap<FIntPoint, TObjectPtr<ABattleGridCell>> GridMap;
 	
 protected:
 	int32 EntityIndex = -1;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
 	TObjectPtr<ABattleEntity> CurrentEntityChosen;
 	UPROPERTY()
 	TObjectPtr<APlayerBattleController> PlayerBattleController;
-
-	FCellSelected CellSelectedEvent;
 	
+	FCellSelected CellSelectedEvent;
+	// to disable player clicking entity choices while clicking grid
 	bool SelectMode = false;
-
 public:
 	ABattleManager();
-	void SetUpBattle();
 	void OnEntitySelected(ABattleEntity* entity);
 	UFUNCTION()
 	void ActionChoiceSelected(UActionButtonUI* selectedButton);
-	
 	UFUNCTION()
-	void OnCellSelected(ABattleEntity* target);
-protected:
-	UFUNCTION()
+	void OnCellSelected(ABattleEntity* target, EActionType type, bool mainCell);
+	UFUNCTION(BlueprintCallable, Category = "For Designers | Variables")
 	void NextEntityTurn();
-
+protected:
 	virtual void BeginPlay() override;
 };
