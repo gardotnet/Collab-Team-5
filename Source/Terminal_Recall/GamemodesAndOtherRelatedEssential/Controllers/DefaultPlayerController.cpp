@@ -32,6 +32,16 @@ void ADefaultPlayerController::BeginPlay()
 		CurrentCell = Cast<AWorldGridCell>(hitResult.GetActor());
 		CurrentCell->OnUnitArrive_Implementation();
 	}
+	for (const auto& pos : gameInstance->VisitedCells)
+	{
+		FVector rayStart = pos + FVector(0.0,0.0,100.0f);
+		endTracePos = rayStart + FVector(0.0,0.0,-200.0f);
+		GetWorld()->LineTraceSingleByChannel(hitResult, rayStart, endTracePos, ECC_GameTraceChannel1, collisionParams);
+		if (hitResult.GetActor())
+		{
+			Cast<AWorldGridCell>(hitResult.GetActor())->OnUnitArrive_Implementation();
+		}
+	}
 }
 void ADefaultPlayerController::SetupInputComponent()
 {

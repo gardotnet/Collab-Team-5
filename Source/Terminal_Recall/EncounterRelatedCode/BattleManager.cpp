@@ -1,8 +1,10 @@
 ﻿#include "BattleManager.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "Terminal_Recall/EntityClasses/BattleEnemyEntity.h"
 #include "Terminal_Recall/EntityClasses/BattleEntity.h"
 #include "Terminal_Recall/EntityClasses/BattlePlayerEntity.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
 #include "Terminal_Recall/StuffForUI/ActionButtonUI.h"
@@ -150,6 +152,7 @@ void ABattleManager::NextEntityTurn()
 	if (!IsValid(PlayerRef))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Player Lost"));
+		UGameplayStatics::OpenLevel(GetWorld(), MainGameLevel);
 		return;
 	}
 	// LAMBDA is fun
@@ -161,6 +164,8 @@ void ABattleManager::NextEntityTurn()
 	if (EnemyArray.IsEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Player Won"));
+		Cast<UDefaultInstance>(GetGameInstance())->EncounterWon();
+		UGameplayStatics::OpenLevel(GetWorld(), MainGameLevel);
 		return;
 	}
 	//PlayerRef->OnTurnGo();
@@ -184,4 +189,3 @@ void ABattleManager::BeginPlay()
 	Super::BeginPlay();
 	PlayerBattleController = Cast<APlayerBattleController>(GetWorld()->GetFirstPlayerController());
 }
-

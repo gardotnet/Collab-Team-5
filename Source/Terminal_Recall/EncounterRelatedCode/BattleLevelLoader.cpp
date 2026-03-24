@@ -37,13 +37,22 @@ void ABattleLevelLoader::BeginPlay()
 	}
 	TempActors.Empty();
 	// get level to load
-	UDefaultInstance* gameInstance = Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *OverwriteLevelPath);
 	if (OverwriteLevelPath != "")
 		LoadLevel(OverwriteLevelPath);
 	else
+	{
+		UDefaultInstance* gameInstance = Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 		LoadLevel(FPaths::ProjectContentDir() + gameInstance->Map);
+	}
 }
+
+void ABattleLevelLoader::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+	UE_LOG(LogTemp, Warning, TEXT("Construct this"), *OverwriteLevelPath);
+}
+
 void ABattleLevelLoader::LoadLevel(FString levelPath)
 {
 	// load the json file 

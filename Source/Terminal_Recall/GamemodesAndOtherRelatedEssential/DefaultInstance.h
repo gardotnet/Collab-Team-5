@@ -28,11 +28,9 @@ public:
 	TArray<int> AttackList;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | Player Variables")
 	TArray<int> MoveList;
-	
-protected:
-	void EncounterWon();
-	
+
 public:
+	void EncounterWon();
 	UFUNCTION(BlueprintCallable, Category="For Designers | Functions" )
 	void AddVisitedCells(FVector newPos);
 };

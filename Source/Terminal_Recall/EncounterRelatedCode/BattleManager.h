@@ -23,7 +23,9 @@ public:
 	FGroupCellDelegate CallGroupHoverEvent;
 	FGroupCellDelegate CallGroupHoverEndEvent;
 	FGroupCellDelegate CallGroupAttackEvent;
-	
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "For Designers | Necessities")
+	FName MainGameLevel = "Viet_Test_Place";
 	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
 	TObjectPtr<ABattlePlayerEntity> PlayerRef;
 	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")

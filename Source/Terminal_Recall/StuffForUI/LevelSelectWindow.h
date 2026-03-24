@@ -43,9 +43,15 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	UHorizontalBox* EnemyHintContainer;
 
+	UPROPERTY(EditAnywhere, Category="Stuff For Designers | Necessities")
+	bool BattleLevelOverride = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Necessities", meta=(EditCondition="BattleLevelOverride") )
+	FName LevelName = TEXT("BattleScene");
+
 protected:
 	
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 	
 	UFUNCTION()
 	void OnCloseButtonPressed();

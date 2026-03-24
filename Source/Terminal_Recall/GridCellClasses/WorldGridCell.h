@@ -60,6 +60,7 @@ public:
 	void ResetPathPosition();
 	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 	virtual void OnUnitArrive_Implementation() override;
+	
 protected:
 	void ActualPathCreation(FWorldNeighbourStruct* neighbour);
 	virtual void BeginPlay() override;

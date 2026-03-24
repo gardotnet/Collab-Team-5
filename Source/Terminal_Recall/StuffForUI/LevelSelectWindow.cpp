@@ -4,6 +4,7 @@
 #include "Components/Button.h"
 #include "Components/HorizontalBox.h"
 #include "Components/Image.h"
+#include "Kismet/GameplayStatics.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/EnemyInfoStruct.h"
 
 void ULevelSelectWindow::NativeConstruct()
@@ -35,12 +36,25 @@ void ULevelSelectWindow::NativeConstruct()
 		}
 	}
 }
+
+void ULevelSelectWindow::NativeDestruct()
+{
+	Super::NativeDestruct();
+	if (CloseButton)
+		CloseButton->OnClicked.RemoveDynamic(this, &ULevelSelectWindow::OnCloseButtonPressed);
+	if (EnterLevelButton)
+		EnterLevelButton->OnClicked.RemoveDynamic(this, &ULevelSelectWindow::OnEnterLevelButtonPressed);
+}
+
 void ULevelSelectWindow::OnCloseButtonPressed()
 {
 	RemoveFromParent();
+	ClearUIEvent.Broadcast();
+	ClearUIEvent.Clear();
 }
 void ULevelSelectWindow::OnEnterLevelButtonPressed()
 {
+	UGameplayStatics::OpenLevel(GetWorld(), LevelName);
 }
 void ULevelSelectWindow::PassInfoToLevelSelectWindow(int32 difficulty, const TArray<int32>& enemiesID)
 {
@@ -56,7 +70,7 @@ void ULevelSelectWindow::PassInfoToLevelSelectWindow(int32 difficulty, const TAr
 	int difCount = DifficultWidgetHolder.Num() - difficulty;
 	if (difCount >= 0)
 	{
-		for (int i = 0; i < difCount; i++)
+		for (int i = 0; i < difficulty; i++)
 		{
 			ClearUIEvent.AddDynamic(DifficultWidgetHolder[i], &ULevelSelectIconWidget::HideUI);
 			DifficultyContainer->AddChild(DifficultWidgetHolder[i]);
