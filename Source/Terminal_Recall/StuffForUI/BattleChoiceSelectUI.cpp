@@ -77,8 +77,7 @@ void UBattleChoiceSelectUI::AddActionButton(TArray<UActionButtonUI*>& movementLi
 		for (UActionButtonUI* moveAction : movementList)
 		{
 			OnRemoveChoices.AddDynamic(moveAction, &UActionButtonUI::RemoveForChoices);
-			if (UUserWidget* parentConversion = Cast<UUserWidget>(moveAction))
-				MovesScrollBox->AddChild(parentConversion);
+			MovesScrollBox->AddChild(moveAction);
 		}
 	}
 	if (attackList.Num() > 0)
@@ -86,8 +85,7 @@ void UBattleChoiceSelectUI::AddActionButton(TArray<UActionButtonUI*>& movementLi
 		for (UActionButtonUI* attackAction : attackList)
 		{
 			OnRemoveChoices.AddDynamic(attackAction, &UActionButtonUI::RemoveForChoices);
-			if (UUserWidget* parentConversion = Cast<UUserWidget>(attackAction))
-				AttacksScrollBox->AddChild(parentConversion);
+			AttacksScrollBox->AddChild(attackAction);
 		}
 	}
 	if (itemList.Num() > 0)
@@ -95,8 +93,7 @@ void UBattleChoiceSelectUI::AddActionButton(TArray<UActionButtonUI*>& movementLi
 		for (UActionButtonUI* itemAction : itemList)
 		{
 			OnRemoveChoices.AddDynamic(itemAction, &UActionButtonUI::RemoveForChoices);
-			if (UUserWidget* parentConversion = Cast<UUserWidget>(itemAction))
-				ItemsScrollBox->AddChild(parentConversion);
+			ItemsScrollBox->AddChild(itemAction);
 		}
 	}
 }

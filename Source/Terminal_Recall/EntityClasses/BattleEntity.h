@@ -30,16 +30,16 @@ class TERMINAL_RECALL_API ABattleEntity : public ABaseEntity
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditDefaultsOnly, Category = "Stuff For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category = "For Designers | Necessities")
 	TObjectPtr<UDataTable> ActionDataTable;
-	UPROPERTY(EditAnywhere, Category = "Stuff For Designers | Necessities")
+	UPROPERTY(EditAnywhere, Category = "For Designers | Necessities")
 	TSubclassOf<UUserWidget> ActionButtonClass;
-	UPROPERTY(BlueprintReadOnly, Category = "Stuff For Designers | Delegates")
+	UPROPERTY(BlueprintReadOnly, Category = "For Designers | Delegates")
 	FChangeCell OnChangeCell;
 protected:
 	UPROPERTY()
 	TObjectPtr<ABattleManager> BattleManager;
-	UPROPERTY(EditAnywhere, Category="Stuff For Designers | Entity Info | General Stuff")
+	UPROPERTY(EditAnywhere, Category="For Designers | Entity Info | General Stuff")
 	float DamageMultiplier = 1.0f;
 	UPROPERTY()
 	FIntPoint GridPos = FIntPoint(0.0f, 0.0f);

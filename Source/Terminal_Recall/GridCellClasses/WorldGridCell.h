@@ -3,8 +3,10 @@
 #include "CoreMinimal.h"
 #include "BaseGridCell.h"
 #include "Terminal_Recall/StructsAndEnums/WorldNeighbourStruct.h"
+#include "Terminal_Recall/StructsAndEnums/ForDataTable/LevelnfoStruct.h"
 #include "WorldGridCell.generated.h"
 
+class UDefaultInstance;
 class ADefaultPlayerController;
 
 UCLASS()
@@ -16,6 +18,8 @@ protected:
 	UPROPERTY()
 	TObjectPtr<ADefaultPlayerController> PlayerController;
 	TArray<FWorldNeighbourStruct> OldNeighbouringCells;
+	UPROPERTY()
+	TObjectPtr<UDefaultInstance> GameInstance;
 public:
 	AWorldGridCell();
 	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Grid Cell Info | Necessities", meta = (ToolTip = "Add the path actor here"))
@@ -24,14 +28,19 @@ public:
 	TSubclassOf<AActor> CellCoverBpClass;
 	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Grid Cell Info | Necessities", meta = (ToolTip = "Add the cell cover material here"))
 	TObjectPtr<UMaterial> CoverMaterial;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Grid Cell Info | General Stuff", meta = (ToolTip = "Make sure to add neighbours and it distance here!"))
+	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Grid Cell Info | Necessities")
+	TObjectPtr<UDataTable> LevelDataTable;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Grid Cell Info | General Stuff")
 	bool Visited = false;
 	UPROPERTY(EditInstanceOnly, Category="Stuff For Designers | Grid Cell Info | General Stuff", meta = (ToolTip = "Make sure to add neighbours and it distance here!"))
 	TArray<FWorldNeighbourStruct> NeighbouringCells;
-	UPROPERTY(EditInstanceOnly, Category="Stuff For Designers | Grid Cell Info | Encounter Stuff", meta = (ToolTip = "Enable if cell will trigger an encounter"))
-	bool IsEncounter = true;
-	UPROPERTY(EditInstanceOnly, Category="Stuff For Designers | Grid Cell Info | Encounter Stuff", meta = (ToolTip = "Paste the level's text file path here"))
-	FString LevelFilePath;
+	
+	UPROPERTY(EditInstanceOnly, Category="Stuff For Designers | Grid Cell Info | Encounter Stuff", meta = (ToolTip = "Add the Level ID from \"Level Data Table\" here"))
+	int32 LevelID = 0;
+	UPROPERTY(BlueprintReadOnly, Category="Stuff For Designers | Grid Cell Info | Encounter Stuff")
+	FLevelInfoStruct LevelInfo;
+	
 	UPROPERTY(EditInstanceOnly, Category="Stuff For Designers | Grid Cell Info | Cell Hider Options", meta = (ToolTip = "Enable if cell will be hidden"))
 	bool IsCellHidden = false;
 	UPROPERTY(EditInstanceOnly, Category="Stuff For Designers | Grid Cell Info | Cell Hider Options", meta = (ToolTip = "Set offset here", EditCondition = "IsCellHidden"))
@@ -42,9 +51,9 @@ public:
 	float CoverHeight = 500;
 	UPROPERTY()
 	TObjectPtr<AActor> CoverObject;
+	
+	bool NeighbourCloudRemoved = false;
 public:
-	UFUNCTION(BlueprintCallable,  Category="Stuff For Designers | Functions")
-	void LoadLevel();
 	UFUNCTION(BlueprintCallable, CallInEditor, Category="Stuff For Designers | Grid Cell Tool")
 	void CreatePath();
 	UFUNCTION(BlueprintCallable, CallInEditor, Category="Stuff For Designers | Grid Cell Tool")

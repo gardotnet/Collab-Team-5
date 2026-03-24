@@ -1,4 +1,11 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+﻿#include "DefaultInstance.h"
 
+void UDefaultInstance::EncounterWon()
+{
+	VisitedCells.Add(PlayerSpawnPos);
+}
 
-#include "DefaultInstance.h"
+void UDefaultInstance::AddVisitedCells(FVector newPos)
+{
+	VisitedCells.Add(newPos);
+}
