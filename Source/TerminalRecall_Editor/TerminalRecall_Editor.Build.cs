@@ -24,7 +24,8 @@ public class TerminalRecall_Editor : ModuleRules
 			"Json",                // Added for JsonObjectConverter
 			"JsonUtilities",       // Added for JsonObjectConverter
 			"DesktopPlatform",      // Added for IDesktopPlatform
-			"LevelEditor"
+			"LevelEditor",
+			"PropertyEditor"
 		});
 	}
 }

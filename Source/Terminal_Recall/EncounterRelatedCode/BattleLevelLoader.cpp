@@ -137,19 +137,14 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 					case ECellBrushMode::EnemySpawn:
 						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 						{
-							FString stringConvert = FString::FromInt(cellData.IdForCellContent);
-							// look for enemy info using ID given
-							if (FEnemyInfoStruct* enemyInfo = EnemyDataTable->FindRow<FEnemyInfoStruct>(FName(*stringConvert), TEXT("Level Loader")))
-							{
-								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
-								ABattleEnemyEntity* newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
-								// [NOTE] Pass data to enemy
-								battleManager->EnemyArray.Add(newEnemy);
-								newEnemy->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
-								newEnemy->OnBattleStart(battleManager, cellData.IdForCellContent);
-								newEnemy->SetPos(cellData.Position, *newCell);
-								(*newCell)->HouseEntity(newEnemy);
-							}
+							propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
+							ABattleEnemyEntity* newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
+							// [NOTE] Pass data to enemy
+							battleManager->EnemyArray.Add(newEnemy);
+							newEnemy->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
+							newEnemy->OnBattleStart(battleManager, cellData.IdForCellContent);
+							newEnemy->SetPos(cellData.Position, *newCell);
+							(*newCell)->HouseEntity(newEnemy);
 						}
 					break;
 					default:

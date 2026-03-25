@@ -3,6 +3,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
+#include "Terminal_Recall/StuffForUI/MainBattleUI.h"
 
 ABattlePlayerEntity::ABattlePlayerEntity()
 {
@@ -19,4 +21,16 @@ void ABattlePlayerEntity::OnBattleStart(ABattleManager* battleManager)
 		MaxHealth = gameInstance->MaxHealth;
 		DamageMultiplier = gameInstance->DamageMultiplier;
 	}
+}
+
+void ABattlePlayerEntity::StartMove(FVector position)
+{
+	Super::StartMove(position);
+	OnActionComplete(EActionType::Movement);
+}
+
+void ABattlePlayerEntity::CustomTakeDamage(float damage)
+{
+	Super::CustomTakeDamage(damage);
+	PlayerBattleController->MainBattleUIWidget->ChangeHealth(CurrentHealth);
 }

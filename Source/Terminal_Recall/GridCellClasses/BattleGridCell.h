@@ -5,9 +5,9 @@
 #include "BaseGridCell.h"
 #include "BattleGridCell.generated.h"
 
-class ABattleManager;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnClickedCell, ABattleEntity*, target, EActionType, type, bool, mainAttackCell);
 
+class ABattleManager;
 class APlayerBattleController;
 class ABattleEntity;
 class ABaseTrap;
@@ -39,6 +39,8 @@ protected:
 	UMaterialInterface* MoveHighlightMat;
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	UMaterialInterface* HoverHighlightMat;
+	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
+	UMaterialInterface* HitHighlightMat;
 public:
 	ABattleGridCell();
 	void AssignTrap(TObjectPtr<ABaseTrap> trap);
@@ -63,10 +65,16 @@ public:
 	FIntPoint GetGridPos() { return GridPos; }
 	void SetWalkable(bool walkable);
 	bool CanMoveOnTo();
+	
+	void ForceHighlight(ABattleEntity* causer);
+	void EndForceHighlight();
+	
+	
 protected:
 	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 	UFUNCTION()
 	void OnHoverOver(UPrimitiveComponent* TouchedComponent);
 	UFUNCTION()
 	void OnHoverEnd(UPrimitiveComponent* TouchedComponent);
+	
 };
