@@ -3,20 +3,12 @@
 #include "CoreMinimal.h"
 #include "BaseEntity.h"
 #include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
+#include "Terminal_Recall/StructsAndEnums/EntityTwinActionContainer.h"
 #include "Terminal_Recall/StructsAndEnums/GridRangeExport.h"
 #include "BattleEntity.generated.h"
 
+class UTextRenderComponent;
 class ABattleGridCell;
-
-USTRUCT()
-struct FMoveStruct
-{
-	GENERATED_BODY()
-	UPROPERTY()
-	FGridRangeExport ActionRange;
-	UPROPERTY()
-	int32 Cooldown = 0;
-};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FChangeCell);
 
@@ -36,7 +28,10 @@ public:
 	TSubclassOf<UUserWidget> ActionButtonClass;
 	UPROPERTY(BlueprintReadOnly, Category = "For Designers | Delegates")
 	FChangeCell OnChangeCell;
+	int32 SelectedActionID = -1;
 protected:
+	UPROPERTY()
+	TObjectPtr<UTextRenderComponent> TextRenderComponent;
 	UPROPERTY()
 	TObjectPtr<ABattleManager> BattleManager;
 	UPROPERTY(EditAnywhere, Category="For Designers | Entity Info | General Stuff")
@@ -51,24 +46,38 @@ protected:
 	TArray<UActionButtonUI*> AttackActionsUI;
 	UPROPERTY()
 	TArray<UActionButtonUI*> ItemActionsUI;
-	TArray<FMoveStruct> AttackInfoList; 
-	TArray<FMoveStruct> MoveInfoList;
+	TArray<FEntityTwinActionContainer> ActionList;
 	UPROPERTY()
 	TObjectPtr<ABattleGridCell> CurrentCell;
+	
 public:
 	ABattleEntity();
 	virtual void OnBattleStart(ABattleManager* battleManager);
 	virtual void OnBattleStart(ABattleManager* battleManager, int32 enemyID);
 	virtual void OnTurnGo();
 	void ShowChoices();
-	void CustomTakeDamage(float damage);
+	virtual void CustomTakeDamage(float damage);
 	void SetPos(FIntPoint newPos, ABattleGridCell* cell);
 	FIntPoint GetPos() { return GridPos; }
 	
-	FGridRangeExport* GetActionInfo(EActionType type, int32 indexInList);
 	virtual void BeginPlay() override;
 	virtual void OnMove() override;
 	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed) override;
+
+	void OnActionComplete(EActionType type);
+	void AddCooldown(EActionType type);
+	void ReduceCooldown();
+	
+	UFUNCTION(BlueprintCallable, Category = "Stuff For Designers | Functions")
+	void ShowPotentialHit(float damage);
+	UFUNCTION(BlueprintCallable, Category = "Stuff For Designers | Functions")
+	void HidePotentialHit();
+	
+	void DealDamage(ABattleEntity* target);
+	int32 GetDamage() { return ActionList[SelectedActionID].AttackAction.Damage; }
+	FGridRangeExport* GetActionInfo(EActionType type, int32 indexInList);
+	
+	
 protected:
 	virtual void FindAndSaveActions(const TArray<int32>& attackArray, const TArray<int32>& moveArray, bool isEnemy = true);
 	TOptional<FGridRangeExport> LoadActionInfoFromPath(FString path);

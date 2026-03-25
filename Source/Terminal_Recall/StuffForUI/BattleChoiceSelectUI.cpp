@@ -1,8 +1,10 @@
 ﻿#include "BattleChoiceSelectUI.h"
 
 #include "ActionButtonUI.h"
+#include "MainBattleUI.h"
 #include "Components/Button.h"
 #include "Components/ScrollBox.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
 
 void UBattleChoiceSelectUI::NativeConstruct()
 {
@@ -15,6 +17,7 @@ void UBattleChoiceSelectUI::NativeConstruct()
 		AttackTabButton->OnClicked.AddDynamic(this, &UBattleChoiceSelectUI::OnAttackTabButtonClicked);
 	if (ItemTabButton)
 		ItemTabButton->OnClicked.AddDynamic(this, &UBattleChoiceSelectUI::OnItemTabButtonClicked);
+	PlayerBattleController = Cast<APlayerBattleController>(GetWorld()->GetFirstPlayerController());
 }
 
 void UBattleChoiceSelectUI::NativeDestruct()
@@ -33,6 +36,7 @@ void UBattleChoiceSelectUI::NativeDestruct()
 void UBattleChoiceSelectUI::OnCloseButtonClicked()
 {
 	RemoveFromParent();
+	PlayerBattleController->MainBattleUIWidget->HideEnemyHp();
 }
 
 void UBattleChoiceSelectUI::OnMoveTabButtonClicked()

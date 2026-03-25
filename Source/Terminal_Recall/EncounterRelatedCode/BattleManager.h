@@ -34,6 +34,7 @@ public:
 	TMap<FIntPoint, TObjectPtr<ABattleGridCell>> GridMap;
 	
 protected:
+	int32 SavedActionId = -1;
 	int32 EntityIndex = -1;
 	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
 	TObjectPtr<ABattleEntity> CurrentEntityChosen;

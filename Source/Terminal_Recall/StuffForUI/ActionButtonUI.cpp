@@ -1,6 +1,7 @@
 ﻿#include "ActionButtonUI.h"
 
 #include "Components/Button.h"
+#include "Components/TextBlock.h"
 
 void UActionButtonUI::NativeConstruct()
 {
@@ -22,4 +23,18 @@ void UActionButtonUI::OnButtonClicked()
 void UActionButtonUI::RemoveForChoices()
 {
 	RemoveFromParent();
+}
+
+void UActionButtonUI::SetCooldown(int32 cooldown)
+{
+	Cooldown = cooldown;
+	if (cooldown == 0)
+	{
+		NameLabel->SetText(FText::FromString(ActionName));
+		ActionButton->SetIsEnabled(true);
+		return;
+	}
+	NameLabel->SetText(FText::AsNumber(cooldown));
+	ActionButton->SetIsEnabled(false);
+	
 }

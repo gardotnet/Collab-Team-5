@@ -8,6 +8,16 @@ class ABattleGridCell;
 class ABattlePlayerEntity;
 class APlayerBattleController;
 
+USTRUCT()
+struct FPotentialMoveCellInfo
+{
+	GENERATED_BODY()
+	UPROPERTY()
+	ABattleGridCell* Cell = nullptr;
+	UPROPERTY()
+	TArray<int32> RelatedActionIdInList;
+};
+
 UCLASS()
 class TERMINAL_RECALL_API ABattleEnemyEntity : public ABattleEntity
 {
@@ -22,18 +32,21 @@ protected:
 	UPROPERTY()
 	TObjectPtr<ABattlePlayerEntity> PlayerRef;
 	UPROPERTY()
-	int32 EnemyMoveRange;
-	UPROPERTY()
 	TObjectPtr<ABattleGridCell> TargetCell;
+	
+	UPROPERTY()
+	TArray<ABattleGridCell*> HighlightedCells;
 
 public:
 	ABattleEnemyEntity();
 	virtual void OnTurnGo() override;
 	virtual void StartMove(FVector position) override;
 	virtual void OnMove() override;
-	virtual void OnBattleStart(ABattleManager* battleManager, int32 enemyID);
+	virtual void OnBattleStart(ABattleManager* battleManager, int32 enemyID) override;
 
 protected:
-	void SetRandomTargetInList(TArray<ABattleGridCell*> list);
-	
+	UFUNCTION()
+	void DelayAttack();
+	void SetRandomTargetInList(const TArray<FPotentialMoveCellInfo>& list);
+	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 };

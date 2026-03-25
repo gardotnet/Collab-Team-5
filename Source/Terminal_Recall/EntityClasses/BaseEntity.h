@@ -49,5 +49,4 @@ public:
 	virtual void StartMove(TArray<TObjectPtr<AHarryWorldTraversalNode>> path);
 	UFUNCTION()
 	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed);
-	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 };
