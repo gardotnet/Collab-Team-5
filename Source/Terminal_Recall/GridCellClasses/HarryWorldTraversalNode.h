@@ -6,6 +6,7 @@
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/LevelnfoStruct.h"
 #include "HarryWorldTraversalNode.generated.h"
 
+class AHarryWorldTraversalSystem;
 class ATraversalPlayerController;
 class UDefaultInstance;
 
@@ -53,6 +54,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UDefaultInstance> GameInstance;
 	TArray<FHarryNeighbourStruct> OldNeighbouringNodes;
+	
+	UPROPERTY()
+	TObjectPtr<AHarryWorldTraversalSystem> WorldTraversalSystem;
 
 public:
 	virtual void BeginPlay() override;
@@ -61,6 +65,7 @@ public:
 
 protected:
 #if WITH_EDITOR
+	virtual void PreEditChange(FProperty* PropertyAboutToChange) override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
 };

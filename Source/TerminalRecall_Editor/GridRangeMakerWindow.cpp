@@ -107,7 +107,6 @@ void UGridRangeMakerWindow::OnCreateGrid()
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			VisualiserObject = GEditor->GetEditorWorldContext().World()->SpawnActor<AGridVisualiser>(VisualiserClass, FVector(50.0f, -7950.0f, 0.0f), FRotator::ZeroRotator, SpawnParams);
 		}
-		VisualiserObject->Modify();
 	}
 	if (!LevelGridVisualISM)
 		LevelGridVisualISM = VisualiserObject->GridVisualComp;
