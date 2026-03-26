@@ -3,6 +3,8 @@
 #include "HarryWorldTraversalNode.h"
 #include "Components/SplineComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Terminal_Recall/ForWorldTraversal/CustomSplineComp.h"
+#include "Terminal_Recall/ForWorldTraversal/PathActor.h"
 #include "Terminal_Recall/StructsAndEnums/HarryNeighbourStruct.h"
 
 AHarryWorldTraversalSystem::AHarryWorldTraversalSystem()
@@ -73,8 +75,7 @@ void AHarryWorldTraversalSystem::CreatePaths()
 		
 		for (FHarryNeighbourStruct& Neighbour : Node->NeighbouringNodes)
 		{
-			
-			if (Neighbour.Node != nullptr)
+			if (IsValid(Neighbour.Node))
 			{
 				ActualPathCreation(Node, &Neighbour);
 			}
@@ -160,12 +161,14 @@ void AHarryWorldTraversalSystem::ClearPaths()
 }
 
 void AHarryWorldTraversalSystem::ActualPathCreation(AHarryWorldTraversalNode* NodeA,
-	FHarryNeighbourStruct* NeighbourInfo)
+                                                    FHarryNeighbourStruct* NeighbourInfo)
 {
 	#if WITH_EDITOR
 	if (!IsValid(NodeA) || !NeighbourInfo || !IsValid(NeighbourInfo->Node)) return;
-	
+
+	NodeA->Modify();
 	AHarryWorldTraversalNode* NodeB = NeighbourInfo->Node;
+	NodeB->Modify();
 
 	if (NeighbourInfo->HasPathConnected)
 		return;
@@ -177,13 +180,13 @@ void AHarryWorldTraversalSystem::ActualPathCreation(AHarryWorldTraversalNode* No
 	{
 		return Item.Node == NodeA;
 	});
-
+	
 	if (FoundSelf && FoundSelf->HasPathConnected)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Path already connected between %s and %s"), *NodeA->GetName(), *NodeB->GetName());
 		return;
 	}
-
+	
 	if (!FoundSelf)
 	{
 		// We need to add NodeA to NodeB's neighbours
@@ -196,7 +199,6 @@ void AHarryWorldTraversalSystem::ActualPathCreation(AHarryWorldTraversalNode* No
 			return Item.Node == NodeA;
 		});
 	}
-
 	if (FoundSelf)
 	{
 		FoundSelf->HasPathConnected = true;
@@ -214,21 +216,24 @@ void AHarryWorldTraversalSystem::ActualPathCreation(AHarryWorldTraversalNode* No
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	if (AActor* NewPath = GetWorld()->SpawnActor<AActor>(SplinePathBpClass, SpawnPoint, FRotator::ZeroRotator, SpawnParams))
+	FRotator zeroRotation = FRotator(0.0f, 0.0f, 0.0f);
+	
+	if (APathActor* NewPath = GetWorld()->SpawnActor<APathActor>(SplinePathBpClass, SpawnPoint, zeroRotation, SpawnParams))
 	{
+		NewPath->Modify();
+		NewPath->LinkStruct(this, NeighbourInfo);
 		NewPath->Tags.Add(FName("TraversalPathActor"));
-		
-		USplineComponent* SplineComp = Cast<USplineComponent>(NewPath->GetComponentByClass(USplineComponent::StaticClass()));
+		UCustomSplineComp* SplineComp = Cast<UCustomSplineComp>(NewPath->GetComponentByClass(UCustomSplineComp::StaticClass()));
 		if (!IsValid(SplineComp))
 		{
-			SplineComp = NewObject<USplineComponent>(NewPath, USplineComponent::StaticClass(), TEXT("PathSpline"));
+			SplineComp = NewObject<UCustomSplineComp>(NewPath, UCustomSplineComp::StaticClass(), TEXT("PathSpline"));
 			if (IsValid(SplineComp))
 			{
 				SplineComp->RegisterComponent();
 				NewPath->AddInstanceComponent(SplineComp);
 			}
 		}
-
+		SplineComp->Modify();
 		if (IsValid(SplineComp))
 		{
 			SplineComp->ClearSplinePoints(true);
@@ -256,7 +261,10 @@ void AHarryWorldTraversalSystem::RebuildMeshesForPath(FHarryNeighbourStruct* Nei
 	if (!NeighbourInfo || !IsValid(NeighbourInfo->PathObject) || !IsValid(NeighbourInfo->PathSplineComponent)) return;
 
 	AActor* PathActor = NeighbourInfo->PathObject;
-	USplineComponent* Spline = NeighbourInfo->PathSplineComponent;
+	UCustomSplineComp* Spline = NeighbourInfo->PathSplineComponent;
+
+	PathActor->Modify();
+	Spline->Modify();
 
 	// Remove old meshes
 	TArray<USplineMeshComponent*> ExistingMeshes;
@@ -276,7 +284,7 @@ void AHarryWorldTraversalSystem::RebuildMeshesForPath(FHarryNeighbourStruct* Nei
 	if (NumPoints < 2) return;
 
 	// Spawn actors if enabled
-	if (bSpawnActorsOnPath && ActorToSpawnClass)
+	if (bSpawnActorsOnPath && IsValid(ActorToSpawnClass))
 	{
 		// Roll for a single spawn along the path
 		float RandomRoll = FMath::RandRange(0.f, 100.f);
@@ -330,6 +338,7 @@ void AHarryWorldTraversalSystem::RebuildMeshesForPath(FHarryNeighbourStruct* Nei
 				USplineMeshComponent* SplineMesh = NewObject<USplineMeshComponent>(PathActor, USplineMeshComponent::StaticClass());
 				if (IsValid(SplineMesh))
 				{
+					SplineMesh->Modify();
 					SplineMesh->SetStaticMesh(PathMesh);
 					SplineMesh->SetForwardAxis(PathMeshForwardAxis);
 					SplineMesh->SetMobility(EComponentMobility::Movable); 

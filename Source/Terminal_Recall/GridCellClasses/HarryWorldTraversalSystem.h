@@ -5,9 +5,10 @@
 #include "CoreMinimal.h"
 #include "Components/SplineMeshComponent.h"
 #include "GameFramework/Actor.h"
+#include "Terminal_Recall/StructsAndEnums/HarryNeighbourStruct.h"
 #include "HarryWorldTraversalSystem.generated.h"
 
-struct FHarryNeighbourStruct;
+class APathActor;
 class AHarryWorldTraversalNode;
 
 UCLASS()
@@ -19,7 +20,7 @@ public:
 	#pragma region Path Stuff
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Traversal System | Generation", meta = (ToolTip = "Add the path actor here"))
-	TSubclassOf<AActor> SplinePathBpClass;
+	TSubclassOf<APathActor> SplinePathBpClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Traversal System | Mesh Info", meta = (ToolTip = "The mesh to populate along the spline"))
 	TObjectPtr<UStaticMesh> PathMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Traversal System | Mesh Info", meta = (ToolTip = "Forward axis for the spline mesh (usually X or Y)"))
@@ -75,10 +76,15 @@ public:
 	// Update spline meshes along the splines
 	UFUNCTION(BlueprintCallable, CallInEditor, Category="Traversal System | Tools")
 	void UpdatePathMeshes();
+	
 
 	// Clear all paths
 	UFUNCTION(BlueprintCallable, CallInEditor, Category="Traversal System | Tools")
 	void ClearPaths();
+
+	// Update spline meshes along the splines
+	void RebuildMeshesForPath(FHarryNeighbourStruct* NeighbourInfo);
+	void ActualPathCreation(AHarryWorldTraversalNode* NodeA, FHarryNeighbourStruct* NeighbourInfo);
 	
 	/*// Save spline data to JSON
 	UFUNCTION(BlueprintCallable, CallInEditor, Category="Traversal System | Data Saving")
@@ -89,8 +95,5 @@ public:
 	void LoadSplineData();*/
 
 protected:
-	void ActualPathCreation(AHarryWorldTraversalNode* NodeA, FHarryNeighbourStruct* NeighbourInfo);
-	// Update spline meshes along the splines
-	void RebuildMeshesForPath(FHarryNeighbourStruct* NeighbourInfo);
 	void ClearSpawnedActors(FHarryNeighbourStruct* NeighbourInfo);
 };

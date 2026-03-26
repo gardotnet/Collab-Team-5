@@ -101,6 +101,8 @@ bool ATraversalPlayerController::FindCell(TObjectPtr<UNodeInfoForCellSearch> cur
 		}
 		for (auto neighbour : cellInfo->Node->NeighbouringNodes)
 		{
+			if (!IsValid(neighbour.Node))
+				continue;
 			FString neighbourName = neighbour.Node->GetActorNameOrLabel();
 			float neighbourGCost = cellInfo->GCost + neighbour.Length;
 			float distTillDestination = Heuristic_Manhattan(neighbour.Node->GetActorLocation(), DestinationNode->GetActorLocation());

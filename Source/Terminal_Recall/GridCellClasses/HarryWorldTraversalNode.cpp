@@ -2,12 +2,15 @@
 
 #include "HarryWorldTraversalSystem.h"
 #include "Kismet/GameplayStatics.h"
+#include "Terminal_Recall/ForWorldTraversal/PathActor.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/TraversalPlayerController.h"
+#include "Terminal_Recall/Harry/TraversalFunctionLibrary.h"
 
 AHarryWorldTraversalNode::AHarryWorldTraversalNode()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	bRunConstructionScriptOnDrag = false;
 }
 
 void AHarryWorldTraversalNode::BeginPlay()
@@ -21,6 +24,8 @@ void AHarryWorldTraversalNode::BeginPlay()
 		LevelInfo = *LevelDataTable->FindRow<FLevelInfoStruct>(FName(*stringConvert), TEXT(""));
 	}
 	WorldTraversalSystem = Cast<AHarryWorldTraversalSystem>(UGameplayStatics::GetActorOfClass(GetWorld(), AHarryWorldTraversalSystem::StaticClass()));
+	if (!IsCellHidden)
+		Clickable = true;
 }
 
 void AHarryWorldTraversalNode::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
@@ -45,9 +50,16 @@ void AHarryWorldTraversalNode::OnUnitArrive_Implementation()
 		Visited = true;
 	else
 	{
-		GameInstance->Map = LevelInfo.LevelFilePath;
-		GameInstance->PlayerSpawnPos = GetActorLocation();
-		PlayerController->OpenLevelSelect(LevelInfo.Difficulty, LevelInfo.EnemyIdForHints);
+		if (IsEncounter)
+		{
+			GameInstance->Map = LevelInfo.LevelFilePath;
+			GameInstance->PlayerSpawnPos = GetActorLocation();
+			PlayerController->OpenLevelSelect(LevelInfo.Difficulty, LevelInfo.EnemyIdForHints);
+		}
+		else
+		{
+			Visited = true;
+		}
 	}
 	
 	if (!Visited)
@@ -61,10 +73,155 @@ void AHarryWorldTraversalNode::OnUnitArrive_Implementation()
 		if (IsValid(neighbour.Node->CoverObject))
 			neighbour.Node->CoverObject->Destroy();
 	}
+	NeighbourCloudRemoved = true;
+}
+
+void AHarryWorldTraversalNode::CreateSinglePath(FHarryNeighbourStruct* neighbour)
+{
+	this->Modify();
+	
+	if (neighbour->HasPathConnected)
+		return;
+	neighbour->HasPathConnected = true;
+	if (!IsValid(WorldTraversalSystem))
+		WorldTraversalSystem = Cast<AHarryWorldTraversalSystem>(UGameplayStatics::GetActorOfClass(GetWorld(), AHarryWorldTraversalSystem::StaticClass()));
+	// finding itself to see if it is in its neighbour's list
+	FHarryNeighbourStruct* foundSelf = neighbour->Node->NeighbouringNodes.FindByPredicate([this](const FHarryNeighbourStruct& item)
+	{
+		return item.Node == this;
+	});
+	
+	if (!foundSelf)
+	{
+		FHarryNeighbourStruct NewStruct;
+		NewStruct.Node = this;
+		neighbour->Node->NeighbouringNodes.Add(NewStruct);
+
+		foundSelf = neighbour->Node->NeighbouringNodes.FindByPredicate([this](const FHarryNeighbourStruct& item)
+		{
+			return item.Node == this;
+		});
+	}
+
+	if (foundSelf)
+	{
+		foundSelf->HasPathConnected = true;
+	}
+
+	// Calculate the position of the path (spline)
+	FVector PosA = GetActorLocation();
+	FVector PosB = neighbour->Node->GetActorLocation();
+	PosB.Z = PosA.Z; // keep on a 2D plane (same height)
+	
+	float Dist = FVector::Dist(PosA, PosB);
+	
+	FVector SpawnPoint = (PosA + PosB) * 0.5f;
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	if (APathActor* NewPath = GetWorld()->SpawnActor<APathActor>(WorldTraversalSystem->SplinePathBpClass, SpawnPoint, FRotator::ZeroRotator, SpawnParams))
+	{
+		NewPath->Tags.Add(FName("TraversalPathActor"));
+		NewPath->LinkStruct(WorldTraversalSystem, neighbour);
+		UCustomSplineComp* SplineComp = Cast<UCustomSplineComp>(NewPath->GetComponentByClass(UCustomSplineComp::StaticClass()));
+		if (!IsValid(SplineComp))
+		{
+			SplineComp = NewObject<UCustomSplineComp>(NewPath, UCustomSplineComp::StaticClass(), TEXT("PathSpline"));
+			if (IsValid(SplineComp))
+			{
+				SplineComp->RegisterComponent();
+				NewPath->AddInstanceComponent(SplineComp);
+			}
+		}
+
+		if (IsValid(SplineComp))
+		{
+			SplineComp->ClearSplinePoints(true);
+			SplineComp->AddSplinePoint(PosA, ESplineCoordinateSpace::World, true);
+			SplineComp->AddSplinePoint(PosB, ESplineCoordinateSpace::World, true);
+		}
+
+		neighbour->PathObject = NewPath;
+		neighbour->PathSplineComponent = SplineComp;
+		neighbour->Length = Dist / 100;
+
+		if (foundSelf)
+		{
+			foundSelf->PathObject = NewPath;
+			foundSelf->PathSplineComponent = SplineComp;
+			foundSelf->Length = Dist / 100;
+		}
+		
+		WorldTraversalSystem->RebuildMeshesForPath(neighbour);
+	}
+}
+
+#if WITH_EDITOR
+void AHarryWorldTraversalNode::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+	UE_LOG(LogTemp, Warning, TEXT("The value of Loaded is: %s"), VariableLoaded ? TEXT("True") : TEXT("False"));
+	
+	if (!VariableLoaded)
+	{
+		VariableLoaded = true;
+		FTimerHandle timerHandle;
+		GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &AHarryWorldTraversalNode::InitializeVariables, 1.0f, false);
+	}
+	else
+	{
+		for (auto neighbour : NeighbouringNodes)
+		{
+			if (!IsValid(neighbour.PathSplineComponent))
+				continue;
+			UCustomSplineComp* SplineComp = neighbour.PathSplineComponent;
+			FVector startPos;
+			FRotator startRot;
+			UTraversalFunctionLibrary::EvaluateSplineMovement(SplineComp, 0, false, startPos, startRot );
+			if (startPos == neighbour.Node->GetActorLocation())
+			{
+				SplineComp->SetLocationAtSplinePoint(0, GetActorLocation(), ESplineCoordinateSpace::World, true);
+			}
+			else
+			{
+				
+				SplineComp->SetLocationAtSplinePoint(SplineComp->GetNumberOfSplinePoints() - 1, GetActorLocation(), ESplineCoordinateSpace::World, true);
+			}
+			if (!IsValid(WorldTraversalSystem))
+				WorldTraversalSystem = Cast<AHarryWorldTraversalSystem>(UGameplayStatics::GetActorOfClass(GetWorld(), AHarryWorldTraversalSystem::StaticClass()));
+			WorldTraversalSystem->RebuildMeshesForPath(&neighbour);
+		}
+	}
+}
+
+void AHarryWorldTraversalNode::PostActorCreated()
+{
+	Super::PostActorCreated();
+	VariableLoaded = true;
+	bRunConstructionScriptOnDrag = true;
+	PostEditChange();
+}
+
+void AHarryWorldTraversalNode::InitializeVariables()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Helllo!"));
+	OldNeighbouringNodes.Empty();
+	OldNeighbouringNodes.Append(NeighbouringNodes);
+	/*for (auto neighbour : NeighbouringNodes)
+	{
+		if (!IsValid(neighbour.PathSplineComponent))
+			continue;
+		WorldTraversalSystem = Cast<AHarryWorldTraversalSystem>(UGameplayStatics::GetActorOfClass(GetWorld(), AHarryWorldTraversalSystem::StaticClass()));
+		neighbour.PathObject->LinkStruct(WorldTraversalSystem, &neighbour);
+	}*/
+	bRunConstructionScriptOnDrag = true;
+	PostEditChange();
 }
 
 void AHarryWorldTraversalNode::PreEditChange(FProperty* PropertyAboutToChange)
 {
+	this->Modify();
 	Super::PreEditChange(PropertyAboutToChange);
 	// if the neighbour list is being changed
 	if (PropertyAboutToChange && PropertyAboutToChange->GetFName() == GET_MEMBER_NAME_CHECKED(AHarryWorldTraversalNode, NeighbouringNodes))
@@ -77,6 +234,7 @@ void AHarryWorldTraversalNode::PreEditChange(FProperty* PropertyAboutToChange)
 
 void AHarryWorldTraversalNode::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
+	this->Modify();
 	Super::PostEditChangeChainProperty(PropertyChangedEvent);
 	FEditPropertyChain::TDoubleLinkedListNode* MemberNode = PropertyChangedEvent.PropertyChain.GetActiveMemberNode();
 	FName MemberName = (MemberNode != nullptr) ? MemberNode->GetValue()->GetFName() : NAME_None;
@@ -106,8 +264,10 @@ void AHarryWorldTraversalNode::PostEditChangeChainProperty(FPropertyChangedChain
                     });
                     if (indexFoundAt != INDEX_NONE)
                     {
-                        //oldNeighbourRef.Node->Modify();
+                        oldNeighbourRef.Node->Modify();
                         oldNeighbourRef.Node->NeighbouringNodes.RemoveAt(indexFoundAt);
+
+                    	(void) oldNeighbourRef.Node->MarkPackageDirty(); 
                     }
                 }
             }
@@ -126,8 +286,12 @@ void AHarryWorldTraversalNode::PostEditChangeChainProperty(FPropertyChangedChain
 
     			if (indexFoundAt != INDEX_NONE)
     			{
-    				//oldNeighbourRef.Node->Modify();
+    				oldNeighbourRef.Node->Modify();
     				oldNeighbourRef.Node->NeighbouringNodes.RemoveAt(indexFoundAt);
+
+    				FProperty* Prop = oldNeighbourRef.Node->GetClass()->FindPropertyByName(GET_MEMBER_NAME_CHECKED(AHarryWorldTraversalNode, NeighbouringNodes));
+    				FPropertyChangedEvent ChildChangeEvent(Prop, EPropertyChangeType::ArrayRemove);
+    				oldNeighbourRef.Node->PostEditChangeProperty(ChildChangeEvent);
     			}
     		}
     	}
@@ -135,31 +299,48 @@ void AHarryWorldTraversalNode::PostEditChangeChainProperty(FPropertyChangedChain
         {
         	FName propertyName = (PropertyChangedEvent.Property != nullptr) 
 				? PropertyChangedEvent.Property->GetFName() : NAME_None;
-        	FHarryNeighbourStruct* neighbour = &NeighbouringNodes[index];
+        	FHarryNeighbourStruct* neighbourInfo = &NeighbouringNodes[index];
+        	AHarryWorldTraversalNode* refToLastNeighbour = NeighbouringNodes[index].Node;
+        	if (!IsValid(refToLastNeighbour))
+        	{
+        		if (!OldNeighbouringNodes.IsValidIndex(index) || !IsValid(OldNeighbouringNodes[index].Node))
+        			return;
+        		refToLastNeighbour = OldNeighbouringNodes[index].Node;
+        	}
 			// if what was changed was the cell/ref to other neighbour
-        	if (propertyName == FName("Cell"))
+        	if (propertyName == FName("Node"))
         	{
         		// if it was previously linked to another cell
-        		if (neighbour->PathObject != nullptr)
+        		if (IsValid(neighbourInfo->PathObject))
         		{
         			// remove the path
-        			neighbour->PathObject->Destroy();
-        			neighbour->PathObject = nullptr;
-        			neighbour->HasPathConnected = false;
-        			int32 indexFoundAt = neighbour->Node->NeighbouringNodes.IndexOfByPredicate([this](const FHarryNeighbourStruct& Item) {
+        			neighbourInfo->PathObject->Destroy();
+        			neighbourInfo->PathObject = nullptr;
+        			neighbourInfo->PathSplineComponent = nullptr;
+        			neighbourInfo->HasPathConnected = false;
+        			int32 indexFoundAt = refToLastNeighbour->NeighbouringNodes.IndexOfByPredicate([this](const FHarryNeighbourStruct& Item) {
 						return Item.Node == this;
 					});
         			// remove itself from disconnected neighbour's list
         			if (indexFoundAt != INDEX_NONE)
         			{
-        				neighbour->Node->Modify();
-        				neighbour->Node->NeighbouringNodes.RemoveAt(indexFoundAt);
+        				refToLastNeighbour->Modify();
+        				refToLastNeighbour->NeighbouringNodes.RemoveAt(indexFoundAt);
+
+        				FProperty* Prop = refToLastNeighbour->GetClass()->FindPropertyByName(GET_MEMBER_NAME_CHECKED(AHarryWorldTraversalNode, NeighbouringNodes));
+        				FPropertyChangedEvent ChildChangeEvent(Prop, EPropertyChangeType::ArrayRemove);
+        				refToLastNeighbour->PostEditChangeProperty(ChildChangeEvent);
         			}
         		}
         		// if chosen a valid ref to another cell 
-        		if (neighbour->Node != nullptr)
+        		if (IsValid(neighbourInfo->Node))
         		{
-        			WorldTraversalSystem->CreatePaths();
+        			UE_LOG(LogTemp, Warning, TEXT("Im running"));
+        			//CreateSinglePath(neighbourInfo);
+        			if (!IsValid(WorldTraversalSystem))
+        				WorldTraversalSystem = Cast<AHarryWorldTraversalSystem>(UGameplayStatics::GetActorOfClass(GetWorld(), AHarryWorldTraversalSystem::StaticClass()));
+        			WorldTraversalSystem->ActualPathCreation(this, neighbourInfo);
+        			WorldTraversalSystem->RebuildMeshesForPath(neighbourInfo);
         		}
         	}
         }
@@ -207,5 +388,7 @@ void AHarryWorldTraversalNode::PostEditChangeChainProperty(FPropertyChangedChain
 		coverLoc.Z = CoverHeight;
 		CoverObject->SetActorLocation(coverLoc);
 	}
+	OldNeighbouringNodes.Empty();
+	OldNeighbouringNodes.Append(NeighbouringNodes);
 }
-
+#endif
