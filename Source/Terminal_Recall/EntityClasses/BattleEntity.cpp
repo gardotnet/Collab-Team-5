@@ -118,8 +118,10 @@ void ABattleEntity::AddCooldown(EActionType type)
 	}
 	if (ActionList[SelectedActionID].Cooldown == 0)
 		return;
-	AttackActionsUI[SelectedActionID]->SetCooldown(ActionList[SelectedActionID].Cooldown);
-	MovementActionsUI[SelectedActionID]->SetCooldown(ActionList[SelectedActionID].Cooldown);
+	if (AttackActionsUI.IsValidIndex(SelectedActionID))
+		AttackActionsUI[SelectedActionID]->SetCooldown(ActionList[SelectedActionID].Cooldown);
+	if (MovementActionsUI.IsValidIndex(SelectedActionID))
+		MovementActionsUI[SelectedActionID]->SetCooldown(ActionList[SelectedActionID].Cooldown);
 }
 
 void ABattleEntity::ReduceCooldown()

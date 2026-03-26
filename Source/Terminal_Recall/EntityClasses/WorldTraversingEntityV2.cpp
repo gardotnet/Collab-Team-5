@@ -44,11 +44,12 @@ void AWorldTraversingEntityV2::OnMove()
 		});
 		UE_LOG(LogTemp, Log, TEXT("Next: %s and found %s"), *TheNodePath[PathIndex + 1]->GetActorNameOrLabel(), *connectedNeighbour->Node->GetActorNameOrLabel());
 		CurrentSplineComp = connectedNeighbour->PathSplineComponent;
-		bDontReverseSplineLoc = true;
+		bDontReverseSplineLoc = false;
 		UTraversalFunctionLibrary::EvaluateSplineMovement(CurrentSplineComp, 0, bDontReverseSplineLoc, TargetPosition, TargetRotation);
-		if (TargetPosition != TheNodePath[PathIndex]->GetActorLocation())
+		
+		if (TargetPosition == TheNodePath[PathIndex + 1]->GetActorLocation())
 		{
-			bDontReverseSplineLoc = false;
+			bDontReverseSplineLoc = true;
 			UTraversalFunctionLibrary::EvaluateSplineMovement(CurrentSplineComp, 0, bDontReverseSplineLoc, TargetPosition, TargetRotation);
 		}
 		UTraversalFunctionLibrary::CalculateSplineMoveDuration(CurrentSplineComp, Speed, DesiredMoveDuration);
