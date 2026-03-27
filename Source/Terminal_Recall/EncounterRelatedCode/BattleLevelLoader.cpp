@@ -198,6 +198,16 @@ void ABattleLevelLoader::EditorLoadLevel()
 		if (bOpened && OutFileNames.Num() > 0)
 		{
 			OverwriteLevelPath = OutFileNames[0];
+			#if WITH_EDITOR
+			if (UWorld* World = GetWorld())
+			{
+				if (World->IsGameWorld())
+				{
+					LoadLevel(OverwriteLevelPath);
+					return;
+				}
+			}
+			#endif
 			FString jsonData;
 			// fetch file data and shove it into "jsonData"
 			if (FFileHelper::LoadFileToString(jsonData, *OverwriteLevelPath))

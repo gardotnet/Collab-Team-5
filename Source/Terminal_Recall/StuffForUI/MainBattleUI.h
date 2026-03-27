@@ -33,5 +33,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="For Designers | Functions")
 	void HideEnemyHp();
 	
+protected:
+	virtual void NativeConstruct() override;
 	
 };

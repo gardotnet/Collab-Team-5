@@ -28,6 +28,9 @@ public:
 	TArray<int> AttackList;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | Player Variables")
 	TArray<int> MoveList;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | Player Variables")
+	FVector LastValidVisitCell;
 
 protected:
 	#if WITH_EDITOR

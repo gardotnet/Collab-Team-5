@@ -56,6 +56,7 @@ protected:
 	TObjectPtr<ATraversalPlayerController> PlayerController;
 	UPROPERTY()
 	TObjectPtr<UDefaultInstance> GameInstance;
+	UPROPERTY(Transient)
 	TArray<FHarryNeighbourStruct> OldNeighbouringNodes;
 	
 	UPROPERTY()

@@ -335,6 +335,13 @@ void AHarryWorldTraversalNode::PostEditChangeChainProperty(FPropertyChangedChain
         		// if chosen a valid ref to another cell 
         		if (IsValid(neighbourInfo->Node))
         		{
+        			if (OldNeighbouringNodes.IsValidIndex(index))
+        			{
+        				if (OldNeighbouringNodes[index].Node == neighbourInfo->Node)
+        					return;
+        			}        		
+        			if (this == neighbourInfo->Node)
+        				return;
         			UE_LOG(LogTemp, Warning, TEXT("Im running"));
         			//CreateSinglePath(neighbourInfo);
         			if (!IsValid(WorldTraversalSystem))
