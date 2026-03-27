@@ -123,7 +123,7 @@ void AHarryWorldTraversalNode::CreateSinglePath(FHarryNeighbourStruct* neighbour
 	if (APathActor* NewPath = GetWorld()->SpawnActor<APathActor>(WorldTraversalSystem->SplinePathBpClass, SpawnPoint, FRotator::ZeroRotator, SpawnParams))
 	{
 		NewPath->Tags.Add(FName("TraversalPathActor"));
-		NewPath->LinkStruct(WorldTraversalSystem, neighbour);
+		NewPath->LinkStruct(WorldTraversalSystem, this, *neighbour);
 		UCustomSplineComp* SplineComp = Cast<UCustomSplineComp>(NewPath->GetComponentByClass(UCustomSplineComp::StaticClass()));
 		if (!IsValid(SplineComp))
 		{
@@ -161,8 +161,6 @@ void AHarryWorldTraversalNode::CreateSinglePath(FHarryNeighbourStruct* neighbour
 void AHarryWorldTraversalNode::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
-	UE_LOG(LogTemp, Warning, TEXT("The value of Loaded is: %s"), VariableLoaded ? TEXT("True") : TEXT("False"));
-	
 	if (!VariableLoaded)
 	{
 		VariableLoaded = true;
@@ -205,16 +203,8 @@ void AHarryWorldTraversalNode::PostActorCreated()
 
 void AHarryWorldTraversalNode::InitializeVariables()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Helllo!"));
 	OldNeighbouringNodes.Empty();
 	OldNeighbouringNodes.Append(NeighbouringNodes);
-	/*for (auto neighbour : NeighbouringNodes)
-	{
-		if (!IsValid(neighbour.PathSplineComponent))
-			continue;
-		WorldTraversalSystem = Cast<AHarryWorldTraversalSystem>(UGameplayStatics::GetActorOfClass(GetWorld(), AHarryWorldTraversalSystem::StaticClass()));
-		neighbour.PathObject->LinkStruct(WorldTraversalSystem, &neighbour);
-	}*/
 	bRunConstructionScriptOnDrag = true;
 	PostEditChange();
 }
@@ -307,6 +297,13 @@ void AHarryWorldTraversalNode::PostEditChangeChainProperty(FPropertyChangedChain
         			return;
         		refToLastNeighbour = OldNeighbouringNodes[index].Node;
         	}
+        	if (this == neighbourInfo->Node)
+        	{
+        		
+        		neighbourInfo->PathObject->Destroy();
+        		NeighbouringNodes.RemoveAt(index);
+        		return;
+        	}
 			// if what was changed was the cell/ref to other neighbour
         	if (propertyName == FName("Node"))
         	{
@@ -340,8 +337,7 @@ void AHarryWorldTraversalNode::PostEditChangeChainProperty(FPropertyChangedChain
         				if (OldNeighbouringNodes[index].Node == neighbourInfo->Node)
         					return;
         			}        		
-        			if (this == neighbourInfo->Node)
-        				return;
+        			
         			UE_LOG(LogTemp, Warning, TEXT("Im running"));
         			//CreateSinglePath(neighbourInfo);
         			if (!IsValid(WorldTraversalSystem))

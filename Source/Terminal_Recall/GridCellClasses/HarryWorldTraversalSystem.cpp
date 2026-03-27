@@ -221,7 +221,7 @@ void AHarryWorldTraversalSystem::ActualPathCreation(AHarryWorldTraversalNode* No
 	if (APathActor* NewPath = GetWorld()->SpawnActor<APathActor>(SplinePathBpClass, SpawnPoint, zeroRotation, SpawnParams))
 	{
 		NewPath->Modify();
-		NewPath->LinkStruct(this, NeighbourInfo);
+		NewPath->LinkStruct(this, NodeA,*NeighbourInfo);
 		NewPath->Tags.Add(FName("TraversalPathActor"));
 		UCustomSplineComp* SplineComp = Cast<UCustomSplineComp>(NewPath->GetComponentByClass(UCustomSplineComp::StaticClass()));
 		if (!IsValid(SplineComp))
@@ -263,6 +263,7 @@ void AHarryWorldTraversalSystem::RebuildMeshesForPath(FHarryNeighbourStruct* Nei
 	AActor* PathActor = NeighbourInfo->PathObject;
 	UCustomSplineComp* Spline = NeighbourInfo->PathSplineComponent;
 
+	Modify();
 	PathActor->Modify();
 	Spline->Modify();
 
@@ -278,13 +279,13 @@ void AHarryWorldTraversalSystem::RebuildMeshesForPath(FHarryNeighbourStruct* Nei
 	}
 	
 	// Remove old actors
-	ClearSpawnedActors(NeighbourInfo);
+	//ClearSpawnedActors(NeighbourInfo);
 
 	int32 NumPoints = Spline->GetNumberOfSplinePoints();
 	if (NumPoints < 2) return;
 
 	// Spawn actors if enabled
-	if (bSpawnActorsOnPath && IsValid(ActorToSpawnClass))
+	/*if (bSpawnActorsOnPath && IsValid(ActorToSpawnClass))
 	{
 		// Roll for a single spawn along the path
 		float RandomRoll = FMath::RandRange(0.f, 100.f);
@@ -315,7 +316,7 @@ void AHarryWorldTraversalSystem::RebuildMeshesForPath(FHarryNeighbourStruct* Nei
 				Spawned->AttachToActor(PathActor, FAttachmentTransformRules::KeepWorldTransform);
 			}
 		}
-	}
+	}*/
 
 	// Always generate meshes if mesh is set
 	if (IsValid(PathMesh))

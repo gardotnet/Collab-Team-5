@@ -17,12 +17,17 @@ public:
 	APathActor();
 
 protected:
-	UPROPERTY()
-	AHarryWorldTraversalSystem* WorldTraversalSystem;
-	FHarryNeighbourStruct* RelatedStruct;
+	UPROPERTY(EditAnywhere, Category="Stuff For Designers | Necessities")
+	bool bHelpRefIsGone = false;
+	UPROPERTY(EditAnywhere, Category="Stuff For Designers | Necessities", meta = (EditCondition = "bHelpRefIsGone"))
+	TSoftObjectPtr<AHarryWorldTraversalSystem> WorldTraversalSystem;
+	UPROPERTY(EditAnywhere, Category="Stuff For Designers | Necessities", meta = (EditCondition = "bHelpRefIsGone"))
+	TSoftObjectPtr<AHarryWorldTraversalNode> Node;
+	UPROPERTY(Transient)
+	FHarryNeighbourStruct RelatedStruct;
 	
 public:
-	void LinkStruct(AHarryWorldTraversalSystem* system, FHarryNeighbourStruct* relatedStruct);
+	void LinkStruct(AHarryWorldTraversalSystem* system, AHarryWorldTraversalNode* owningNode, FHarryNeighbourStruct relatedStruct);
 protected:
 	virtual void OnConstruction(const FTransform& Transform) override;
 };
