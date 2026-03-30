@@ -11,7 +11,6 @@
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
 #include "Terminal_Recall/StructsAndEnums/LevelExportStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/AssetLookUpStruct.h"
-#include "Terminal_Recall/StructsAndEnums/ForDataTable/EnemyInfoStruct.h"
 
 ABattleLevelLoader::ABattleLevelLoader()
 {
@@ -250,6 +249,10 @@ void ABattleLevelLoader::EditorLoadLevel()
 						case ECellBrushMode::Wall:
 							if (TObjectPtr<ABattleGridCell>* newCell = TempGridMap.Find(cellData.Position))
 							{
+								if (cellData.IdForCellContent == 0)
+								{
+									(*newCell)->Destroy();
+								}
 								FString stringConvert = FString::FromInt(cellData.IdForCellContent);
 								if (FAssetLookUpTable* propInfo = PropDataTable->FindRow<FAssetLookUpTable>(FName(*stringConvert), TEXT("Level Loader")))
 								{
