@@ -50,6 +50,9 @@ protected:
 
 	float MoveTimer = 0.0f;
 	float DesiredMoveDuration = 0.0f;
+	
+	UPROPERTY()
+	UWorld* World;
 public:
 	UFUNCTION(BlueprintCallable, Category="Stuff For Designers | Functions")
 	void OpenLevelSelect(int32 difficulty, const TArray<int32>& enemiesID);

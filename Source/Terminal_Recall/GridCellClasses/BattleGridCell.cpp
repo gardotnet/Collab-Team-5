@@ -16,22 +16,27 @@ void ABattleGridCell::AssignTrap(TObjectPtr<ABaseTrap> trap)
 }
 bool ABattleGridCell::EnableCell(EActionType actionType, ABattleEntity* causer, int32 groupID)
 {
-	if (ResidingEntity && !(actionType == EActionType::Attack || actionType == EActionType::EnemyAttack))
+	if (IsValid(ResidingEntity) && (actionType != EActionType::Attack && actionType != EActionType::EnemyAttack))
 		return false;
 	if (!Walkable || Clickable)
 		return false;
+	
 	EntityCauserRef = causer;
 	ActionType = actionType;
 	CellGroupID = groupID;
 	MeshComponent->SetCollisionProfileName("BlockAll");
 	Clickable = true;
 	MeshComponent->SetOverlayMaterial(MoveHighlightMat);
+	if (IsValid(ResidingEntity) && (actionType == EActionType::Attack || actionType == EActionType::EnemyAttack))
+		ResidingEntity->ShowPotentialHit(EntityCauserRef->GetDamage());
 	return true;
 }
 void ABattleGridCell::DisableCell()
 {
 	MeshComponent->SetCollisionProfileName("NoCollision");
 	MeshComponent->SetOverlayMaterial(nullptr);
+	if (IsValid(ResidingEntity))
+		ResidingEntity->HidePotentialHit();
 	Clickable = false;
 }
 void ABattleGridCell::ForceAttack(int32 groupID)
@@ -42,7 +47,12 @@ void ABattleGridCell::ForceAttack(int32 groupID)
 void ABattleGridCell::ForceHover(int32 groupID)
 {
 	if (groupID == CellGroupID)
-		MeshComponent->SetOverlayMaterial(HoverHighlightMat);
+	{
+		if (IsValid(ResidingEntity))
+			MeshComponent->SetOverlayMaterial(HitHighlightMat);
+		else
+			MeshComponent->SetOverlayMaterial(HoverHighlightMat);
+	}
 }
 void ABattleGridCell::ForceEndHover(int32 groupID)
 {
@@ -77,6 +87,24 @@ bool ABattleGridCell::CanMoveOnTo()
 	return true;
 }
 
+void ABattleGridCell::ForceHighlight(ABattleEntity* causer)
+{
+	if (IsValid(ResidingEntity))
+	{
+		ResidingEntity->ShowPotentialHit(causer->GetDamage());
+		MeshComponent->SetOverlayMaterial(HitHighlightMat);
+		return;
+	}
+	MeshComponent->SetOverlayMaterial(MoveHighlightMat);
+}
+
+void ABattleGridCell::EndForceHighlight()
+{
+	MeshComponent->SetOverlayMaterial(nullptr);
+	if (IsValid(ResidingEntity))
+		ResidingEntity->HidePotentialHit();
+}
+
 void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
 	if (!Clickable)
@@ -109,7 +137,10 @@ void ABattleGridCell::OnHoverOver(UPrimitiveComponent* TouchedComponent)
 {
 	if (Clickable)
 	{
-		MeshComponent->SetOverlayMaterial(HoverHighlightMat);
+		if (IsValid(ResidingEntity))
+			MeshComponent->SetOverlayMaterial(HitHighlightMat);
+		else
+			MeshComponent->SetOverlayMaterial(HoverHighlightMat);
 		if (ActionType == EActionType::Attack)
 			BattleManager->CallGroupHoverEvent.Broadcast(CellGroupID);
 	}

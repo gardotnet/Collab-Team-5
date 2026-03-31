@@ -28,6 +28,7 @@ public:
 	FOnActionSelected OnActionSelected;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* NameLabel;
+	int32 Cooldown = 0;
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
@@ -36,4 +37,5 @@ protected:
 public:
 	UFUNCTION()
 	void RemoveForChoices();
+	void SetCooldown(int32 cooldown);
 };

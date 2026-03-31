@@ -10,6 +10,13 @@
 
 void ATraversalPlayerController::OpenLevelSelect(int32 difficulty, const TArray<int32>& enemiesID)
 {
+	if (ThePath.Num() >= 2)
+	{
+		Algo::Reverse(ThePath);
+		ThePath.SetNum(2, EAllowShrinking::Yes);
+		UDefaultInstance* gameInstance =  Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(World));
+		gameInstance->LastValidVisitCell = ThePath[1]->GetActorLocation();
+	}
 	LevelSelectWindow->AddToViewport();
 	LevelSelectWindow->PassInfoToLevelSelectWindow(difficulty, enemiesID);
 	ScreenOn = true;
@@ -60,9 +67,9 @@ void ATraversalPlayerController::UpdatePlayerPos(TObjectPtr<AHarryWorldTraversal
 void ATraversalPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-
-	FTimerHandle timerHandle;
-	GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &ATraversalPlayerController::DelayedBeginPlay, 1.0f, false);
+	World = GetWorld();
+	World->OnWorldBeginPlay.AddUObject(this, &ATraversalPlayerController::DelayedBeginPlay);
+	//GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &ATraversalPlayerController::DelayedBeginPlay, 0.0f, false);
 }
 
 void ATraversalPlayerController::SetupInputComponent()
@@ -77,10 +84,26 @@ void ATraversalPlayerController::SetupInputComponent()
 
 void ATraversalPlayerController::NavigateOneSpaceBack()
 {
-	Algo::Reverse(ThePath);
-	ThePath.SetNum(2, EAllowShrinking::Yes);
 	ScreenOn = false;
 	DestinationNode = nullptr;
+	if (ThePath.IsEmpty())
+	{
+		UDefaultInstance* gameInstance =  Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(World));
+		FVector endTracePos = gameInstance->LastValidVisitCell + FVector(0,0, -100);
+		FCollisionQueryParams collisionParams;
+		FHitResult hitResult;
+		World->LineTraceSingleByChannel(hitResult, gameInstance->LastValidVisitCell + FVector(0,0, 100), endTracePos, ECC_GameTraceChannel1, collisionParams);
+		if (hitResult.GetActor())
+		{
+			AHarryWorldTraversalNode* prevNode = Cast<AHarryWorldTraversalNode>(hitResult.GetActor());
+			if (IsValid(prevNode))
+			{
+				NavigateWorld(prevNode);
+			}
+		}
+		return;
+	}
+	ThePath.RemoveAt(0, ThePath.Num() - 2); 
 	PlayerEntity->StartMove(ThePath);
 }
 
@@ -101,6 +124,8 @@ bool ATraversalPlayerController::FindCell(TObjectPtr<UNodeInfoForCellSearch> cur
 		}
 		for (auto neighbour : cellInfo->Node->NeighbouringNodes)
 		{
+			if (!IsValid(neighbour.Node))
+				continue;
 			FString neighbourName = neighbour.Node->GetActorNameOrLabel();
 			float neighbourGCost = cellInfo->GCost + neighbour.Length;
 			float distTillDestination = Heuristic_Manhattan(neighbour.Node->GetActorLocation(), DestinationNode->GetActorLocation());
@@ -163,22 +188,23 @@ float ATraversalPlayerController::Heuristic_Manhattan(FVector start, FVector end
 
 void ATraversalPlayerController::DelayedBeginPlay()
 {
+	World->OnWorldBeginPlay.RemoveAll(this);
 	LevelSelectWindow = Cast<ULevelSelectWindow>(CreateWidget(GetWorld()->GetFirstPlayerController(), LevelSelectUIClass));
 	// (gets game instance because it will have the player spawn point)
-	UDefaultInstance* gameInstance =  Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	UDefaultInstance* gameInstance =  Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(World));
 	if (IsValid(gameInstance) && IsValid(PlayerChar))
 	{
 		FVector spawnPos =  gameInstance->PlayerSpawnPos + FVector(0.0,0.0,100.0f);
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		FRotator Rotation(0,0,0);
-		PlayerEntity = GetWorld()->SpawnActor<AWorldTraversingEntityV2>(PlayerChar, spawnPos, Rotation, SpawnParams);
+		PlayerEntity = World->SpawnActor<AWorldTraversingEntityV2>(PlayerChar, spawnPos, Rotation, SpawnParams);
 	}
 	// raycast to get the cell that player spawn on
 	FVector endTracePos = PlayerEntity->GetActorLocation() + FVector(0,0, -1000);
 	FCollisionQueryParams collisionParams;
 	FHitResult hitResult;
-	GetWorld()->LineTraceSingleByChannel(hitResult, PlayerEntity->GetActorLocation(), endTracePos, ECC_GameTraceChannel1, collisionParams);
+	World->LineTraceSingleByChannel(hitResult, PlayerEntity->GetActorLocation(), endTracePos, ECC_GameTraceChannel1, collisionParams);
 	if (hitResult.GetActor())
 	{
 		CurrentNode = Cast<AHarryWorldTraversalNode>(hitResult.GetActor());
@@ -188,7 +214,7 @@ void ATraversalPlayerController::DelayedBeginPlay()
 	{
 		FVector rayStart = pos + FVector(0.0,0.0,100.0f);
 		endTracePos = rayStart + FVector(0.0,0.0,-200.0f);
-		GetWorld()->LineTraceSingleByChannel(hitResult, rayStart, endTracePos, ECC_GameTraceChannel1, collisionParams);
+		World->LineTraceSingleByChannel(hitResult, rayStart, endTracePos, ECC_GameTraceChannel1, collisionParams);
 		if (hitResult.GetActor())
 		{
 			if (AHarryWorldTraversalNode* foundNode = Cast<AHarryWorldTraversalNode>(hitResult.GetActor()))

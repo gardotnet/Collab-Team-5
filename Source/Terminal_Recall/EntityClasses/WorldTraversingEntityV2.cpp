@@ -42,17 +42,19 @@ void AWorldTraversingEntityV2::OnMove()
 		auto* connectedNeighbour = TheNodePath[PathIndex]->NeighbouringNodes.FindByPredicate([&](const auto& info) {
 			return info.Node == TheNodePath[PathIndex + 1];
 		});
-		UE_LOG(LogTemp, Log, TEXT("Next: %s and found %s"), *TheNodePath[PathIndex + 1]->GetActorNameOrLabel(), *connectedNeighbour->Node->GetActorNameOrLabel());
+		UE_LOG(LogTemp, Log, TEXT("Next: %s and current %s"), *TheNodePath[PathIndex + 1]->GetActorNameOrLabel(), *TheNodePath[PathIndex]->GetActorNameOrLabel());
 		CurrentSplineComp = connectedNeighbour->PathSplineComponent;
 		bDontReverseSplineLoc = true;
 		UTraversalFunctionLibrary::EvaluateSplineMovement(CurrentSplineComp, 0, bDontReverseSplineLoc, TargetPosition, TargetRotation);
-		if (TargetPosition != TheNodePath[PathIndex]->GetActorLocation())
+		
+		float DistanceToCurrent = FVector::DistSquared(TargetPosition, TheNodePath[PathIndex]->GetActorLocation());
+
+		if (DistanceToCurrent > 0) 
 		{
-			bDontReverseSplineLoc = false;
-			UTraversalFunctionLibrary::EvaluateSplineMovement(CurrentSplineComp, 0, bDontReverseSplineLoc, TargetPosition, TargetRotation);
+			bDontReverseSplineLoc = false; 
+			UTraversalFunctionLibrary::EvaluateSplineMovement(CurrentSplineComp, 0.0f, bDontReverseSplineLoc, TargetPosition, TargetRotation);
 		}
 		UTraversalFunctionLibrary::CalculateSplineMoveDuration(CurrentSplineComp, Speed, DesiredMoveDuration);
-		//DesiredMoveDuration *= SplineTraverseRate;
 		TargetPosition.Z = GetActorLocation().Z;
 		TimerManagerRef->SetTimer(MoveTimerHandle, this, &AWorldTraversingEntityV2::OnSplineTraversal, 0.01f, true);
 	}

@@ -1,66 +1,10 @@
 {
 	"centrePoint":
 	{
-		"x": 1,
-		"y": 1
+		"x": 9,
+		"y": 7
 	},
 	"cells": [
-		{
-			"gridPos":
-			{
-				"x": -1,
-				"y": -1
-			},
-			"directionModifier": [
-				{
-					"direction": "SW",
-					"magnitude": 2
-				}
-			],
-			"groupId": -1
-		},
-		{
-			"gridPos":
-			{
-				"x": -1,
-				"y": 0
-			},
-			"directionModifier": [
-				{
-					"direction": "W",
-					"magnitude": 2
-				}
-			],
-			"groupId": -1
-		},
-		{
-			"gridPos":
-			{
-				"x": -1,
-				"y": 1
-			},
-			"directionModifier": [
-				{
-					"direction": "NW",
-					"magnitude": 2
-				}
-			],
-			"groupId": -1
-		},
-		{
-			"gridPos":
-			{
-				"x": 0,
-				"y": -1
-			},
-			"directionModifier": [
-				{
-					"direction": "S",
-					"magnitude": 2
-				}
-			],
-			"groupId": -1
-		},
 		{
 			"gridPos":
 			{
@@ -70,49 +14,7 @@
 			"directionModifier": [
 				{
 					"direction": "N",
-					"magnitude": 2
-				}
-			],
-			"groupId": -1
-		},
-		{
-			"gridPos":
-			{
-				"x": 1,
-				"y": -1
-			},
-			"directionModifier": [
-				{
-					"direction": "SE",
-					"magnitude": 2
-				}
-			],
-			"groupId": -1
-		},
-		{
-			"gridPos":
-			{
-				"x": 1,
-				"y": 0
-			},
-			"directionModifier": [
-				{
-					"direction": "E",
-					"magnitude": 2
-				}
-			],
-			"groupId": -1
-		},
-		{
-			"gridPos":
-			{
-				"x": 1,
-				"y": 1
-			},
-			"directionModifier": [
-				{
-					"direction": "NE",
-					"magnitude": 2
+					"magnitude": 4
 				}
 			],
 			"groupId": -1
@@ -120,8 +22,8 @@
 	],
 	"gridSize":
 	{
-		"x": 3,
-		"y": 3
+		"x": 10,
+		"y": 9
 	},
 	"oneGroup": false
 }

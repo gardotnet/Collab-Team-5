@@ -28,7 +28,16 @@ public:
 	TArray<int> AttackList;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | Player Variables")
 	TArray<int> MoveList;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | Player Variables")
+	FVector LastValidVisitCell;
 
+protected:
+	#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	#endif
+
+	virtual void OnStart() override;
 public:
 	void EncounterWon();
 	UFUNCTION(BlueprintCallable, Category="For Designers | Functions" )

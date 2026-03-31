@@ -16,7 +16,7 @@ AGridVisualiser::AGridVisualiser()
 // clears grids and re-make it
 void AGridVisualiser::RegenerateGrid(FIntPoint gridSize)
 {
-	if (!GridVisualComp || !GridVisualComp->GetStaticMesh())
+	if (!IsValid(GridVisualComp) || !IsValid(GridVisualComp->GetStaticMesh()))
 		return;
 	auto color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	ClearText();

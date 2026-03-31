@@ -18,11 +18,11 @@ struct FActionStruct : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName ActionName = "";
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Damage = 1.0;
+	float Damage = 1.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString GridRangeFilePath = "";
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 CooldownDuration = 0.0;
+	int32 CooldownDuration = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<int32> IdToStatusToApply;
 };

@@ -11,7 +11,6 @@
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
 #include "Terminal_Recall/StructsAndEnums/LevelExportStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/AssetLookUpStruct.h"
-#include "Terminal_Recall/StructsAndEnums/ForDataTable/EnemyInfoStruct.h"
 
 ABattleLevelLoader::ABattleLevelLoader()
 {
@@ -137,19 +136,14 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 					case ECellBrushMode::EnemySpawn:
 						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 						{
-							FString stringConvert = FString::FromInt(cellData.IdForCellContent);
-							// look for enemy info using ID given
-							if (FEnemyInfoStruct* enemyInfo = EnemyDataTable->FindRow<FEnemyInfoStruct>(FName(*stringConvert), TEXT("Level Loader")))
-							{
-								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
-								ABattleEnemyEntity* newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
-								// [NOTE] Pass data to enemy
-								battleManager->EnemyArray.Add(newEnemy);
-								newEnemy->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
-								newEnemy->OnBattleStart(battleManager, cellData.IdForCellContent);
-								newEnemy->SetPos(cellData.Position, *newCell);
-								(*newCell)->HouseEntity(newEnemy);
-							}
+							propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
+							ABattleEnemyEntity* newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
+							// [NOTE] Pass data to enemy
+							battleManager->EnemyArray.Add(newEnemy);
+							newEnemy->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
+							newEnemy->OnBattleStart(battleManager, cellData.IdForCellContent);
+							newEnemy->SetPos(cellData.Position, *newCell);
+							(*newCell)->HouseEntity(newEnemy);
 						}
 					break;
 					default:
@@ -203,6 +197,16 @@ void ABattleLevelLoader::EditorLoadLevel()
 		if (bOpened && OutFileNames.Num() > 0)
 		{
 			OverwriteLevelPath = OutFileNames[0];
+			#if WITH_EDITOR
+			if (UWorld* World = GetWorld())
+			{
+				if (World->IsGameWorld())
+				{
+					LoadLevel(OverwriteLevelPath);
+					return;
+				}
+			}
+			#endif
 			FString jsonData;
 			// fetch file data and shove it into "jsonData"
 			if (FFileHelper::LoadFileToString(jsonData, *OverwriteLevelPath))
@@ -245,6 +249,10 @@ void ABattleLevelLoader::EditorLoadLevel()
 						case ECellBrushMode::Wall:
 							if (TObjectPtr<ABattleGridCell>* newCell = TempGridMap.Find(cellData.Position))
 							{
+								if (cellData.IdForCellContent == 0)
+								{
+									(*newCell)->Destroy();
+								}
 								FString stringConvert = FString::FromInt(cellData.IdForCellContent);
 								if (FAssetLookUpTable* propInfo = PropDataTable->FindRow<FAssetLookUpTable>(FName(*stringConvert), TEXT("Level Loader")))
 								{

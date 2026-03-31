@@ -45,8 +45,3 @@ void ABaseEntity::OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
 	UE_LOG(LogTemp, Warning, TEXT("How dare you click me, I'm telling the world manager!"));
 }
-/*void ABaseEntity::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}*/
-

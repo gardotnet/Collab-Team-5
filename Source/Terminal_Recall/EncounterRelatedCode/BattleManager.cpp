@@ -23,6 +23,7 @@ void ABattleManager::OnEntitySelected(ABattleEntity* entity)
 }
 void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 {
+	PlayerRef->SelectedActionID = selectedButton->IndexInOwningEntityArray;
 	// allow player to select entity
 	SelectMode = true;
 	ABattleEntity* entityRef = selectedButton->Entity;
@@ -31,7 +32,6 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 	// Can put in array and link after
 	PlayerBattleController->BattleChoiceUIWidget->OnCloseButtonClicked();
 	FGridRangeExport* gridRange = entityRef->GetActionInfo(selectedButton->ActionType, selectedButton->IndexInOwningEntityArray);
-	//TArray<ABattleGridCell*> cellsAffected;
 	FIntPoint entityPos = entityRef->GetPos();
 	// for each cell required for the action
 	for (auto cellInfo : gridRange->Cells)
@@ -115,6 +115,7 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 			}
 		}
 	}
+	
 }
 void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, bool mainAttackCell)
 {
@@ -136,6 +137,7 @@ void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, boo
 		target->CustomTakeDamage(1.0f);
 	if (mainAttackCell && !(type == EActionType::EnemyAttack || type == EActionType::EnemyMove))
 	{
+		PlayerRef->OnActionComplete(type);
 		NextEntityTurn();
 		return;
 	}
@@ -147,6 +149,8 @@ void ABattleManager::NextEntityTurn()
 	if (!IsValid(PlayerRef))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Player Lost"));
+		UDefaultInstance* theInstance = Cast<UDefaultInstance>(GetGameInstance());
+		theInstance->Health = theInstance->MaxHealth;
 		UGameplayStatics::OpenLevel(GetWorld(), MainGameLevel);
 		return;
 	}
@@ -159,11 +163,12 @@ void ABattleManager::NextEntityTurn()
 	if (EnemyArray.IsEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Player Won"));
-		Cast<UDefaultInstance>(GetGameInstance())->EncounterWon();
+		UDefaultInstance* theInstance = Cast<UDefaultInstance>(GetGameInstance());
+		theInstance->Health = PlayerRef->CurrentHealth;
+		theInstance->EncounterWon();
 		UGameplayStatics::OpenLevel(GetWorld(), MainGameLevel);
 		return;
 	}
-	//PlayerRef->OnTurnGo();
 	// gets next entity's turn
 	EntityIndex++;
 	if (EntityIndex == EnemyArray.Num())
@@ -184,7 +189,6 @@ void ABattleManager::BeginPlay()
 	Super::BeginPlay();
 	PlayerBattleController = Cast<APlayerBattleController>(GetWorld()->GetFirstPlayerController());
 }
-
 void ABattleManager::BeginDestroy()
 {
 	Super::BeginDestroy();
