@@ -10,7 +10,9 @@
 AHarryWorldTraversalNode::AHarryWorldTraversalNode()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	#if WITH_EDITOR
 	bRunConstructionScriptOnDrag = false;
+	#endif
 }
 
 void AHarryWorldTraversalNode::BeginPlay()

@@ -15,7 +15,8 @@ class TERMINAL_RECALL_API UCustomSplineComp : public USplineComponent
 public:
 	// Sets default values for this component's properties
 	UCustomSplineComp();
-
-
+	
+	#if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+	#endif
 };
