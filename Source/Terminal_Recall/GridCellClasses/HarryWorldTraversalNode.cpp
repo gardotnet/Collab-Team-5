@@ -72,6 +72,8 @@ void AHarryWorldTraversalNode::OnUnitArrive_Implementation()
 	Clickable = true;
 	for (auto& neighbour : NeighbouringNodes)
 	{
+		if (!IsValid(neighbour.Node))
+			continue;
 		if (IsValid(neighbour.Node->CoverObject))
 			neighbour.Node->CoverObject->Destroy();
 	}
