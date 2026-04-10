@@ -8,7 +8,7 @@ public class Terminal_Recall : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "Slate", "SlateCore", "Json", "JsonUtilities", "DesktopPlatform" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "Slate", "SlateCore", "Json", "JsonUtilities" });
 
 		/*if (Target.bBuildEditor)
 		{
@@ -16,6 +16,10 @@ public class Terminal_Recall : ModuleRules
 			
 			PrivateDependencyModuleNames.AddRange(new string[] { "UnrealEd", "EditorFramework", "LevelEditor" });
 		}*/
+		if (Target.bBuildEditor)
+		{
+			PublicDependencyModuleNames.AddRange(new string[] { "DesktopPlatform" });
+		}
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
