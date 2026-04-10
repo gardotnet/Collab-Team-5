@@ -36,4 +36,6 @@ public:
 	// BlueprintPure makes it a green node in Blueprints (no execution pins needed)
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Interactable|Info")
 	virtual void GetItemInfo(FString& OutName, FString& OutDescription) const;
+	
+	virtual void OnActivate_Implementation() override; 
 };

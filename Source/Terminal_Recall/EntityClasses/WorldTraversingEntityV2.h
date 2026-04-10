@@ -6,6 +6,7 @@
 #include "BaseEntity.h"
 #include "WorldTraversingEntityV2.generated.h"
 
+class UDefaultInstance;
 class USplineComponent;
 class ATraversalPlayerController;
 class AHarryWorldTraversalNode;
@@ -32,10 +33,14 @@ protected:
 	
 	FRotator TargetRotation;
 	
+	TArray<TObjectPtr<AHarryWorldTraversalNode>> TheReversePath;
+	UPROPERTY()
+	UDefaultInstance* TheGameInstance;
 
 public:
 	virtual void StartMove(TArray<TObjectPtr<AHarryWorldTraversalNode>> path) override;
-
+	
+	void MoveBack();
 
 protected:
 	
@@ -43,6 +48,4 @@ protected:
 	virtual void OnMove() override;
 	UFUNCTION()
 	virtual void OnSplineTraversal();
-
-	
 };
