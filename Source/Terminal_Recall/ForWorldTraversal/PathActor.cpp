@@ -7,7 +7,9 @@
 APathActor::APathActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	#if WITH_EDITOR
 	bRunConstructionScriptOnDrag = true; 
+	#endif
 }
 
 void APathActor::LinkStruct(AHarryWorldTraversalSystem*system, AHarryWorldTraversalNode* owningNode, FHarryNeighbourStruct relatedStruct)
