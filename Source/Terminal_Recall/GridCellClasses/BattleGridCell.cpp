@@ -3,6 +3,7 @@
 #include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
 #include "Terminal_Recall/EntityClasses/BattleEntity.h"
 #include "Terminal_Recall/TrapClasses/BaseTrapLatest.h"
+#include "Terminal_Recall/InteractableObject/BaseInteractable.h"
 
 ABattleGridCell::ABattleGridCell()
 {
@@ -109,6 +110,12 @@ void ABattleGridCell::EndForceHighlight()
 		ResidingEntity->HidePotentialHit();
 }
 
+void ABattleGridCell::PassInteractableRef(ABaseInteractable* interactable, bool bIsPersistent)
+{
+	Interactable = interactable;
+	bIsPersistentInteractable = bIsPersistent;
+}
+
 void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
 	if (!Clickable)
@@ -137,6 +144,15 @@ void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 		break;
 	}
 }
+
+void ABattleGridCell::OnUnitArrive_Implementation()
+{
+	Super::OnUnitArrive_Implementation();
+	OnUnitArrive();
+	if (IsValid(Interactable))
+		Interactable->OnActivate();
+}
+
 void ABattleGridCell::OnHoverOver(UPrimitiveComponent* TouchedComponent)
 {
 	if (Clickable)

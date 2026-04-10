@@ -5,7 +5,6 @@
 #include "BaseGridCell.h"
 #include "BattleGridCell.generated.h"
 
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnClickedCell, ABattleEntity*, target, EActionType, type, bool,
                                                mainAttackCell);
 class ABaseInteractable;
@@ -42,6 +41,11 @@ protected:
 	UMaterialInterface* HoverHighlightMat;
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	UMaterialInterface* HitHighlightMat;
+	
+	UPROPERTY()
+	ABaseInteractable* Interactable;
+	bool bIsPersistentInteractable;
+	
 public:
 	ABattleGridCell();
 	void AssignInteractable(TObjectPtr<ABaseInteractable> interactable);
@@ -70,9 +74,11 @@ public:
 	void ForceHighlight(ABattleEntity* causer);
 	void EndForceHighlight();
 	
+	void PassInteractableRef(ABaseInteractable* interactable, bool bIsPersistent);
 	
 protected:
 	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
+	virtual void OnUnitArrive_Implementation() override;
 	UFUNCTION()
 	void OnHoverOver(UPrimitiveComponent* TouchedComponent);
 	UFUNCTION()

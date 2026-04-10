@@ -1,8 +1,6 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "Engine/DataTable.h"
 #include "Terminal_Recall/InteractableObject/BaseInteractable.h"
 #include "BaseTrapLatest.generated.h"
 
@@ -17,8 +15,14 @@ public:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Info")
 	int32 TrapDamage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Info")
+	bool bIsTriggered = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Info")
+	bool bIsPersistent = false;
 	
-	virtual void OnActivate_Implementation(ABattleEntity* entity) override;
 
+	virtual void OnActivate_Implementation(ABattleEntity* entity) override;
 	virtual void RemoveFromGame() override;
+	virtual void ResetTrap();
+
 };

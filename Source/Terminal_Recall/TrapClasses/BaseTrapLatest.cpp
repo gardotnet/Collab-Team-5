@@ -10,10 +10,15 @@ ABaseTrapLatest::ABaseTrapLatest()
 void ABaseTrapLatest::OnActivate_Implementation(ABattleEntity* entity)
 {
 	Super::OnActivate_Implementation(entity);
+	if (bIsTriggered)
+		return;
+	bIsTriggered = true;
+	OnActivate();
+	if (!bIsPersistent)
+		Destroy();
 }
 
-void ABaseTrapLatest::RemoveFromGame()
+void ABaseTrapLatest::ResetTrap()
 {
-	ParentGridCell->InteractableRef = nullptr;
-	Destroy();
+	bIsTriggered = false;
 }

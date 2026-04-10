@@ -51,6 +51,7 @@ void ABattleLevelLoader::BeginPlay()
 
 void ABattleLevelLoader::LoadLevel(FString levelPath)
 {
+	
 	// load the json file 
 	FString content;
 	if (FFileHelper::LoadFileToString(content, *levelPath))
@@ -61,7 +62,32 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 			// battle manager for game
 			ABattleManager* battleManager = Cast<ABattleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ABattleManager::StaticClass()));
 			if (!IsValid(battleManager))
+			{
 				battleManager = GetWorld()->SpawnActor<ABattleManager>(BattleManagerClass);
+			}
+			else
+			{
+				if (!battleManager->GridMap.IsEmpty())
+				{
+					for (auto& It : battleManager->GridMap)
+					{
+						if (It.Value)
+						{
+							It.Value->Destroy();
+						}
+					}
+					 battleManager->GridMap.Empty();
+					for (AActor* Actor : TempActors)
+					{
+						if (IsValid(Actor))
+						{
+							Actor->Destroy();
+						}
+					}
+					TempActors.Empty();
+				}
+			}
+			
 			FActorSpawnParameters spawnParams;
 			spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			// create grid
@@ -110,7 +136,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 							if (FAssetLookUpTable* propInfo = PropDataTable->FindRow<FAssetLookUpTable>(FName(*stringConvert), TEXT("Level Loader")))
 							{
 								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
-								GetWorld()->SpawnActor<AActor>(propInfo->ActorBP, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
+								TempActors.Add(GetWorld()->SpawnActor<AActor>(propInfo->ActorBP, propSpawnLoc, FRotator::ZeroRotator, spawnParams));
 								(*newCell)->SetWalkable(false);
 							}
 						}
@@ -128,6 +154,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 								battleManager->PlayerRef->OnBattleStart(battleManager);
 								battleManager->PlayerRef->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
 								(*newCell)->HouseEntity(battleManager->PlayerRef);
+								TempActors.Add(battleManager->PlayerRef);
 							}
 						}
 						else
@@ -147,6 +174,16 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 							newEnemy->OnBattleStart(battleManager, cellData.IdForCellContent);
 							newEnemy->SetPos(cellData.Position, *newCell);
 							(*newCell)->HouseEntity(newEnemy);
+							TempActors.Add(newEnemy);
+						}
+					break;
+					case ECellBrushMode::Trap:
+						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
+						{
+							/*if (FTrapInfoStruct trapInfo = TrapDataTable->FindRow<FTrapInfoStruct>(FText::AsNumber(cellData.IdForCellContent)))
+							{
+								
+							}*/
 						}
 					break;
 					case ECellBrushMode::Trap:
@@ -276,6 +313,7 @@ void ABattleLevelLoader::EditorLoadLevel()
 					for (const auto& cellData : levelData.GridCells)
 					{
 						FVector propSpawnLoc;
+						
 						switch (cellData.CellType)
 						{
 						case ECellBrushMode::Wall:
@@ -284,6 +322,7 @@ void ABattleLevelLoader::EditorLoadLevel()
 								if (cellData.IdForCellContent == 0)
 								{
 									(*newCell)->Destroy();
+									continue;
 								}
 								FString stringConvert = FString::FromInt(cellData.IdForCellContent);
 								if (FAssetLookUpTable* propInfo = PropDataTable->FindRow<FAssetLookUpTable>(FName(*stringConvert), TEXT("Level Loader")))
@@ -333,6 +372,9 @@ void ABattleLevelLoader::EditorLoadLevel()
 								TempActors.Add(enemyChar);
 							}
 							break;
+						case ECellBrushMode::Trap:
+							
+							break;	
 						default:
 							break;
 						}
