@@ -9,11 +9,10 @@ ABaseTrapLatest::ABaseTrapLatest()
 
 void ABaseTrapLatest::OnActivate_Implementation(ABattleEntity* entity)
 {
-	Super::OnActivate_Implementation(entity);
 	if (bIsTriggered)
 		return;
 	bIsTriggered = true;
-	OnActivate();
+	OnActivate(entity);
 	if (!bIsPersistent)
 		Destroy();
 }

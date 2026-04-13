@@ -20,7 +20,7 @@ void ABaseItemInteractable::GetItemInfo(FString& OutName, FString& OutDescriptio
 	OutDescription = ItemDescription;
 }
 
-void ABaseItemInteractable::OnActivate_Implementation()
+void ABaseItemInteractable::OnActivate_Implementation(ABattleEntity* entity)
 {
-	Super::OnActivate_Implementation();
+	Super::OnActivate_Implementation(entity);
 }

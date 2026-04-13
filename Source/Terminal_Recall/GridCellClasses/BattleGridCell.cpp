@@ -150,8 +150,6 @@ void ABattleGridCell::OnUnitArrive_Implementation()
 {
 	Super::OnUnitArrive_Implementation();
 	OnUnitArrive();
-	if (IsValid(Interactable))
-		Interactable->OnActivate();
 }
 
 void ABattleGridCell::OnHoverOver(UPrimitiveComponent* TouchedComponent)
