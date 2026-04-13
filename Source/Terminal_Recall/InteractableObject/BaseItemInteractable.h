@@ -37,5 +37,5 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Interactable|Info")
 	virtual void GetItemInfo(FString& OutName, FString& OutDescription) const;
 	
-	virtual void OnActivate_Implementation() override; 
+	virtual void OnActivate_Implementation(ABattleEntity* entity) override; 
 };

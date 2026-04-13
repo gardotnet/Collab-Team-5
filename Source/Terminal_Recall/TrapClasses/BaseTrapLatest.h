@@ -17,8 +17,6 @@ public:
 	int32 TrapDamage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Info")
 	bool bIsTriggered = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Info")
-	bool bIsPersistent = false;
 
 	virtual void ResetTrap();
 

@@ -66,7 +66,6 @@ void ABattleGridCell::ForceEndHover(int32 groupID)
 void ABattleGridCell::HouseEntity(ABattleEntity* entity)
 {
 	ResidingEntity = entity;
-
 	if (InteractableRef != nullptr)
 		InteractableRef->OnActivate_Implementation(entity);
 	entity->OnChangeCell.AddDynamic(this, &ABattleGridCell::EvictEntity);
@@ -150,8 +149,6 @@ void ABattleGridCell::OnUnitArrive_Implementation()
 {
 	Super::OnUnitArrive_Implementation();
 	OnUnitArrive();
-	if (IsValid(Interactable))
-		Interactable->OnActivate();
 }
 
 void ABattleGridCell::OnHoverOver(UPrimitiveComponent* TouchedComponent)

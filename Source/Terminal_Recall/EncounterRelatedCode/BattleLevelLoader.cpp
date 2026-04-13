@@ -176,15 +176,6 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 						}
 					break;
 					case ECellBrushMode::Trap:
-						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
-						{
-							/*if (FTrapInfoStruct trapInfo = TrapDataTable->FindRow<FTrapInfoStruct>(FText::AsNumber(cellData.IdForCellContent)))
-							{
-								
-							}*/
-						}
-					break;
-					case ECellBrushMode::Trap:
 						if (FTrapInfoStruct* trapInfo = TrapDataTable->FindRow<FTrapInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
 						{
 							if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
