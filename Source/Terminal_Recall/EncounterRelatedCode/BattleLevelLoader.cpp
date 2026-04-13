@@ -5,12 +5,14 @@
 #include "IDesktopPlatform.h"
 #include "JsonObjectConverter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialIR.h"
 #include "Terminal_Recall/EntityClasses/BattleEnemyEntity.h"
 #include "Terminal_Recall/EntityClasses/BattlePlayerEntity.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
 #include "Terminal_Recall/StructsAndEnums/LevelExportStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/AssetLookUpStruct.h"
+#include "Terminal_Recall/StructsAndEnums/ForDataTable/InteractableInfoStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/TrapInfoStruct.h"
 
 ABattleLevelLoader::ABattleLevelLoader()
@@ -152,14 +154,24 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 						{
 							if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 							{
-								// create the trap using class ref from data table
-								// and add it to the class using
-								// (*newCell)->AssignInteractable()
+								if (trapInfo->ObjectRef == nullptr) { continue; }
+								TSubclassOf<ABaseTrapLatest> objectTrap = trapInfo->ObjectRef;
+								AActor* trapInteractable = GetWorld()->SpawnActor<AActor>(objectTrap);
+								(*newCell)->AssignInteractable(Cast<ABaseInteractable>(trapInteractable));
 							}
 						}
 					break;
 					case ECellBrushMode::InteractableSpawn:
-						// same thing as trap but for interactable items 
+					if (FInteractableInfoStruct* infoStruct = InteractableDataTable->FindRow<FInteractableInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
+					{
+						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
+						{
+							if (infoStruct->ObjectRef == nullptr) { continue; }
+							TSubclassOf<ABaseInteractable> objectInteracftable = infoStruct->ObjectRef;
+							AActor* ObjectInteractable = GetWorld()->SpawnActor<AActor>(objectInteracftable);
+							(*newCell)->AssignInteractable(Cast<ABaseInteractable>(ObjectInteractable));
+						}
+					}
 					break;
 					default:
 					break;
