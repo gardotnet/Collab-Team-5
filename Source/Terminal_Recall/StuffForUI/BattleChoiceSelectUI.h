@@ -32,9 +32,9 @@ protected:
 	TObjectPtr<APlayerBattleController> PlayerBattleController;
 	
 public:
-	UPROPERTY(EditDefaultsOnly, Category="For Designers | Customisation")
+	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Customisation")
 	FLinearColor SelectColour = FLinearColor(0.426f, 0.426f, 0.426f, 1.0f);
-	UPROPERTY(EditDefaultsOnly, Category="For Designers | Customisation")
+	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Customisation")
 	FLinearColor UnselectColour = FLinearColor(0.135f, 0.135f, 0.135f, 1.0f);
 	
 	UPROPERTY(meta = (BindWidget))
