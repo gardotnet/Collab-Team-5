@@ -11,7 +11,7 @@
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
 #include "Terminal_Recall/StructsAndEnums/LevelExportStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/AssetLookUpStruct.h"
-#include "Terminal_Recall/StructsAndEnums/ForDataTable/EnemyInfoStruct.h"
+#include "Terminal_Recall/StructsAndEnums/ForDataTable/TrapInfoStruct.h"
 
 ABattleLevelLoader::ABattleLevelLoader()
 {
@@ -30,22 +30,26 @@ void ABattleLevelLoader::BeginPlay()
 	TempGridMap.Empty();
 	for (AActor* Actor : TempActors)
 	{
-		if (Actor)
+		if (IsValid(Actor))
 		{
 			Actor->Destroy();
 		}
 	}
 	TempActors.Empty();
 	// get level to load
-	UDefaultInstance* gameInstance = Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *OverwriteLevelPath);
 	if (OverwriteLevelPath != "")
 		LoadLevel(OverwriteLevelPath);
 	else
+	{
+		UDefaultInstance* gameInstance = Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 		LoadLevel(FPaths::ProjectContentDir() + gameInstance->Map);
+	}
 }
+
 void ABattleLevelLoader::LoadLevel(FString levelPath)
 {
+	
 	// load the json file 
 	FString content;
 	if (FFileHelper::LoadFileToString(content, *levelPath))
@@ -54,9 +58,34 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 		if (FJsonObjectConverter::JsonObjectStringToUStruct(content, &levelData, 0, 0))
 		{
 			// battle manager for game
-			ABattleManager* battleManager =  Cast<ABattleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ABattleManager::StaticClass()));
-			if (!battleManager)
+			ABattleManager* battleManager = Cast<ABattleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ABattleManager::StaticClass()));
+			if (!IsValid(battleManager))
+			{
 				battleManager = GetWorld()->SpawnActor<ABattleManager>(BattleManagerClass);
+			}
+			else
+			{
+				if (!battleManager->GridMap.IsEmpty())
+				{
+					for (auto& It : battleManager->GridMap)
+					{
+						if (It.Value)
+						{
+							It.Value->Destroy();
+						}
+					}
+					 battleManager->GridMap.Empty();
+					for (AActor* Actor : TempActors)
+					{
+						if (IsValid(Actor))
+						{
+							Actor->Destroy();
+						}
+					}
+					TempActors.Empty();
+				}
+			}
+			
 			FActorSpawnParameters spawnParams;
 			spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			// create grid
@@ -94,7 +123,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 					case ECellBrushMode::Wall:
 						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 						{
-							if (cellData.IdForCellContent == -1)
+							if (cellData.IdForCellContent == 0)
 							{
 								(*newCell)->Destroy();
 								battleManager->GridMap.Remove(cellData.Position);
@@ -105,7 +134,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 							if (FAssetLookUpTable* propInfo = PropDataTable->FindRow<FAssetLookUpTable>(FName(*stringConvert), TEXT("Level Loader")))
 							{
 								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
-								GetWorld()->SpawnActor<AActor>(propInfo->ActorBP, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
+								TempActors.Add(GetWorld()->SpawnActor<AActor>(propInfo->ActorBP, propSpawnLoc, FRotator::ZeroRotator, spawnParams));
 								(*newCell)->SetWalkable(false);
 							}
 						}
@@ -113,16 +142,17 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 					// if it is player spawn
 					case ECellBrushMode::PlayerSpawn:
 						// Check if player is already spawned
-						if (battleManager->PlayerRef == nullptr)
+						if (!IsValid(battleManager->PlayerRef))
 						{
 							if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 							{
 								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
 								battleManager->PlayerRef = GetWorld()->SpawnActor<ABattlePlayerEntity>(PlayerEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
-								battleManager->PlayerRef->SetPos(cellData.Position);
+								battleManager->PlayerRef->SetPos(cellData.Position, *newCell);
 								battleManager->PlayerRef->OnBattleStart(battleManager);
 								battleManager->PlayerRef->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
 								(*newCell)->HouseEntity(battleManager->PlayerRef);
+								TempActors.Add(battleManager->PlayerRef);
 							}
 						}
 						else
@@ -134,19 +164,24 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 					case ECellBrushMode::EnemySpawn:
 						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 						{
-							FString stringConvert = FString::FromInt(cellData.IdForCellContent);
-							// look for enemy info using ID given
-							if (FEnemyInfoStruct* enemyInfo = EnemyDataTable->FindRow<FEnemyInfoStruct>(FName(*stringConvert), TEXT("Level Loader")))
+							propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
+							ABattleEnemyEntity* newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
+							// [NOTE] Pass data to enemy
+							battleManager->EnemyArray.Add(newEnemy);
+							newEnemy->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
+							newEnemy->OnBattleStart(battleManager, cellData.IdForCellContent);
+							newEnemy->SetPos(cellData.Position, *newCell);
+							(*newCell)->HouseEntity(newEnemy);
+							TempActors.Add(newEnemy);
+						}
+					break;
+					case ECellBrushMode::Trap:
+						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
+						{
+							/*if (FTrapInfoStruct trapInfo = TrapDataTable->FindRow<FTrapInfoStruct>(FText::AsNumber(cellData.IdForCellContent)))
 							{
-								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
-								ABattleEnemyEntity* newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
-								// [NOTE] Pass data to enemy
-								battleManager->EnemyArray.Add(newEnemy);
-								newEnemy->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
-								newEnemy->OnBattleStart(battleManager, cellData.IdForCellContent);
-								newEnemy->SetPos(cellData.Position);
-								(*newCell)->HouseEntity(newEnemy);
-							}
+								
+							}*/
 						}
 					break;
 					default:
@@ -169,14 +204,14 @@ void ABattleLevelLoader::EditorLoadLevel()
 	TempGridMap.Empty();
 	for (AActor* Actor : TempActors)
 	{
-		if (Actor)
+		if (IsValid(Actor))
 		{
 			Actor->Destroy();
 		}
 	}
 	TempActors.Empty();
 	UWorld* world = GetWorld();
-	if (world)
+	if (IsValid(world))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Editor Load Level"));
 		world->SetFlags(RF_Transient);
@@ -200,6 +235,16 @@ void ABattleLevelLoader::EditorLoadLevel()
 		if (bOpened && OutFileNames.Num() > 0)
 		{
 			OverwriteLevelPath = OutFileNames[0];
+			#if WITH_EDITOR
+			if (UWorld* World = GetWorld())
+			{
+				if (World->IsGameWorld())
+				{
+					LoadLevel(OverwriteLevelPath);
+					return;
+				}
+			}
+			#endif
 			FString jsonData;
 			// fetch file data and shove it into "jsonData"
 			if (FFileHelper::LoadFileToString(jsonData, *OverwriteLevelPath))
@@ -237,11 +282,17 @@ void ABattleLevelLoader::EditorLoadLevel()
 					for (const auto& cellData : levelData.GridCells)
 					{
 						FVector propSpawnLoc;
+						
 						switch (cellData.CellType)
 						{
 						case ECellBrushMode::Wall:
 							if (TObjectPtr<ABattleGridCell>* newCell = TempGridMap.Find(cellData.Position))
 							{
+								if (cellData.IdForCellContent == 0)
+								{
+									(*newCell)->Destroy();
+									continue;
+								}
 								FString stringConvert = FString::FromInt(cellData.IdForCellContent);
 								if (FAssetLookUpTable* propInfo = PropDataTable->FindRow<FAssetLookUpTable>(FName(*stringConvert), TEXT("Level Loader")))
 								{
@@ -290,6 +341,9 @@ void ABattleLevelLoader::EditorLoadLevel()
 								TempActors.Add(enemyChar);
 							}
 							break;
+						case ECellBrushMode::Trap:
+							
+							break;	
 						default:
 							break;
 						}

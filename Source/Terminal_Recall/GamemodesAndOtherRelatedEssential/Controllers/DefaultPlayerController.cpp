@@ -6,19 +6,21 @@
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GridCellClasses/NodeInfoForCellSearch.h"
 #include "Terminal_Recall/GridCellClasses/WorldGridCell.h"
+#include "Terminal_Recall/StuffForUI/LevelSelectWindow.h"
 
 void ADefaultPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	UE_LOG(LogTemp, Warning, TEXT("ADefaultPlayerController::BeginPlay"));
+	LevelSelectWindow = Cast<ULevelSelectWindow>(CreateWidget(GetWorld()->GetFirstPlayerController(), LevelSelectUIClass));
 	// (gets game instance because it will have the player spawn point)
 	UDefaultInstance* gameInstance =  Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if (gameInstance && PlayerChar)
 	{
+		FVector spawnPos =  gameInstance->PlayerSpawnPos + FVector(0.0,0.0,100.0f);
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		FRotator Rotation(0,0,0);
-		PlayerEntity = GetWorld()->SpawnActor<AWorldTraversalEntity>(PlayerChar, gameInstance->PlayerSpawnPos, Rotation, SpawnParams);
+		PlayerEntity = GetWorld()->SpawnActor<AWorldTraversalEntity>(PlayerChar, spawnPos, Rotation, SpawnParams);
 	}
 	// raycast to get the cell that player spawn on
 	FVector endTracePos = PlayerEntity->GetActorLocation() + FVector(0,0, -1000);
@@ -30,6 +32,16 @@ void ADefaultPlayerController::BeginPlay()
 		CurrentCell = Cast<AWorldGridCell>(hitResult.GetActor());
 		CurrentCell->OnUnitArrive_Implementation();
 	}
+	for (const auto& pos : gameInstance->VisitedCells)
+	{
+		FVector rayStart = pos + FVector(0.0,0.0,100.0f);
+		endTracePos = rayStart + FVector(0.0,0.0,-200.0f);
+		GetWorld()->LineTraceSingleByChannel(hitResult, rayStart, endTracePos, ECC_GameTraceChannel1, collisionParams);
+		if (hitResult.GetActor())
+		{
+			Cast<AWorldGridCell>(hitResult.GetActor())->OnUnitArrive_Implementation();
+		}
+	}
 }
 void ADefaultPlayerController::SetupInputComponent()
 {
@@ -40,6 +52,13 @@ void ADefaultPlayerController::SetupInputComponent()
 			subsystem->AddMappingContext(MappingContext, 0);
 	}
 }
+
+void ADefaultPlayerController::OpenLevelSelect(int32 difficulty, const TArray<int32>& enemiesID)
+{
+	LevelSelectWindow->AddToViewport();
+	LevelSelectWindow->PassInfoToLevelSelectWindow(difficulty, enemiesID);
+}
+
 void ADefaultPlayerController::NavigateWorld(TObjectPtr<AWorldGridCell> cell)
 {
 	if (DestinationCell == cell)

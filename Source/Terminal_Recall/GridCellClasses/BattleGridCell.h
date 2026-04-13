@@ -5,9 +5,11 @@
 #include "BaseGridCell.h"
 #include "BattleGridCell.generated.h"
 
-class ABattleManager;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnClickedCell, ABattleEntity*, target, EActionType, type, bool, mainAttackCell);
+class ABaseInteractable;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnClickedCell, ABattleEntity*, target, EActionType, type, bool,
+                                               mainAttackCell);
 
+class ABattleManager;
 class APlayerBattleController;
 class ABattleEntity;
 class ABaseTrap;
@@ -39,6 +41,13 @@ protected:
 	UMaterialInterface* MoveHighlightMat;
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	UMaterialInterface* HoverHighlightMat;
+	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
+	UMaterialInterface* HitHighlightMat;
+	
+	UPROPERTY()
+	ABaseInteractable* Interactable;
+	bool bIsPersistentInteractable;
+	
 public:
 	ABattleGridCell();
 	void AssignTrap(TObjectPtr<ABaseTrap> trap);
@@ -60,13 +69,21 @@ public:
 
 	void CellSetUp(FIntPoint gridPos, ABattleManager* battleManager);
 	
-	FIntPoint GetGridPos() { return GridPos; };
+	FIntPoint GetGridPos() { return GridPos; }
 	void SetWalkable(bool walkable);
-	bool GetWalkable() { return Walkable; };
+	bool CanMoveOnTo();
+	
+	void ForceHighlight(ABattleEntity* causer);
+	void EndForceHighlight();
+	
+	void PassInteractableRef(ABaseInteractable* interactable, bool bIsPersistent);
+	
 protected:
 	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
+	virtual void OnUnitArrive_Implementation() override;
 	UFUNCTION()
 	void OnHoverOver(UPrimitiveComponent* TouchedComponent);
 	UFUNCTION()
 	void OnHoverEnd(UPrimitiveComponent* TouchedComponent);
+	
 };

@@ -1,8 +1,10 @@
 ﻿#include "BattleChoiceSelectUI.h"
 
 #include "ActionButtonUI.h"
+#include "MainBattleUI.h"
 #include "Components/Button.h"
 #include "Components/ScrollBox.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
 
 void UBattleChoiceSelectUI::NativeConstruct()
 {
@@ -15,6 +17,7 @@ void UBattleChoiceSelectUI::NativeConstruct()
 		AttackTabButton->OnClicked.AddDynamic(this, &UBattleChoiceSelectUI::OnAttackTabButtonClicked);
 	if (ItemTabButton)
 		ItemTabButton->OnClicked.AddDynamic(this, &UBattleChoiceSelectUI::OnItemTabButtonClicked);
+	PlayerBattleController = Cast<APlayerBattleController>(GetWorld()->GetFirstPlayerController());
 }
 
 void UBattleChoiceSelectUI::NativeDestruct()
@@ -33,6 +36,7 @@ void UBattleChoiceSelectUI::NativeDestruct()
 void UBattleChoiceSelectUI::OnCloseButtonClicked()
 {
 	RemoveFromParent();
+	PlayerBattleController->MainBattleUIWidget->HideEnemyHp();
 }
 
 void UBattleChoiceSelectUI::OnMoveTabButtonClicked()
@@ -77,8 +81,7 @@ void UBattleChoiceSelectUI::AddActionButton(TArray<UActionButtonUI*>& movementLi
 		for (UActionButtonUI* moveAction : movementList)
 		{
 			OnRemoveChoices.AddDynamic(moveAction, &UActionButtonUI::RemoveForChoices);
-			if (UUserWidget* parentConversion = Cast<UUserWidget>(moveAction))
-				MovesScrollBox->AddChild(parentConversion);
+			MovesScrollBox->AddChild(moveAction);
 		}
 	}
 	if (attackList.Num() > 0)
@@ -86,8 +89,7 @@ void UBattleChoiceSelectUI::AddActionButton(TArray<UActionButtonUI*>& movementLi
 		for (UActionButtonUI* attackAction : attackList)
 		{
 			OnRemoveChoices.AddDynamic(attackAction, &UActionButtonUI::RemoveForChoices);
-			if (UUserWidget* parentConversion = Cast<UUserWidget>(attackAction))
-				AttacksScrollBox->AddChild(parentConversion);
+			AttacksScrollBox->AddChild(attackAction);
 		}
 	}
 	if (itemList.Num() > 0)
@@ -95,8 +97,7 @@ void UBattleChoiceSelectUI::AddActionButton(TArray<UActionButtonUI*>& movementLi
 		for (UActionButtonUI* itemAction : itemList)
 		{
 			OnRemoveChoices.AddDynamic(itemAction, &UActionButtonUI::RemoveForChoices);
-			if (UUserWidget* parentConversion = Cast<UUserWidget>(itemAction))
-				ItemsScrollBox->AddChild(parentConversion);
+			ItemsScrollBox->AddChild(itemAction);
 		}
 	}
 }

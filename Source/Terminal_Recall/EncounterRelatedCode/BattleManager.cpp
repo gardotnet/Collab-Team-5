@@ -1,8 +1,10 @@
 ﻿#include "BattleManager.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "Terminal_Recall/EntityClasses/BattleEnemyEntity.h"
 #include "Terminal_Recall/EntityClasses/BattleEntity.h"
 #include "Terminal_Recall/EntityClasses/BattlePlayerEntity.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
 #include "Terminal_Recall/StuffForUI/ActionButtonUI.h"
@@ -21,6 +23,7 @@ void ABattleManager::OnEntitySelected(ABattleEntity* entity)
 }
 void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 {
+	PlayerRef->SelectedActionID = selectedButton->IndexInOwningEntityArray;
 	// allow player to select entity
 	SelectMode = true;
 	ABattleEntity* entityRef = selectedButton->Entity;
@@ -29,7 +32,6 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 	// Can put in array and link after
 	PlayerBattleController->BattleChoiceUIWidget->OnCloseButtonClicked();
 	FGridRangeExport* gridRange = entityRef->GetActionInfo(selectedButton->ActionType, selectedButton->IndexInOwningEntityArray);
-	//TArray<ABattleGridCell*> cellsAffected;
 	FIntPoint entityPos = entityRef->GetPos();
 	// for each cell required for the action
 	for (auto cellInfo : gridRange->Cells)
@@ -113,11 +115,7 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 			}
 		}
 	}
-	// if for player then enable the ability to do move and attack when cell is clicked
-	/*if (selectedButton->Entity == PlayerRef)
-	{
-		
-	}*/
+	
 }
 void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, bool mainAttackCell)
 {
@@ -139,6 +137,7 @@ void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, boo
 		target->CustomTakeDamage(1.0f);
 	if (mainAttackCell && !(type == EActionType::EnemyAttack || type == EActionType::EnemyMove))
 	{
+		PlayerRef->OnActionComplete(type);
 		NextEntityTurn();
 		return;
 	}
@@ -150,6 +149,9 @@ void ABattleManager::NextEntityTurn()
 	if (!IsValid(PlayerRef))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Player Lost"));
+		UDefaultInstance* theInstance = Cast<UDefaultInstance>(GetGameInstance());
+		theInstance->Health = theInstance->MaxHealth;
+		UGameplayStatics::OpenLevel(GetWorld(), MainGameLevel);
 		return;
 	}
 	// LAMBDA is fun
@@ -161,9 +163,12 @@ void ABattleManager::NextEntityTurn()
 	if (EnemyArray.IsEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Player Won"));
+		UDefaultInstance* theInstance = Cast<UDefaultInstance>(GetGameInstance());
+		theInstance->Health = PlayerRef->CurrentHealth;
+		theInstance->EncounterWon();
+		UGameplayStatics::OpenLevel(GetWorld(), MainGameLevel);
 		return;
 	}
-	PlayerRef->OnTurnGo();
 	// gets next entity's turn
 	EntityIndex++;
 	if (EntityIndex == EnemyArray.Num())
@@ -171,9 +176,11 @@ void ABattleManager::NextEntityTurn()
 		EntityIndex = -1;
 		SelectMode = false;
 		PlayerRef->OnTurnGo();
+		UE_LOG(LogTemp, Warning, TEXT("Loop to player"));
 	}
 	else
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Where enemy turn"));
 		EnemyArray[EntityIndex]->OnTurnGo();
 	}
 }
@@ -182,4 +189,11 @@ void ABattleManager::BeginPlay()
 	Super::BeginPlay();
 	PlayerBattleController = Cast<APlayerBattleController>(GetWorld()->GetFirstPlayerController());
 }
-
+void ABattleManager::BeginDestroy()
+{
+	Super::BeginDestroy();
+	CellSelectedEvent.Clear();
+	CallGroupHoverEvent.Clear();
+	CallGroupHoverEndEvent.Clear();
+	CallGroupAttackEvent.Clear();
+}

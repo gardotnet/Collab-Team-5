@@ -1,16 +1,15 @@
 ﻿#include "WorldGridCell.h"
 
 #include "Kismet/KismetMathLibrary.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/DefaultPlayerController.h"
+
 
 AWorldGridCell::AWorldGridCell()
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
-void AWorldGridCell::LoadLevel()
-{
-	// [NOTE] Will update game mode and to load the level assign to this cell.
-}
+
 void AWorldGridCell::CreatePath()
 {
 	for (auto& neighbour : NeighbouringCells)
@@ -56,6 +55,12 @@ void AWorldGridCell::BeginPlay()
 {
 	Super::BeginPlay();
 	PlayerController = Cast<ADefaultPlayerController>(GetWorld()->GetFirstPlayerController());
+	GameInstance = Cast<UDefaultInstance>(GetGameInstance());
+	if (LevelID > 0)
+	{
+		FString stringConvert = FString::FromInt(LevelID);
+		LevelInfo = *LevelDataTable->FindRow<FLevelInfoStruct>(FName(*stringConvert), TEXT(""));
+	}
 }
 void AWorldGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
@@ -70,15 +75,28 @@ void AWorldGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 void AWorldGridCell::OnUnitArrive_Implementation()
 {
 	Super::OnUnitArrive_Implementation();
-	// unhides the clouds
-	if (!Visited)
-	{
+	if (!IsValid(GameInstance))
+		GameInstance = Cast<UDefaultInstance>(GetGameInstance());
+	if (GameInstance->VisitedCells.IsEmpty())
+		return;
+	if (GameInstance->VisitedCells.Contains(GetActorLocation()))
 		Visited = true;
-		for (auto& neighbour : NeighbouringCells)
-		{
-			if (neighbour.Cell->CoverObject)
-				neighbour.Cell->CoverObject->Destroy();
-		}
+	else
+	{
+		GameInstance->Map = LevelInfo.LevelFilePath;
+		GameInstance->PlayerSpawnPos = GetActorLocation();
+		PlayerController->OpenLevelSelect(LevelInfo.Difficulty, LevelInfo.EnemyIdForHints);
+	}
+	
+	if (!Visited)
+		return;
+	if (NeighbourCloudRemoved)
+		return;
+	
+	for (auto& neighbour : NeighbouringCells)
+	{
+		if (neighbour.Cell->CoverObject)
+			neighbour.Cell->CoverObject->Destroy();
 	}
 }
 void AWorldGridCell::ActualPathCreation(FWorldNeighbourStruct* neighbour)

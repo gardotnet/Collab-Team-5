@@ -26,5 +26,4 @@ protected:
 	
 	virtual void BeginPlay() override;
 	virtual void OnMove() override;
-	
 };

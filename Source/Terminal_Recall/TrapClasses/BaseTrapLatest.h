@@ -1,42 +1,25 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "Engine/DataTable.h"
-#include "Terminal_Recall/StructsAndEnums/ForDataTable/TrapInfoStruct.h"
+#include "Terminal_Recall/InteractableObject/BaseInteractable.h"
 #include "BaseTrapLatest.generated.h"
 
 UCLASS(Blueprintable, BlueprintType)
-class TERMINAL_RECALL_API ABaseTrapLatest : public AActor
+class TERMINAL_RECALL_API ABaseTrapLatest : public ABaseInteractable
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	ABaseTrapLatest();
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "For Designers | Necessities")
-	TObjectPtr<UDataTable> TrapDataTable;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "For Designers | Necessities")
-	FName TrapRowName;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "For Designers | Necessities")
-	FTrapInfoStruct TrapData;
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION(BlueprintCallable, Category = "Trap Events")
-	virtual void FetchTrapData();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Trap Events")
-	void OnUnitArrive();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Info")
+	int32 TrapDamage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Info")
+	bool bIsTriggered = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Info")
+	bool bIsPersistent = false;
+	
+	virtual void OnActivate_Implementation() override;
+	virtual void ResetTrap();
 };

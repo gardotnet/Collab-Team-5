@@ -23,6 +23,7 @@ public:
 protected:
 	ABaseGridCell();
 	virtual void BeginPlay() override;
+	virtual void BeginDestroy() override;
 public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Stuff For Designers | Functions")
 	void OnUnitArrive();

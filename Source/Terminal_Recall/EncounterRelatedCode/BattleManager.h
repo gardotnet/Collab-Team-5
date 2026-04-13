@@ -23,7 +23,9 @@ public:
 	FGroupCellDelegate CallGroupHoverEvent;
 	FGroupCellDelegate CallGroupHoverEndEvent;
 	FGroupCellDelegate CallGroupAttackEvent;
-	
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "For Designers | Necessities")
+	FName MainGameLevel = "Viet_Test_Place";
 	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
 	TObjectPtr<ABattlePlayerEntity> PlayerRef;
 	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
@@ -32,6 +34,7 @@ public:
 	TMap<FIntPoint, TObjectPtr<ABattleGridCell>> GridMap;
 	
 protected:
+	int32 SavedActionId = -1;
 	int32 EntityIndex = -1;
 	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
 	TObjectPtr<ABattleEntity> CurrentEntityChosen;
@@ -52,4 +55,5 @@ public:
 	void NextEntityTurn();
 protected:
 	virtual void BeginPlay() override;
+	virtual void BeginDestroy() override;
 };

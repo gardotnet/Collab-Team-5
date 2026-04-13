@@ -4,13 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-#include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
-#include "Terminal_Recall/StructsAndEnums/ForDataTable/ActionStruct.h"
 #include "DefaultInstance.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class TERMINAL_RECALL_API UDefaultInstance : public UGameInstance
 {
@@ -20,6 +15,9 @@ public:
 	FVector PlayerSpawnPos = FVector::Zero();
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | System Variables")
 	FString Map = "";
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | System Variables")
+	TArray<FVector> VisitedCells;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | Player Variables")
 	float Health = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | Player Variables")
@@ -30,4 +28,18 @@ public:
 	TArray<int> AttackList;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | Player Variables")
 	TArray<int> MoveList;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="For Designers | Player Variables")
+	FVector LastValidVisitCell;
+
+protected:
+	#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	#endif
+
+	virtual void OnStart() override;
+public:
+	void EncounterWon();
+	UFUNCTION(BlueprintCallable, Category="For Designers | Functions" )
+	void AddVisitedCells(FVector newPos);
 };

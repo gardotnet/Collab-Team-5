@@ -1,0 +1,68 @@
+﻿#pragma once
+
+#include "CoreMinimal.h"
+#include "Blueprint/UserWidget.h"
+#include "LevelSelectWindow.generated.h"
+
+class ATraversalPlayerController;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FClearLevelSelectInfoDelegate);
+
+class ULevelSelectIconWidget;
+class UHorizontalBox;
+class UButton;
+
+UCLASS()
+class TERMINAL_RECALL_API ULevelSelectWindow : public UUserWidget
+{
+	GENERATED_BODY()
+	
+protected:
+	
+	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Necessities")
+	TSubclassOf<ULevelSelectIconWidget> IconWidgetClass;
+	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Necessities")
+	TObjectPtr<UTexture2D> DifficultIconTexture;
+	UPROPERTY(EditDefaultsOnly, Category = "Stuff For Designers | Necessities")
+	TObjectPtr<UDataTable> EnemyDataTable;
+	
+	FClearLevelSelectInfoDelegate ClearUIEvent;
+	
+	UPROPERTY()
+	TArray<ULevelSelectIconWidget*> DifficultWidgetHolder;
+	UPROPERTY()
+	TArray<ULevelSelectIconWidget*> EnemyIconWidgetHolder;
+
+	UPROPERTY()
+	TObjectPtr<ATraversalPlayerController> PlayerController;
+	
+public:
+	
+	UPROPERTY(meta=(BindWidget))
+	UButton* CloseButton;
+	UPROPERTY(meta=(BindWidget))
+	UButton* EnterLevelButton;
+	
+	UPROPERTY(meta=(BindWidget))
+	UHorizontalBox* DifficultyContainer;
+	UPROPERTY(meta=(BindWidget))
+	UHorizontalBox* EnemyHintContainer;
+
+	UPROPERTY(EditAnywhere, Category="Stuff For Designers | Necessities")
+	bool BattleLevelOverride = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Necessities", meta=(EditCondition="BattleLevelOverride") )
+	FName LevelName = TEXT("BattleScene");
+
+protected:
+	
+	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
+	
+	UFUNCTION()
+	void OnCloseButtonPressed();
+	UFUNCTION()
+	void OnEnterLevelButtonPressed();
+	
+public:
+	UFUNCTION(BlueprintCallable)
+	void PassInfoToLevelSelectWindow(int32 difficultyLevel, const TArray<int32>& enemiesID);
+};
