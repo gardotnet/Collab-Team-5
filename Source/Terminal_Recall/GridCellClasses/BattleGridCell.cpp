@@ -4,6 +4,7 @@
 #include "Terminal_Recall/EntityClasses/BattleEntity.h"
 #include "Terminal_Recall/TrapClasses/BaseTrapLatest.h"
 #include "Terminal_Recall/InteractableObject/BaseInteractable.h"
+#include "Terminal_Recall/TrapClasses/BaseTrapLatest.h"
 
 ABattleGridCell::ABattleGridCell()
 {

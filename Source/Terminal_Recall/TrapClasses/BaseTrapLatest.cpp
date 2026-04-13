@@ -22,3 +22,9 @@ void ABaseTrapLatest::ResetTrap()
 {
 	bIsTriggered = false;
 }
+
+void ABaseTrapLatest::RemoveFromGame()
+{
+	ParentGridCell->InteractableRef = nullptr;
+	Destroy();
+}

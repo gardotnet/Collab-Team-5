@@ -178,15 +178,6 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 						}
 					break;
 					case ECellBrushMode::Trap:
-						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
-						{
-							/*if (FTrapInfoStruct trapInfo = TrapDataTable->FindRow<FTrapInfoStruct>(FText::AsNumber(cellData.IdForCellContent)))
-							{
-								
-							}*/
-						}
-					break;
-					case ECellBrushMode::Trap:
 						if (FTrapInfoStruct* trapInfo = TrapDataTable->FindRow<FTrapInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
 						{
 							if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
@@ -201,19 +192,19 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 						}
 					break;
 					case ECellBrushMode::InteractableSpawn:
-					if (FInteractableInfoStruct* infoStruct = InteractableDataTable->FindRow<FInteractableInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
-					{
-						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
+						if (FInteractableInfoStruct* infoStruct = InteractableDataTable->FindRow<FInteractableInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
 						{
-							if (infoStruct->ObjectRef == nullptr) { continue; }
-							AActor* ObjectInteractable = GetWorld()->SpawnActor<AActor>(infoStruct->ObjectRef);
-							FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
-							FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
-							ObjectInteractable->SetActorTransform(transform);
-							ObjectInteractable->
-							(*newCell)->AssignInteractable(Cast<ABaseInteractable>(ObjectInteractable));
+							if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
+							{
+								if (infoStruct->ObjectRef == nullptr) { continue; }
+								AActor* ObjectInteractable = GetWorld()->SpawnActor<AActor>(infoStruct->ObjectRef);
+								FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
+								FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
+								ObjectInteractable->SetActorTransform(transform);
+								ObjectInteractable->
+								(*newCell)->AssignInteractable(Cast<ABaseInteractable>(ObjectInteractable));
+							}
 						}
-					}
 					break;
 					default:
 					break;

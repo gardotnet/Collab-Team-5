@@ -20,9 +20,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Info")
 	bool bIsPersistent = false;
 	
-
 	virtual void OnActivate_Implementation(ABattleEntity* entity) override;
 	virtual void RemoveFromGame() override;
 	virtual void ResetTrap();
-
 };
