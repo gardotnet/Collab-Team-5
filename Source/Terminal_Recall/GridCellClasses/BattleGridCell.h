@@ -18,7 +18,7 @@ class TERMINAL_RECALL_API ABattleGridCell : public ABaseGridCell
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(BlueprintReadWrite, Category="For Designers | Delegates")
+	UPROPERTY(BlueprintReadWrite, Category="Stuff For Designers | Delegates")
 	FOnClickedCell OnClickedCellEvent;
 	int32 CellGroupID = -1;
 	UPROPERTY()
@@ -35,11 +35,11 @@ protected:
 	EActionType ActionType;
 	UPROPERTY()
 	ABattleManager* BattleManager;
-	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Necessities")
 	UMaterialInterface* MoveHighlightMat;
-	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Necessities")
 	UMaterialInterface* HoverHighlightMat;
-	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Necessities")
 	UMaterialInterface* HitHighlightMat;
 	
 	UPROPERTY()

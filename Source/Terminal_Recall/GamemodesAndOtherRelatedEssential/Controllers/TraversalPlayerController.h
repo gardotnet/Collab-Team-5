@@ -22,7 +22,7 @@ public:
 	TSubclassOf<AWorldTraversingEntityV2> PlayerChar;
 	UPROPERTY(EditAnywhere, Category="Stuff For Designers | General Stuff")
 	float PlayerSpeed = 100;
-	UPROPERTY(EditAnywhere, Category="Input Stuff")
+	UPROPERTY(EditAnywhere, Category="Stuff For Designers | Input Stuff")
 	TObjectPtr<UInputMappingContext> MappingContext;
 
 	bool ScreenOn = false;
