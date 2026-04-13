@@ -10,7 +10,9 @@
 AHarryWorldTraversalNode::AHarryWorldTraversalNode()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	#if WITH_EDITOR
 	bRunConstructionScriptOnDrag = false;
+	#endif
 }
 
 void AHarryWorldTraversalNode::BeginPlay()
@@ -70,6 +72,8 @@ void AHarryWorldTraversalNode::OnUnitArrive_Implementation()
 	Clickable = true;
 	for (auto& neighbour : NeighbouringNodes)
 	{
+		if (!IsValid(neighbour.Node))
+			continue;
 		if (IsValid(neighbour.Node->CoverObject))
 			neighbour.Node->CoverObject->Destroy();
 	}
