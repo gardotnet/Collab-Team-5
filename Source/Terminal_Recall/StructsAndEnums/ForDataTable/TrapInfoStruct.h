@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Terminal_Recall/StructsAndEnums/For2dArray/GridRow.h"
+#include "Terminal_Recall/TrapClasses/BaseTrapLatest.h"
 #include "UObject/Object.h"
 #include "TrapInfoStruct.generated.h"
 
@@ -12,7 +13,7 @@ struct FTrapInfoStruct : public FTableRowBase
 
 	FTrapInfoStruct() = default;
 	
-	FTrapInfoStruct(FName name , const TArray<FGridRow>& size, TObjectPtr<AActor> trapObject)
+	FTrapInfoStruct(FName name , const TArray<FGridRow>& size, TSubclassOf<ABaseTrapLatest> trapObject)
 	{
 		TrapName = name;
 		GridSize = size;
@@ -24,5 +25,5 @@ struct FTrapInfoStruct : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FGridRow> GridSize;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<AActor> ObjectRef;
+	TSubclassOf<ABaseTrapLatest> ObjectRef;
 };

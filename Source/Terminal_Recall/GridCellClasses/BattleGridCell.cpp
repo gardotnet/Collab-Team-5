@@ -3,6 +3,7 @@
 #include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
 #include "Terminal_Recall/EntityClasses/BattleEntity.h"
 #include "Terminal_Recall/InteractableObject/BaseInteractable.h"
+#include "Terminal_Recall/TrapClasses/BaseTrapLatest.h"
 
 ABattleGridCell::ABattleGridCell()
 {
@@ -11,9 +12,11 @@ ABattleGridCell::ABattleGridCell()
 	MeshComponent->OnBeginCursorOver.AddDynamic(this, &ABattleGridCell::OnHoverOver);
 	MeshComponent->OnEndCursorOver.AddDynamic(this, &ABattleGridCell::OnHoverEnd);
 }
-void ABattleGridCell::AssignTrap(TObjectPtr<ABaseTrap> trap)
+void ABattleGridCell::AssignInteractable(TObjectPtr<ABaseInteractable> interactable)
 {
-	//TrapRef = trap;
+	InteractableRef = interactable;
+	interactable->ParentGridCell = this;
+	InteractableRef->OnLinked();
 }
 bool ABattleGridCell::EnableCell(EActionType actionType, ABattleEntity* causer, int32 groupID)
 {
@@ -63,7 +66,9 @@ void ABattleGridCell::ForceEndHover(int32 groupID)
 void ABattleGridCell::HouseEntity(ABattleEntity* entity)
 {
 	ResidingEntity = entity;
-	OnUnitArrive_Implementation();
+
+	if (InteractableRef != nullptr)
+		InteractableRef->OnActivate_Implementation(entity);
 	entity->OnChangeCell.AddDynamic(this, &ABattleGridCell::EvictEntity);
 }
 void ABattleGridCell::EvictEntity()
