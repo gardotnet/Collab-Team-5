@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "Terminal_Recall/InteractableObject/BaseItemInteractable.h"
 #include "UObject/Object.h"
 #include "InteractableInfoStruct.generated.h"
 
@@ -11,7 +12,7 @@ struct FInteractableInfoStruct : public FTableRowBase
 
 	FInteractableInfoStruct() = default;
 	
-	FInteractableInfoStruct(FName name, TObjectPtr<AActor> interactableObject)
+	FInteractableInfoStruct(FName name, TSubclassOf<ABaseItemInteractable> interactableObject)
 	{
 		InteractableName = name;
 		ObjectRef = interactableObject;
@@ -20,5 +21,5 @@ struct FInteractableInfoStruct : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName InteractableName = "";
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<AActor> ObjectRef;
+	TSubclassOf<ABaseItemInteractable> ObjectRef;
 };

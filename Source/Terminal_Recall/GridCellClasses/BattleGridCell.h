@@ -5,12 +5,13 @@
 #include "BaseGridCell.h"
 #include "BattleGridCell.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnClickedCell, ABattleEntity*, target, EActionType, type, bool, mainAttackCell);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnClickedCell, ABattleEntity*, target, EActionType, type, bool,
+                                               mainAttackCell);
+class ABaseInteractable;
 class ABattleManager;
 class APlayerBattleController;
 class ABattleEntity;
-class ABaseTrap;
 class UPrimitiveComponent;
 
 UCLASS()
@@ -21,11 +22,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category="For Designers | Delegates")
 	FOnClickedCell OnClickedCellEvent;
 	int32 CellGroupID = -1;
+	UPROPERTY()
+	TObjectPtr<ABaseInteractable> InteractableRef;
 protected:
 	UPROPERTY()
 	TObjectPtr<APlayerBattleController> PlayerController;
-	/*UPROPERTY()
-	TObjectPtr<ABaseTrap> TrapRef;*/
 	FIntPoint GridPos;
 	bool Walkable = true;
 	UPROPERTY()
@@ -43,7 +44,7 @@ protected:
 	UMaterialInterface* HitHighlightMat;
 public:
 	ABattleGridCell();
-	void AssignTrap(TObjectPtr<ABaseTrap> trap);
+	void AssignInteractable(TObjectPtr<ABaseInteractable> interactable);
 	bool EnableCell(EActionType actionType, ABattleEntity* causer, int32 groupID = -1);
 	UFUNCTION()
 	void DisableCell();

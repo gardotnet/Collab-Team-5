@@ -22,8 +22,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "For Designers | Necessities")
 	TObjectPtr<UDataTable> PropDataTable;
 	UPROPERTY(EditDefaultsOnly, Category = "For Designers | Necessities")
-	TObjectPtr<UDataTable> EnemyDataTable;
-	UPROPERTY(EditDefaultsOnly, Category = "For Designers | Necessities")
 	TObjectPtr<UDataTable> TrapDataTable;
 	UPROPERTY(EditDefaultsOnly, Category = "For Designers | Necessities")
 	TObjectPtr<UDataTable> InteractableDataTable;

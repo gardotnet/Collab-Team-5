@@ -18,5 +18,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Info")
 	int32 TrapDamage;
 	
-	virtual void OnActivate_Implementation() override;
+	virtual void OnActivate_Implementation(ABattleEntity* entity) override;
+
+	virtual void RemoveFromGame() override;
 };

@@ -11,6 +11,7 @@
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
 #include "Terminal_Recall/StructsAndEnums/LevelExportStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/AssetLookUpStruct.h"
+#include "Terminal_Recall/StructsAndEnums/ForDataTable/TrapInfoStruct.h"
 
 ABattleLevelLoader::ABattleLevelLoader()
 {
@@ -145,6 +146,20 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 							newEnemy->SetPos(cellData.Position, *newCell);
 							(*newCell)->HouseEntity(newEnemy);
 						}
+					break;
+					case ECellBrushMode::Trap:
+						if (FTrapInfoStruct* trapInfo = TrapDataTable->FindRow<FTrapInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
+						{
+							if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
+							{
+								// create the trap using class ref from data table
+								// and add it to the class using
+								// (*newCell)->AssignInteractable()
+							}
+						}
+					break;
+					case ECellBrushMode::InteractableSpawn:
+						// same thing as trap but for interactable items 
 					break;
 					default:
 					break;
