@@ -155,8 +155,10 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 							if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 							{
 								if (trapInfo->ObjectRef == nullptr) { continue; }
-								TSubclassOf<ABaseTrapLatest> objectTrap = trapInfo->ObjectRef;
-								AActor* trapInteractable = GetWorld()->SpawnActor<AActor>(objectTrap);
+								AActor* trapInteractable = GetWorld()->SpawnActor<AActor>(trapInfo->ObjectRef);
+								FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
+								FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
+								trapInteractable->SetActorTransform(transform);
 								(*newCell)->AssignInteractable(Cast<ABaseInteractable>(trapInteractable));
 							}
 						}
@@ -167,8 +169,11 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 						{
 							if (infoStruct->ObjectRef == nullptr) { continue; }
-							TSubclassOf<ABaseInteractable> objectInteracftable = infoStruct->ObjectRef;
-							AActor* ObjectInteractable = GetWorld()->SpawnActor<AActor>(objectInteracftable);
+							AActor* ObjectInteractable = GetWorld()->SpawnActor<AActor>(infoStruct->ObjectRef);
+							FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
+							FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
+							ObjectInteractable->SetActorTransform(transform);
+							ObjectInteractable->
 							(*newCell)->AssignInteractable(Cast<ABaseInteractable>(ObjectInteractable));
 						}
 					}
