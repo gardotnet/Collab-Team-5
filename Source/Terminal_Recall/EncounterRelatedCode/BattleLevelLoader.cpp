@@ -201,7 +201,6 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 								FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
 								FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
 								ObjectInteractable->SetActorTransform(transform);
-								ObjectInteractable->
 								(*newCell)->AssignInteractable(Cast<ABaseInteractable>(ObjectInteractable));
 							}
 						}
