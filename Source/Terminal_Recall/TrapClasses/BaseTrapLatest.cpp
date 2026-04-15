@@ -8,4 +8,15 @@ ABaseTrapLatest::ABaseTrapLatest()
 void ABaseTrapLatest::OnActivate_Implementation()
 {
 	Super::OnActivate_Implementation();
+	if (bIsTriggered)
+		return;
+	bIsTriggered = true;
+	OnActivate();
+	if (!bIsPersistent)
+		Destroy();
+}
+
+void ABaseTrapLatest::ResetTrap()
+{
+	bIsTriggered = false;
 }

@@ -1,5 +1,7 @@
 ﻿#include "WorldTraversingEntityV2.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/TraversalPlayerController.h"
 #include "Terminal_Recall/GridCellClasses/HarryWorldTraversalNode.h"
 #include "Terminal_Recall/Harry/TraversalFunctionLibrary.h"
@@ -31,6 +33,8 @@ void AWorldTraversingEntityV2::OnMove()
 		// if end point of navigation
 		if (PathIndex + 1 >= TheNodePath.Num())
 		{
+			TheReversePath.Add(TheNodePath[PathIndex]);
+			Algo::Reverse(TheReversePath);
 			TheNodePath.Last()->OnUnitArrive_Implementation();
 			TimerManagerRef->ClearTimer(MoveTimerHandle);
 			return;
@@ -38,6 +42,15 @@ void AWorldTraversingEntityV2::OnMove()
 		TimerManagerRef->ClearTimer(MoveTimerHandle);
 		MoveTimer = 0;
 		
+		if (TheGameInstance->VisitedCells.Contains(TheNodePath[PathIndex]->GetActorLocation()))
+		{
+			TheReversePath.Empty();
+			TheReversePath.Add(TheNodePath[PathIndex]);
+		}
+		else
+		{
+			TheReversePath.Add(TheNodePath[PathIndex]);
+		}
 		// move on to next spline point
 		auto* connectedNeighbour = TheNodePath[PathIndex]->NeighbouringNodes.FindByPredicate([&](const auto& info) {
 			return info.Node == TheNodePath[PathIndex + 1];
@@ -92,4 +105,10 @@ void AWorldTraversingEntityV2::StartMove(TArray<TObjectPtr<AHarryWorldTraversalN
 	DesiredMoveDuration = distance/Speed;
 	TimerManagerRef->ClearTimer(MoveTimerHandle);
 	TimerManagerRef->SetTimer(MoveTimerHandle, this, &AWorldTraversingEntityV2::OnMove, 0.01f, true);
+	TheGameInstance = Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+}
+
+void AWorldTraversingEntityV2::MoveBack()
+{
+	StartMove(TheReversePath);
 }
