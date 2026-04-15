@@ -19,3 +19,8 @@ void ABaseItemInteractable::GetItemInfo(FString& OutName, FString& OutDescriptio
 	OutName = ItemName;
 	OutDescription = ItemDescription;
 }
+
+void ABaseItemInteractable::OnActivate_Implementation()
+{
+	Super::OnActivate_Implementation();
+}

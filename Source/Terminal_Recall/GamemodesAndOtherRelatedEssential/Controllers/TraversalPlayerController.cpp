@@ -104,7 +104,8 @@ void ATraversalPlayerController::NavigateOneSpaceBack()
 		return;
 	}
 	ThePath.RemoveAt(0, ThePath.Num() - 2); 
-	PlayerEntity->StartMove(ThePath);
+	//PlayerEntity->StartMove(ThePath);
+	PlayerEntity->MoveBack();
 }
 
 bool ATraversalPlayerController::FindCell(TObjectPtr<UNodeInfoForCellSearch> currentInfo)
