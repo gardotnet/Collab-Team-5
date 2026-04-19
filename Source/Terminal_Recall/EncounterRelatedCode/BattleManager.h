@@ -24,19 +24,19 @@ public:
 	FGroupCellDelegate CallGroupHoverEndEvent;
 	FGroupCellDelegate CallGroupAttackEvent;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stuff For Designers | Necessities")
 	FName MainGameLevel = "Viet_Test_Place";
-	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
+	UPROPERTY(BlueprintReadOnly, Category="Stuff For Designers | Variables")
 	TObjectPtr<ABattlePlayerEntity> PlayerRef;
-	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
+	UPROPERTY(BlueprintReadOnly, Category="Stuff For Designers | Variables")
 	TArray<TObjectPtr<ABattleEnemyEntity>> EnemyArray;
-	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
+	UPROPERTY(BlueprintReadOnly, Category="Stuff For Designers | Variables")
 	TMap<FIntPoint, TObjectPtr<ABattleGridCell>> GridMap;
 	
 protected:
 	int32 SavedActionId = -1;
 	int32 EntityIndex = -1;
-	UPROPERTY(BlueprintReadOnly, Category="For Designers | Variables")
+	UPROPERTY(BlueprintReadOnly, Category="Stuff For Designers | Variables")
 	TObjectPtr<ABattleEntity> CurrentEntityChosen;
 	UPROPERTY()
 	TObjectPtr<APlayerBattleController> PlayerBattleController;
@@ -51,7 +51,7 @@ public:
 	void ActionChoiceSelected(UActionButtonUI* selectedButton);
 	UFUNCTION()
 	void OnCellSelected(ABattleEntity* target, EActionType type, bool mainAttackCell);
-	UFUNCTION(BlueprintCallable, Category = "For Designers | Variables")
+	UFUNCTION(BlueprintCallable, Category = "Stuff For Designers | Function")
 	void NextEntityTurn();
 protected:
 	virtual void BeginPlay() override;

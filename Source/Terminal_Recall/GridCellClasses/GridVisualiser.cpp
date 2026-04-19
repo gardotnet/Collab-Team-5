@@ -10,9 +10,15 @@ AGridVisualiser::AGridVisualiser()
 	RootComponent = DummyRoot;
 	GridVisualComp = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Grid Visual");
 	GridVisualComp->SetupAttachment(DummyRoot);
+}
+
+void AGridVisualiser::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
 	// cant save this lol
 	SetFlags(RF_Transient);
 }
+
 // clears grids and re-make it
 void AGridVisualiser::RegenerateGrid(FIntPoint gridSize)
 {
@@ -20,6 +26,7 @@ void AGridVisualiser::RegenerateGrid(FIntPoint gridSize)
 		return;
 	auto color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	ClearText();
+	GridVisualComp->NumCustomDataFloats = 4; 
 	GridVisualComp->ClearInstances();
 	for (int y = 0; y < gridSize.Y; y++)
 	{

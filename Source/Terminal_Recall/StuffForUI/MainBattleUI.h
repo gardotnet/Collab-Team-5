@@ -24,13 +24,13 @@ protected:
 	UHorizontalBox* EnemyHPContainer;
 	
 public:
-	UFUNCTION(BlueprintCallable, Category="For Designers | Functions")
+	UFUNCTION(BlueprintCallable, Category="Stuff For Designers | Functions")
 	void ChangeHealth(int32 newHealthValue);
 	
-	UFUNCTION(BlueprintCallable, Category="For Designers | Functions")
+	UFUNCTION(BlueprintCallable, Category="Stuff For Designers | Functions")
 	void SetEnemyHp(int32 newHealthValue);
 	
-	UFUNCTION(BlueprintCallable, Category="For Designers | Functions")
+	UFUNCTION(BlueprintCallable, Category="Stuff For Designers | Functions")
 	void HideEnemyHp();
 	
 protected:

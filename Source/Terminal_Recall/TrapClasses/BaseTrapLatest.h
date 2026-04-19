@@ -17,9 +17,10 @@ public:
 	int32 TrapDamage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Info")
 	bool bIsTriggered = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Info")
-	bool bIsPersistent = false;
-	
-	virtual void OnActivate_Implementation() override;
+
 	virtual void ResetTrap();
+
+	virtual void OnActivate_Implementation(ABattleEntity* entity) override;
+
+	virtual void RemoveFromGame() override;
 };

@@ -1,5 +1,6 @@
 ﻿#include "DefaultInstance.h"
 
+#if WITH_EDITOR
 void UDefaultInstance::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
@@ -16,6 +17,7 @@ void UDefaultInstance::PostEditChangeProperty(FPropertyChangedEvent& PropertyCha
 			MoveList.SetNum(5);
 	}
 }
+#endif
 
 void UDefaultInstance::OnStart()
 {
@@ -27,9 +29,4 @@ void UDefaultInstance::OnStart()
 void UDefaultInstance::EncounterWon()
 {
 	VisitedCells.Add(PlayerSpawnPos);
-}
-
-void UDefaultInstance::AddVisitedCells(FVector newPos)
-{
-	VisitedCells.Add(newPos);
 }

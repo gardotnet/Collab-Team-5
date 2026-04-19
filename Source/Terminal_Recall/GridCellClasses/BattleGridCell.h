@@ -5,14 +5,12 @@
 #include "BaseGridCell.h"
 #include "BattleGridCell.generated.h"
 
-class ABaseInteractable;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnClickedCell, ABattleEntity*, target, EActionType, type, bool,
                                                mainAttackCell);
-
+class ABaseInteractable;
 class ABattleManager;
 class APlayerBattleController;
 class ABattleEntity;
-class ABaseTrap;
 class UPrimitiveComponent;
 
 UCLASS()
@@ -20,14 +18,14 @@ class TERMINAL_RECALL_API ABattleGridCell : public ABaseGridCell
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(BlueprintReadWrite, Category="For Designers | Delegates")
+	UPROPERTY(BlueprintReadWrite, Category="Stuff For Designers | Delegates")
 	FOnClickedCell OnClickedCellEvent;
 	int32 CellGroupID = -1;
+	UPROPERTY()
+	TObjectPtr<ABaseInteractable> InteractableRef;
 protected:
 	UPROPERTY()
 	TObjectPtr<APlayerBattleController> PlayerController;
-	/*UPROPERTY()
-	TObjectPtr<ABaseTrap> TrapRef;*/
 	FIntPoint GridPos;
 	bool Walkable = true;
 	UPROPERTY()
@@ -37,11 +35,11 @@ protected:
 	EActionType ActionType;
 	UPROPERTY()
 	ABattleManager* BattleManager;
-	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Necessities")
 	UMaterialInterface* MoveHighlightMat;
-	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Necessities")
 	UMaterialInterface* HoverHighlightMat;
-	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
+	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Necessities")
 	UMaterialInterface* HitHighlightMat;
 	
 	UPROPERTY()
@@ -50,7 +48,7 @@ protected:
 	
 public:
 	ABattleGridCell();
-	void AssignTrap(TObjectPtr<ABaseTrap> trap);
+	void AssignInteractable(TObjectPtr<ABaseInteractable> interactable);
 	bool EnableCell(EActionType actionType, ABattleEntity* causer, int32 groupID = -1);
 	UFUNCTION()
 	void DisableCell();

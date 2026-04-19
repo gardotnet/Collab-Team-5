@@ -176,13 +176,18 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 						}
 					break;
 					case ECellBrushMode::Trap:
-						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
+						if (FTrapInfoStruct* trapInfo = TrapDataTable->FindRow<FTrapInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
 						{
-							/*if (FTrapInfoStruct trapInfo = TrapDataTable->FindRow<FTrapInfoStruct>(FText::AsNumber(cellData.IdForCellContent)))
+							if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 							{
-								
-							}*/
+								// create the trap using class ref from data table
+								// and add it to the class using
+								// (*newCell)->AssignInteractable()
+							}
 						}
+					break;
+					case ECellBrushMode::InteractableSpawn:
+						// same thing as trap but for interactable items 
 					break;
 					default:
 					break;

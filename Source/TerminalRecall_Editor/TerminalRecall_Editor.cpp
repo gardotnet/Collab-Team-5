@@ -15,6 +15,9 @@ void FTerminalRecall_EditorModule::StartupModule()
 	
 	mySection = PropertyModule.FindOrCreateSection("PathActor", "StuffForDesigners", INVTEXT("Stuff for Designers"));
 	mySection->AddCategory("Stuff for Designers");
+	
+	mySection = PropertyModule.FindOrCreateSection("BattleLevelLoader", "StuffForDesigners", INVTEXT("Stuff for Designers"));
+	mySection->AddCategory("Stuff for Designers");
 }
 
 void FTerminalRecall_EditorModule::ShutdownModule() 
