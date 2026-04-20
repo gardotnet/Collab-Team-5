@@ -1,0 +1,423 @@
+{
+	"gridSize":
+	{
+		"x": 15,
+		"y": 15
+	},
+	"gridCells": [
+		{
+			"position":
+			{
+				"x": 2,
+				"y": 4
+			},
+			"cellType": "EnemySpawn",
+			"idForCellContent": 10
+		},
+		{
+			"position":
+			{
+				"x": 3,
+				"y": 7
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 4,
+				"y": 7
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 4,
+				"y": 11
+			},
+			"cellType": "EnemySpawn",
+			"idForCellContent": 3
+		},
+		{
+			"position":
+			{
+				"x": 5,
+				"y": 2
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 5,
+				"y": 3
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 5,
+				"y": 4
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 5,
+				"y": 5
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 5,
+				"y": 6
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 5,
+				"y": 7
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 6,
+				"y": 7
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 7,
+				"y": 7
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 8,
+				"y": 6
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 8,
+				"y": 7
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 8,
+				"y": 8
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 8,
+				"y": 9
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 8,
+				"y": 10
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 8,
+				"y": 11
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 8,
+				"y": 12
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 8,
+				"y": 13
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 8,
+				"y": 14
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 9,
+				"y": 2
+			},
+			"cellType": "EnemySpawn",
+			"idForCellContent": 7
+		},
+		{
+			"position":
+			{
+				"x": 9,
+				"y": 6
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 9,
+				"y": 7
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 9,
+				"y": 8
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 9,
+				"y": 9
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 9,
+				"y": 10
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 9,
+				"y": 11
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 9,
+				"y": 12
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 9,
+				"y": 13
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 9,
+				"y": 14
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 10,
+				"y": 6
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 10,
+				"y": 7
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 10,
+				"y": 8
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 10,
+				"y": 9
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 10,
+				"y": 10
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 10,
+				"y": 11
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 10,
+				"y": 12
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 10,
+				"y": 13
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 10,
+				"y": 14
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 11,
+				"y": 6
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 12,
+				"y": 6
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 12,
+				"y": 13
+			},
+			"cellType": "PlayerSpawn",
+			"idForCellContent": -1
+		},
+		{
+			"position":
+			{
+				"x": 13,
+				"y": 2
+			},
+			"cellType": "EnemySpawn",
+			"idForCellContent": 7
+		},
+		{
+			"position":
+			{
+				"x": 13,
+				"y": 10
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 14,
+				"y": 10
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		}
+	]
+}
