@@ -58,6 +58,17 @@ FGridRangeExport* ABattleEntity::GetActionInfo(EActionType type, int32 indexInLi
 		return &ActionList[indexInList].MovementAction.ActionRange;
 	return nullptr;
 }
+
+void ABattleEntity::EnableRestrictedMovement()
+{
+	bRestrictedMovement = true;
+	// [NOTE] cancel UI here
+}
+void ABattleEntity::DisableRestrictedMovement()
+{
+	bRestrictedMovement = false;
+	// [NOTE] enable UI here
+}
 void ABattleEntity::CustomTakeDamage(float damage)
 {
 	CurrentHealth = CurrentHealth - damage;
@@ -148,11 +159,6 @@ void ABattleEntity::ShowPotentialHit(float damage)
 void ABattleEntity::HidePotentialHit()
 {
 	TextRenderComponent->SetHiddenInGame(true);
-}
-
-void ABattleEntity::DealDamage(ABattleEntity* target)
-{
-	target->CustomTakeDamage(ActionList[SelectedActionID].AttackAction.Damage);
 }
 
 // finding action in data table and making a button for it

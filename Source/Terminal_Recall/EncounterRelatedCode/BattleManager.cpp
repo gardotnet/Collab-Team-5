@@ -115,7 +115,6 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 			}
 		}
 	}
-	
 }
 void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, bool mainAttackCell)
 {

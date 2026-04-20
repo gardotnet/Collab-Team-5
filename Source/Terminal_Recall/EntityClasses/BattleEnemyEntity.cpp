@@ -516,6 +516,9 @@ void ABattleEnemyEntity::SetRandomTargetInList(const TArray<FPotentialMoveCellIn
 
 void ABattleEnemyEntity::OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
-	Super::OnEntityClicked(TouchedActor, ButtonPressed);
 	PlayerBattleController->MainBattleUIWidget->SetEnemyHp(CurrentHealth);
+	if (TObjectPtr<ABattleGridCell>* currentCell = BattleManager->GridMap.Find(GridPos))
+	{
+		(*currentCell)->OnCellClicked(nullptr, FKey());
+	}
 }

@@ -117,6 +117,31 @@ void ABattleGridCell::PassInteractableRef(ABaseInteractable* interactable, bool 
 	bIsPersistentInteractable = bIsPersistent;
 }
 
+void ABattleGridCell::DeleteCell()
+{
+	BattleManager->GridMap.Remove(GridPos);
+	if (InteractableRef != nullptr)
+		InteractableRef->Destroy();
+	Destroy();
+}
+
+void ABattleGridCell::Explode(float damage, int magnitude)
+{
+	if (magnitude == 0)
+		magnitude = 1;
+	for (int x = 0; x < 1 + (magnitude * 2); x++)
+	{
+		for (int y = 0; y < 1 + (magnitude * 2); y++)
+		{
+			FIntPoint currentPos = FIntPoint(x, y);
+			if (TObjectPtr<ABattleGridCell>* currentCell = BattleManager->GridMap.Find(currentPos))
+			{
+				(*currentCell)->ResidingEntity->CustomTakeDamage(damage);
+			}
+		}
+	}
+}
+
 void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
 	if (!Clickable)
