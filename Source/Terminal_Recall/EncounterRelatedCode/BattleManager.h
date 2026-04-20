@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "BattleLevelLoader.h"
 #include "Terminal_Recall/StructsAndEnums/ActionTypes.h"
 #include "Terminal_Recall/StructsAndEnums/For2dArray/FGridRowCell.h"
 #include "BattleManager.generated.h"
@@ -32,7 +33,8 @@ public:
 	TArray<TObjectPtr<ABattleEnemyEntity>> EnemyArray;
 	UPROPERTY(BlueprintReadOnly, Category="Stuff For Designers | Variables")
 	TMap<FIntPoint, TObjectPtr<ABattleGridCell>> GridMap;
-	
+	FIntPoint GridSize;
+
 protected:
 	int32 SavedActionId = -1;
 	int32 EntityIndex = -1;

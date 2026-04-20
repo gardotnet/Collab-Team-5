@@ -29,6 +29,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Stuff For Designers | Delegates")
 	FChangeCell OnChangeCell;
 	int32 SelectedActionID = -1;
+	UPROPERTY()
+	TArray<FEntityTwinActionContainer> ActionList;
 protected:
 	UPROPERTY()
 	TObjectPtr<UTextRenderComponent> TextRenderComponent;
@@ -46,7 +48,6 @@ protected:
 	TArray<UActionButtonUI*> AttackActionsUI;
 	UPROPERTY()
 	TArray<UActionButtonUI*> ItemActionsUI;
-	TArray<FEntityTwinActionContainer> ActionList;
 	UPROPERTY()
 	TObjectPtr<ABattleGridCell> CurrentCell;
 	
