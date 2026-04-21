@@ -4,6 +4,8 @@
 #include "AI_WeightMapManager.h"
 
 #include "Terminal_Recall/EntityClasses/BattlePlayerEntity.h"
+#include "Terminal_Recall/GridCellClasses/BaseGridCell.h"
+#include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
 #include "WorldPartition/WorldPartitionBuilder.h"
 
 
@@ -24,6 +26,11 @@ void AAI_WeightMapManager::BeginPlay()
 
 void AAI_WeightMapManager::GatherMoveableCells()
 {
+	if (BattleManager == NULL)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, "GatherMoveableCells failed as Weight Map has no reference to BattleManager");
+		return;
+	}
 	FIntPoint output = BattleManager->GridSize;
 
 	for (int i = 0; i < output.X; i++)
@@ -48,10 +55,7 @@ void AAI_WeightMapManager::GetCurrentActionPositionsForPlayer()
 {
 	TObjectPtr<ABattlePlayerEntity> playerEntity = BattleManager->PlayerRef;
 
-	FIntPoint playerPosition = playerEntity->GetPos();
 	TArray<FEntityTwinActionContainer> availableActionList = playerEntity->ActionList;
-
-	
 
 	for (FEntityTwinActionContainer action : availableActionList)
 	{
@@ -63,13 +67,15 @@ void AAI_WeightMapManager::GetCurrentActionPositionsForPlayer()
 			}
 		}
 	}
+
+	GenerateWeightMap();
 }
 
 void AAI_WeightMapManager::GenerateWeightMap()
 {
 	for (FIntPoint pos : possibleTravelPosition)
 	{
-		WeightMap[pos] = weightSize;
+		WeightMap.Add(pos, weightSize);
 
 		for (int i = 0; i < weightSize; i++)
 		{
@@ -92,8 +98,8 @@ void AAI_WeightMapManager::GenerateWeightMap()
 				{
 					continue;
 				}
-				
-				WeightMap[nearbyCellPos] = weightCellStrength;
+
+				WeightMap.Add(nearbyCellPos, weightCellStrength);
 			}
 		}
 	}
@@ -107,11 +113,23 @@ void AAI_WeightMapManager::ShowWeightMap()
 	{
 		for (const TTuple<FIntPoint, int> KeyValuePair : WeightMap)
 		{
-			AActor* colouredSquare = GetWorld()->SpawnActor<AActor>();
-			FVector Pos = FVector{static_cast<float>(KeyValuePair.Key.X), static_cast<float>(KeyValuePair.Key.Y), 0.2};
-			colouredSquare->SetActorLocation(Pos);
+			AVisualWeightMapCell* colouredSquare = GetWorld()->SpawnActor<AVisualWeightMapCell>(VisualiseWeightmap);
+			if (colouredSquare == nullptr)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, "Failed to spawn weight map | Incorrect class! A derived blueprint class must be used from AVisualWeightMapCell in the C++ folder");
+				return;
+			}
+			TObjectPtr<ABattleGridCell>* cell = BattleManager->GridMap.Find(FIntPoint(KeyValuePair.Key.X,KeyValuePair.Key.Y));
+			if (cell == nullptr)
+			{
+				continue;
+			}
+			FVector location = (*cell)->GetActorLocation();
+			colouredSquare->SetActorLocation(location);
+			colouredSquareArr.Add(colouredSquare);
 		}
 	}
+	FIntPoint output = BattleManager->GridSize;
 }
 
 // Called every frame

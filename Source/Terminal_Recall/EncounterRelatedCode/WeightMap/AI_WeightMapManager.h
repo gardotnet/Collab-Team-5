@@ -5,6 +5,7 @@
 #include <map>
 
 #include "CoreMinimal.h"
+#include "VisualWeightMapCell.h"
 #include "GameFramework/Actor.h"
 #include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
 #include "AI_WeightMapManager.generated.h"
@@ -45,6 +46,9 @@ protected:
 
 	TMap<FIntPoint,TObjectPtr<ABattleGridCell>*> cellMap;
 
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Saved Information")
+	TArray<AVisualWeightMapCell*> colouredSquareArr;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -54,4 +58,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable")
 	bool bshowWeightMap = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable" , meta = (EditCondition = "bshowWeightMap"))
+	UClass* VisualiseWeightmap;
 };
