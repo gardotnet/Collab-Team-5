@@ -55,6 +55,8 @@ public:
 	void OnCellSelected(ABattleEntity* target, EActionType type, bool mainAttackCell);
 	UFUNCTION(BlueprintCallable, Category = "Stuff For Designers | Function")
 	void NextEntityTurn();
+	UFUNCTION()
+	void findGridSize();
 protected:
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;

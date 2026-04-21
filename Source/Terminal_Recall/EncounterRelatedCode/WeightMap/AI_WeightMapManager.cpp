@@ -63,7 +63,11 @@ void AAI_WeightMapManager::GetCurrentActionPositionsForPlayer()
 		{
 			for (FGridRangeCellInfo range : action.AttackAction.ActionRange.Cells)
 			{
-				possibleTravelPosition.Add(range.GridPos);
+				FIntPoint point = playerEntity->GetPos();
+				point += range.GridPos;
+				if (point.X < 0 || point.Y < 0) { continue; }
+				if (point.X < BattleManager->GridSize.X || point.Y < BattleManager->GridSize.Y) { continue; }
+				possibleTravelPosition.Add(range.GridPos + point);
 			}
 		}
 	}
@@ -125,7 +129,10 @@ void AAI_WeightMapManager::ShowWeightMap()
 				continue;
 			}
 			FVector location = (*cell)->GetActorLocation();
+			location.Z = (*cell)->GetActorLocation().Z - KeyValuePair.Value * 20;
 			colouredSquare->SetActorLocation(location);
+			colouredSquare->chosenGradient = KeyValuePair.Value;
+			colouredSquare->maxGradient = weightSize;
 			colouredSquareArr.Add(colouredSquare);
 		}
 	}

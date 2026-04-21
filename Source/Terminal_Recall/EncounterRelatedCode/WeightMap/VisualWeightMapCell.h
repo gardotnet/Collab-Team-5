@@ -25,5 +25,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable")
 	int maxGradient = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable")
 	int chosenGradient = 0;
 };

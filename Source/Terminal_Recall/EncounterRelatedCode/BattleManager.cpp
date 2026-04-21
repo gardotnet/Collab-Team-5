@@ -188,6 +188,7 @@ void ABattleManager::BeginPlay()
 {
 	Super::BeginPlay();
 	PlayerBattleController = Cast<APlayerBattleController>(GetWorld()->GetFirstPlayerController());
+	findGridSize();
 }
 void ABattleManager::BeginDestroy()
 {
@@ -196,4 +197,20 @@ void ABattleManager::BeginDestroy()
 	CallGroupHoverEvent.Clear();
 	CallGroupHoverEndEvent.Clear();
 	CallGroupAttackEvent.Clear();
+}
+
+void ABattleManager::findGridSize()
+{
+	FIntPoint furthestPoint = {0,0};
+	
+	for (TPair<FIntPoint,ABattleGridCell*> GridCell : GridMap)
+	{
+		if (GridCell.Key.X + GridCell.Key.Y > furthestPoint.X + furthestPoint.Y)
+		{
+			furthestPoint = GridCell.Key;
+		}
+	}
+
+	GridSize.X = furthestPoint.X;
+	GridSize.Y = furthestPoint.Y;
 }
