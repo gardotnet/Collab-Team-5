@@ -51,7 +51,6 @@ void ABattleLevelLoader::BeginPlay()
 
 void ABattleLevelLoader::LoadLevel(FString levelPath)
 {
-	
 	// load the json file 
 	FString content;
 	if (FFileHelper::LoadFileToString(content, *levelPath))
