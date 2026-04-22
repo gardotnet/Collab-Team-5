@@ -75,9 +75,16 @@ public:
 	void EndForceHighlight();
 	
 	void PassInteractableRef(ABaseInteractable* interactable, bool bIsPersistent);
+
+	UFUNCTION(BlueprintCallable, Category="Stuff For Designers | Functions")
+	void DeleteCell();
+	UFUNCTION(BlueprintCallable, Category="Stuff For Designers | Functions")
+	void Explode(float damage, int magnitude = 1);
+
+	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 	
 protected:
-	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
+	
 	virtual void OnUnitArrive_Implementation() override;
 	UFUNCTION()
 	void OnHoverOver(UPrimitiveComponent* TouchedComponent);

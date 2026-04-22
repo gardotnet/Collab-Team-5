@@ -5,12 +5,14 @@
 #include "IDesktopPlatform.h"
 #include "JsonObjectConverter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialIR.h"
 #include "Terminal_Recall/EntityClasses/BattleEnemyEntity.h"
 #include "Terminal_Recall/EntityClasses/BattlePlayerEntity.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
 #include "Terminal_Recall/StructsAndEnums/LevelExportStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/AssetLookUpStruct.h"
+#include "Terminal_Recall/StructsAndEnums/ForDataTable/InteractableInfoStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/TrapInfoStruct.h"
 
 ABattleLevelLoader::ABattleLevelLoader()
@@ -180,14 +182,28 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 						{
 							if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 							{
-								// create the trap using class ref from data table
-								// and add it to the class using
-								// (*newCell)->AssignInteractable()
+								if (trapInfo->ObjectRef == nullptr) { continue; }
+								AActor* trapInteractable = GetWorld()->SpawnActor<AActor>(trapInfo->ObjectRef);
+								FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
+								FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
+								trapInteractable->SetActorTransform(transform);
+								(*newCell)->AssignInteractable(Cast<ABaseInteractable>(trapInteractable));
 							}
 						}
 					break;
 					case ECellBrushMode::InteractableSpawn:
-						// same thing as trap but for interactable items 
+						if (FInteractableInfoStruct* infoStruct = InteractableDataTable->FindRow<FInteractableInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
+						{
+							if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
+							{
+								if (infoStruct->ObjectRef == nullptr) { continue; }
+								AActor* ObjectInteractable = GetWorld()->SpawnActor<AActor>(infoStruct->ObjectRef);
+								FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
+								FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
+								ObjectInteractable->SetActorTransform(transform);
+								(*newCell)->AssignInteractable(Cast<ABaseInteractable>(ObjectInteractable));
+							}
+						}
 					break;
 					default:
 					break;
@@ -347,8 +363,31 @@ void ABattleLevelLoader::EditorLoadLevel()
 							}
 							break;
 						case ECellBrushMode::Trap:
-							
-							break;	
+							if (FTrapInfoStruct* trapInfo = TrapDataTable->FindRow<FTrapInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
+							{
+								if (TObjectPtr<ABattleGridCell>* newCell = TempGridMap.Find(cellData.Position))
+								{
+									if (trapInfo->ObjectRef == nullptr) { continue; }
+									AActor* trapInteractable = GetWorld()->SpawnActor<AActor>(trapInfo->ObjectRef);
+									FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
+									FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
+									trapInteractable->SetActorTransform(transform);
+								}
+							}
+							break;
+						case ECellBrushMode::InteractableSpawn:
+							if (FInteractableInfoStruct* infoStruct = InteractableDataTable->FindRow<FInteractableInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
+							{
+								if (TObjectPtr<ABattleGridCell>* newCell = TempGridMap.Find(cellData.Position))
+								{
+									if (infoStruct->ObjectRef == nullptr) { continue; }
+									AActor* ObjectInteractable = GetWorld()->SpawnActor<AActor>(infoStruct->ObjectRef);
+									FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
+									FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
+									ObjectInteractable->SetActorTransform(transform);
+								}
+							}
+							break;
 						default:
 							break;
 						}
