@@ -7,6 +7,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnClickedCell, ABattleEntity*, target, EActionType, type, bool,
                                                mainAttackCell);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEntityLeave);
+
 class ABaseInteractable;
 class ABattleManager;
 class APlayerBattleController;
@@ -18,7 +20,7 @@ class TERMINAL_RECALL_API ABattleGridCell : public ABaseGridCell
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(BlueprintReadWrite, Category="Stuff For Designers | Delegates")
+	UPROPERTY(BlueprintAssignable, Category="Stuff For Designers | Delegates")
 	FOnClickedCell OnClickedCellEvent;
 	int32 CellGroupID = -1;
 	UPROPERTY()
@@ -48,6 +50,7 @@ protected:
 	
 public:
 	ABattleGridCell();
+	
 	void AssignInteractable(TObjectPtr<ABaseInteractable> interactable);
 	bool EnableCell(EActionType actionType, ABattleEntity* causer, int32 groupID = -1);
 	UFUNCTION()
