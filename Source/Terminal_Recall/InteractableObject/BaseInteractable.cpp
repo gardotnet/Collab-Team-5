@@ -1,6 +1,7 @@
 ﻿#include "BaseInteractable.h"
 
 #include "Components/CapsuleComponent.h"
+#include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
 
 
@@ -17,28 +18,29 @@ void ABaseInteractable::OnLinked_Implementation()
 {
 }
 
+void ABaseInteractable::ReduceCooldown()
+{
+	Cooldown--;
+	if (Cooldown == 0)
+	{
+		ParentGridCell->BattleManager->OnNewTurnEvent.RemoveDynamic(this, &ABaseInteractable::ReduceCooldown);
+		bIsTriggered = false;
+		OnTrapResetEvent.Broadcast();
+	}
+}
+
 void ABaseInteractable::OnActivate_Implementation(ABattleEntity* entity)
 {
 	if (bIsTriggered)
 		return;
 	if (Cooldown > 0)
-	{
-		Cooldown--;
-		if (Cooldown == 0)
-			ResetInteractable_Implementation();
 		return;
-	}
 	bIsTriggered = true;
 	Cooldown = CooldownTime;
+	ParentGridCell->BattleManager->OnNewTurnEvent.AddDynamic(this, &ABaseInteractable::ReduceCooldown);
 	OnActivate(entity);
 	if (!bIsPersistent)
 		Destroy();
-}
-
-void ABaseInteractable::ResetInteractable_Implementation()
-{
-	bIsTriggered = false;
-	ResetInteractable();
 }
 
 void ABaseInteractable::RemoveFromGame()

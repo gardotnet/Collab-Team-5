@@ -25,6 +25,9 @@ public:
 	int32 CellGroupID = -1;
 	UPROPERTY()
 	TObjectPtr<ABaseInteractable> InteractableRef;
+
+	UPROPERTY()
+	ABattleManager* BattleManager;
 protected:
 	UPROPERTY()
 	TObjectPtr<APlayerBattleController> PlayerController;
@@ -35,8 +38,6 @@ protected:
 	UPROPERTY()
 	TObjectPtr<ABattleEntity> ResidingEntity;
 	EActionType ActionType;
-	UPROPERTY()
-	ABattleManager* BattleManager;
 	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Necessities")
 	UMaterialInterface* MoveHighlightMat;
 	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Necessities")
@@ -62,7 +63,7 @@ public:
 	void ForceHover(int32 groupID);
 	UFUNCTION()
 	void ForceEndHover(int32 groupID);
-	
+
 	void HouseEntity(ABattleEntity* entity);
 	UFUNCTION()
 	void EvictEntity();
@@ -87,7 +88,7 @@ public:
 	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 	
 protected:
-	
+	UFUNCTION()
 	virtual void OnUnitArrive_Implementation() override;
 	UFUNCTION()
 	void OnHoverOver(UPrimitiveComponent* TouchedComponent);

@@ -274,6 +274,7 @@ void ABattleManager::NextEntityTurn()
 	EntityIndex++;
 	if (EntityIndex == EnemyArray.Num())
 	{
+		OnNewTurnEvent.Broadcast();
 		EntityIndex = -1;
 		SelectMode = false;
 		PlayerRef->OnTurnGo();

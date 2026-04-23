@@ -36,7 +36,6 @@ void ABattlePlayerEntity::CustomTakeDamage(float damage)
 	if (CurrentHealth <= 0.0f)
 	{
 		OnChangeCell.Broadcast();
-		BattleManager->NextEntityTurn();
 		Destroy();
 	}
 }

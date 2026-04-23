@@ -7,6 +7,7 @@
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCellSelected);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNewTurn);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGroupCellDelegate, int32, groupID);
 
 class APlayerBattleController;
@@ -24,6 +25,9 @@ public:
 	FGroupCellDelegate CallGroupHoverEvent;
 	FGroupCellDelegate CallGroupHoverEndEvent;
 	FGroupCellDelegate CallGroupAttackEvent;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Stuff For Designers | Delegates")
+	FNewTurn OnNewTurnEvent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stuff For Designers | Necessities")
 	FName MainGameLevel = "Viet_Test_Place";
