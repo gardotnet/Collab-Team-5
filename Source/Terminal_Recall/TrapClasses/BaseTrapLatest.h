@@ -12,4 +12,6 @@ class TERMINAL_RECALL_API ABaseTrapLatest : public ABaseInteractable
 public:
 	ABaseTrapLatest();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Stuff For Designers | Functions")
+	void OnEnemyLeave();
 };
