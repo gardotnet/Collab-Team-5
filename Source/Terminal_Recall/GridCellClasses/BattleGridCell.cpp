@@ -64,6 +64,7 @@ void ABattleGridCell::ForceEndHover(int32 groupID)
 	if (groupID == CellGroupID)
 		MeshComponent->SetOverlayMaterial(MoveHighlightMat);
 }
+
 void ABattleGridCell::HouseEntity(ABattleEntity* entity)
 {
 	ResidingEntity = entity;
@@ -73,7 +74,15 @@ void ABattleGridCell::HouseEntity(ABattleEntity* entity)
 }
 void ABattleGridCell::EvictEntity()
 {
+	UE_LOG(LogTemp, Display, TEXT("EvictEntity %s"), *ResidingEntity->GetActorNameOrLabel());
 	ResidingEntity->OnChangeCell.RemoveDynamic(this, &ABattleGridCell::EvictEntity);
+	if (InteractableRef != nullptr)
+	{
+		if (ABaseTrapLatest* trap = Cast<ABaseTrapLatest>(InteractableRef))
+		{
+			trap->OnEnemyLeave();
+		}
+	}
 	ResidingEntity = nullptr;
 }
 void ABattleGridCell::CellSetUp(FIntPoint gridPos, ABattleManager* battleManager)
@@ -129,14 +138,17 @@ void ABattleGridCell::Explode(float damage, int magnitude)
 {
 	if (magnitude == 0)
 		magnitude = 1;
-	for (int x = 0; x < 1 + (magnitude * 2); x++)
+	for (int x = -1 * magnitude; x < (1 + (magnitude * 2)) - 1; x++)
 	{
-		for (int y = 0; y < 1 + (magnitude * 2); y++)
+		for (int y = -1 * magnitude; y < (1 + (magnitude * 2)) - 1; y++)
 		{
-			FIntPoint currentPos = FIntPoint(x, y);
+			FIntPoint currentPos = FIntPoint(x, y) + GridPos;
 			if (TObjectPtr<ABattleGridCell>* currentCell = BattleManager->GridMap.Find(currentPos))
 			{
-				(*currentCell)->ResidingEntity->CustomTakeDamage(damage);
+				if ((*currentCell)->ResidingEntity != nullptr)
+				{
+					(*currentCell)->ResidingEntity->CustomTakeDamage(damage);
+				}
 			}
 		}
 	}
@@ -157,8 +169,7 @@ void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 			
 		break;
 		case EActionType::Movement:
-			EntityCauserRef->SetPos(GridPos, this);
-			HouseEntity(EntityCauserRef);
+			EntityCauserRef->OnActionDoneEvent.AddDynamic(this, &ABattleGridCell::OnUnitArrive_Implementation);
 			EntityCauserRef->StartMove(GetActorLocation());
 			OnClickedCellEvent.Broadcast(nullptr, ActionType, false);
 		break;
@@ -173,7 +184,9 @@ void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 
 void ABattleGridCell::OnUnitArrive_Implementation()
 {
-	Super::OnUnitArrive_Implementation();
+	EntityCauserRef->OnActionDoneEvent.RemoveDynamic(this, &ABattleGridCell::OnUnitArrive_Implementation);
+	EntityCauserRef->SetPos(GridPos, this);
+	HouseEntity(EntityCauserRef);
 	OnUnitArrive();
 }
 

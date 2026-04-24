@@ -26,7 +26,7 @@ public:
 	TObjectPtr<UDataTable> ActionDataTable;
 	UPROPERTY(EditAnywhere, Category = "Stuff For Designers | Necessities")
 	TSubclassOf<UUserWidget> ActionButtonClass;
-	UPROPERTY(BlueprintReadOnly, Category = "Stuff For Designers | Delegates")
+	UPROPERTY(BlueprintAssignable, Category = "Stuff For Designers | Delegates")
 	FChangeCell OnChangeCell;
 	int32 SelectedActionID = -1;
 

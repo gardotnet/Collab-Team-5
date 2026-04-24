@@ -4,6 +4,8 @@
 #include "GameFramework/Actor.h"
 #include "BaseInteractable.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTrapReset);
+
 class UBoxComponent;
 class ABattleEntity;
 class ABattleGridCell;
@@ -33,6 +35,14 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stuff For Designers | General Stuff")
 	ABattleGridCell* ParentGridCell;
+
+	UPROPERTY(BlueprintAssignable, Category = "Stuff For Designers | Delegates")
+	FTrapReset OnTrapResetEvent;
+
+protected:
+	UFUNCTION()
+	void ReduceCooldown();
+	
 public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Stuff For Designers | Functions")
@@ -41,10 +51,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Stuff For Designers | Functions")
 	void OnActivate(ABattleEntity* entity);
 	virtual void OnActivate_Implementation(ABattleEntity* entity);
-	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Stuff For Designers | Functions")
-	void ResetInteractable();
-	virtual void ResetInteractable_Implementation();
 
 	virtual void RemoveFromGame();
 };
