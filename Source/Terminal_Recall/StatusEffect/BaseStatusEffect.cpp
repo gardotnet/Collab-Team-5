@@ -5,6 +5,6 @@
 
 #include "Terminal_Recall/EntityClasses/BattleEntity.h"
 
-void UBaseStatusEffect::DoStatusEffect_Implementation(ABattleEntity entityTarget)
+void UBaseStatusEffect::DoStatusEffect(ABattleEntity entityTarget)
 {
 }

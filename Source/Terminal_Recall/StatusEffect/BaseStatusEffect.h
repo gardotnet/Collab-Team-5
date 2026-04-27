@@ -13,7 +13,7 @@ class TERMINAL_RECALL_API UBaseStatusEffect : public UObject
 {
 	GENERATED_BODY()
 	
-	UFUNCTION(BlueprintNativeEvent, Category = "Stuff For Designers | Functions")
+	//UFUNCTION(BlueprintNativeEvent, Category = "Stuff For Designers | Functions")
 	void DoStatusEffect(ABattleEntity entityTarget);
 	
 };
