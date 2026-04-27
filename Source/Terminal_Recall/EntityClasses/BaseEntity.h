@@ -33,6 +33,7 @@ public:
 	
 	float DesiredMoveDuration = 0;
 	float MoveTimer;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Stuff For Designers | Variables")
 	FVector TargetPosition;
 	UPROPERTY(BlueprintReadOnly, Category="Stuff For Designers | Variables")
 	FTimerHandle MoveTimerHandle;
