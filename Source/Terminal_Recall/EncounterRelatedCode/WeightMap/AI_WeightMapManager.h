@@ -45,6 +45,8 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Saved Information")
 	TMap<FIntPoint, int> WeightMap;
 
+	// For the code
+
 	UFUNCTION(BlueprintCallable, Category = "Generation")
 	void GatherMoveableCells();
 
@@ -54,12 +56,30 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Generation")
 	void GenerateWeightMap();
 
+
+	// Debugging
+	
 	UFUNCTION(BlueprintCallable, Category = "Generation")
 	void ShowWeightMap();
-
+	
 	// New function for attack-from positions debug
 	UFUNCTION(BlueprintCallable, Category = "Generation")
 	void ShowAttackFromPositionsDebug();
+	
+	
+	// Open to designers
+
+	UFUNCTION(BlueprintCallable, Category = "AI Usable")
+	int GetWeightAtLocation(FIntPoint point);
+
+	UFUNCTION(BlueprintCallable, Category = "AI Usable")
+	TMap<FIntPoint, int> GetWeightMap();
+
+	UFUNCTION(BlueprintCallable, Category = "AI Usable")
+	TArray<FIntPoint> GetAllWeightsOfWeight(int weight);
+	
+	
+	
 
 	// Helper function to get FIntPoint offset from ECompassDirection
 	FIntPoint GetDirectionOffset(ECompassDirection Direction); // Added declaration here
@@ -78,10 +98,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable")
 	bool bshowWeightMap = true;
 
-	// New debug boolean for attack range visualization
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable")
-	bool bShowAttackRangeDebug = false;
-
 	// New debug boolean for attack-from positions visualization
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable")
 	bool bShowAttackFromPositionsDebug = false;
@@ -89,8 +105,4 @@ public:
 	// New debug boolean to control logging of final WeightMap content
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable")
 	bool bLogFinalWeightMap = false;
-
-	// New debug boolean to control verbose generation logging
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable")
-	bool bLogVerboseGeneration = false;
 };

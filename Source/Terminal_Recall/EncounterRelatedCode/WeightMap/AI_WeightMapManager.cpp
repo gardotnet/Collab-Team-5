@@ -3,6 +3,8 @@
 
 #include "AI_WeightMapManager.h"
 
+#include <ThirdParty/ShaderConductor/ShaderConductor/External/DirectXShaderCompiler/include/dxc/DXIL/DxilConstants.h>
+
 #include "Terminal_Recall/EntityClasses/BattlePlayerEntity.h"
 #include "Terminal_Recall/GridCellClasses/BaseGridCell.h"
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
@@ -59,7 +61,6 @@ void AAI_WeightMapManager::GatherMoveableCells()
 	GetCurrentActionPositionsForPlayer();
 }
 
-// Helper function to get FIntPoint offset from ECompassDirection
 FIntPoint AAI_WeightMapManager::GetDirectionOffset(ECompassDirection Direction)
 {
 	switch (Direction)
@@ -79,8 +80,7 @@ FIntPoint AAI_WeightMapManager::GetDirectionOffset(ECompassDirection Direction)
 
 void AAI_WeightMapManager::GetCurrentActionPositionsForPlayer()
 {
-	// Clear previous possible travel positions before recalculating
-	possibleAttackTargetActions.Empty(); // Changed to clear the new map
+	possibleAttackTargetActions.Empty();
 
 	TObjectPtr<ABattlePlayerEntity> playerEntity = BattleManager->PlayerRef;
 
@@ -94,10 +94,9 @@ void AAI_WeightMapManager::GetCurrentActionPositionsForPlayer()
 
 	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::Printf(TEXT("Total available actions: %d"), availableActionList.Num()));
 
-	FIntPoint playerPos = playerEntity->GetPos(); // Get player position once per call
+	FIntPoint playerPos = playerEntity->GetPos();
 	FVector playerWorldLocation = FVector::ZeroVector;
 
-	// Get player's world location for drawing debug arrows
 	TObjectPtr<ABattleGridCell>** playerCellPtr = cellMap.Find(playerPos);
 	if (playerCellPtr && *playerCellPtr)
 	{
@@ -105,108 +104,50 @@ void AAI_WeightMapManager::GetCurrentActionPositionsForPlayer()
 	}
 
 
-	for (FEntityTwinActionContainer action : availableActionList)
+	for (FEntityTwinActionContainer action : availableActionList) // Goes through every action in the action list
 	{
-		if (action.Cooldown == 0)
+		if (action.Cooldown == 0) // if the action calldown is off.
 		{
-			// --- Process Attack Action ---
 			int attackCellsProcessed = 0;
-			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Magenta, FString::Printf(TEXT("Processing Attack Action from container (Cooldown: %d)"), action.Cooldown));
 
-			// Generate a descriptive string for the current action, including the new ActionName
 			FString attackActionDescription = FString::Printf(TEXT("%s (CD:%d, Dmg:%.0f)"), *action.AttackAction.ActionName.ToString(), action.Cooldown, action.AttackAction.Damage);
 
 			for (FGridRangeCellInfo range : action.AttackAction.ActionRange.Cells)
 			{
-				if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("  Attack: Processing FGridRangeCellInfo. GridPos: (%d,%d)"), range.GridPos.X, range.GridPos.Y));
 
-				// Calculate the initial target position from playerPos and range.GridPos
 				FIntPoint initialTargetPos = playerPos + range.GridPos;
 
-				// Process the initial target position
 				if (initialTargetPos.X >= 0 && initialTargetPos.Y >= 0 &&
-					initialTargetPos.X < BattleManager->GridSize.X && initialTargetPos.Y < BattleManager->GridSize.Y)
+					initialTargetPos.X < BattleManager->GridSize.X && initialTargetPos.Y < BattleManager->GridSize.Y) // if the cell location is valid after adding to current players position.
 				{
-					possibleAttackTargetActions.FindOrAdd(initialTargetPos).Descriptions.AddUnique(attackActionDescription);
-					if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("    Attack: Added action '%s' to initial target position: (%d, %d)"), *attackActionDescription, initialTargetPos.X, initialTargetPos.Y));
+					possibleAttackTargetActions.FindOrAdd(initialTargetPos).Descriptions.AddUnique(attackActionDescription);// adds cell information to array
 					attackCellsProcessed++;
-
-					// Draw debug arrow for initial attack range if enabled
-					if (bShowAttackRangeDebug)
-					{
-						TObjectPtr<ABattleGridCell>** targetCellPtr = cellMap.Find(initialTargetPos);
-						if (targetCellPtr && *targetCellPtr)
-						{
-							FVector targetWorldLocation = (**targetCellPtr)->GetActorLocation();
-							FVector arrowStart = playerWorldLocation + FVector(0, 0, 50.0f);
-							FVector arrowEnd = targetWorldLocation + FVector(0, 0, 50.0f);
-							DrawDebugDirectionalArrow(GetWorld(), arrowStart, arrowEnd, 300.0f, FColor::Red, true, -1.0f, 0, 5.0f);
-							if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Attack: Drawing arrow from (%d,%d) to (%d,%d)"), playerPos.X, playerPos.Y, initialTargetPos.X, initialTargetPos.Y));
-						}
-						else
-						{
-							if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Attack: Skipping arrow draw: Target cell (%d,%d) not found in cellMap."), initialTargetPos.X, initialTargetPos.Y));
-						}
-					}
 				}
-				else
+				
+				for (FDirectionAndMag& dirMag : range.DirectionModifier)
 				{
-					if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("    Attack: Skipping out-of-bounds initial target position: (%d, %d)"), initialTargetPos.X, initialTargetPos.Y));
-				}
-
-				// Now process directional modifiers for extended range
-				if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("  Attack: DirectionModifier count for (%d,%d): %d"), range.GridPos.X, range.GridPos.Y, range.DirectionModifier.Num()));
-
-				for (const FDirectionAndMag& dirMag : range.DirectionModifier)
-				{
+					dirMag.Magnitude = 5; // temporary
 					FString DirectionEnumString = UEnum::GetValueAsString(dirMag.Direction);
-					if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("    Attack: Processing DirMag: Direction=%s, Magnitude=%d"), *DirectionEnumString, dirMag.Magnitude));
 
-					if (dirMag.Direction == ECompassDirection::None || dirMag.Magnitude <= 0)
-					{
-						if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("    Attack: Skipping DirMag: Invalid Direction or Magnitude (None or <= 0)."));
-						continue;
-					}
+					GEngine->AddOnScreenDebugMessage(-1, 20, FColor::Red, FString::Printf(TEXT("%s is the direction and %i is the magnitude"), *DirectionEnumString, dirMag.Magnitude));
 
 					FIntPoint directionOffset = GetDirectionOffset(dirMag.Direction);
-					if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, FString::Printf(TEXT("    Attack: GetDirectionOffset(%s) returned: (%d,%d)"), *DirectionEnumString, directionOffset.X, directionOffset.Y));
 
 					FIntPoint currentLinePos = initialTargetPos; // Start from the initial target position
 
 					for (int k = 1; k <= dirMag.Magnitude; k++)
 					{
 						currentLinePos += directionOffset; // Move one step in the direction
-						if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("      Attack: Step %d: currentLinePos = (%d,%d)"), k, currentLinePos.X, currentLinePos.Y));
 
 						// Check if currentLinePos is within grid bounds
 						if (currentLinePos.X >= 0 && currentLinePos.Y >= 0 &&
 							currentLinePos.X < BattleManager->GridSize.X && currentLinePos.Y < BattleManager->GridSize.Y)
 						{
 							possibleAttackTargetActions.FindOrAdd(currentLinePos).Descriptions.AddUnique(attackActionDescription);
-							if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("        Attack: Added action '%s' to extended target position: (%d, %d) (Mag: %d)"), *attackActionDescription, currentLinePos.X, currentLinePos.Y, k));
 							attackCellsProcessed++;
-
-							// Draw debug arrow for extended attack range if enabled
-							if (bShowAttackRangeDebug)
-							{
-								TObjectPtr<ABattleGridCell>** targetCellPtr = cellMap.Find(currentLinePos);
-								if (targetCellPtr && *targetCellPtr)
-								{
-									FVector targetWorldLocation = (**targetCellPtr)->GetActorLocation();
-									FVector arrowStart = playerWorldLocation + FVector(0, 0, 50.0f);
-									FVector arrowEnd = targetWorldLocation + FVector(0, 0, 50.0f);
-									DrawDebugDirectionalArrow(GetWorld(), arrowStart, arrowEnd, 300.0f, FColor::Red, true, -1.0f, 0, 5.0f);
-									if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Attack: Drawing arrow from (%d,%d) to (%d,%d) (Extended)"), playerPos.X, playerPos.Y, currentLinePos.X, currentLinePos.Y));
-								}
-								else
-								{
-									if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Attack: Skipping arrow draw: Extended target cell (%d,%d) not found in cellMap."), currentLinePos.X, currentLinePos.Y));
-								}
-							}
 						}
 						else
 						{
-							if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("        Attack: Skipping out-of-bounds extended target position: (%d, %d) (Mag: %d)"), currentLinePos.X, currentLinePos.Y, k));
 							break; // Stop extending if out of bounds
 						}
 					}
@@ -221,7 +162,6 @@ void AAI_WeightMapManager::GetCurrentActionPositionsForPlayer()
 
 			for (FGridRangeCellInfo range : action.MovementAction.ActionRange.Cells)
 			{
-				if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("  Move: Processing FGridRangeCellInfo. GridPos: (%d,%d)"), range.GridPos.X, range.GridPos.Y));
 
 				FIntPoint initialTargetPos = playerPos + range.GridPos;
 
@@ -229,47 +169,35 @@ void AAI_WeightMapManager::GetCurrentActionPositionsForPlayer()
 					initialTargetPos.X < BattleManager->GridSize.X && initialTargetPos.Y < BattleManager->GridSize.Y)
 				{
 					possibleAttackTargetActions.FindOrAdd(initialTargetPos).Descriptions.AddUnique(moveActionDescription);
-					if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("    Move: Added action '%s' to initial target position: (%d, %d)"), *moveActionDescription, initialTargetPos.X, initialTargetPos.Y));
 					moveCellsProcessed++;
 				}
-				else
-				{
-					if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("    Move: Skipping out-of-bounds initial target position: (%d, %d)"), initialTargetPos.X, initialTargetPos.Y));
-				}
 
-				if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("  Move: DirectionModifier count for (%d,%d): %d"), range.GridPos.X, range.GridPos.Y, range.DirectionModifier.Num()));
 
 				for (const FDirectionAndMag& dirMag : range.DirectionModifier)
 				{
 					FString DirectionEnumString = UEnum::GetValueAsString(dirMag.Direction);
-					if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("    Move: Processing DirMag: Direction=%s, Magnitude=%d"), *DirectionEnumString, dirMag.Magnitude));
 
 					if (dirMag.Direction == ECompassDirection::None || dirMag.Magnitude <= 0)
 					{
-						if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("    Move: Skipping DirMag: Invalid Direction or Magnitude (None or <= 0)."));
 						continue;
 					}
 
 					FIntPoint directionOffset = GetDirectionOffset(dirMag.Direction);
-					if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, FString::Printf(TEXT("    Move: GetDirectionOffset(%s) returned: (%d,%d)"), *DirectionEnumString, directionOffset.X, directionOffset.Y));
 
 					FIntPoint currentLinePos = initialTargetPos;
 
 					for (int k = 1; k <= dirMag.Magnitude; k++)
 					{
 						currentLinePos += directionOffset;
-						if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("      Move: Step %d: currentLinePos = (%d,%d)"), k, currentLinePos.X, currentLinePos.Y));
 
 						if (currentLinePos.X >= 0 && currentLinePos.Y >= 0 &&
 							currentLinePos.X < BattleManager->GridSize.X && currentLinePos.Y < BattleManager->GridSize.Y)
 						{
 							possibleAttackTargetActions.FindOrAdd(currentLinePos).Descriptions.AddUnique(moveActionDescription);
-							if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("        Move: Added action '%s' to extended target position: (%d, %d) (Mag: %d)"), *moveActionDescription, currentLinePos.X, currentLinePos.Y, k));
 							moveCellsProcessed++;
 						}
 						else
 						{
-							if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("        Move: Skipping out-of-bounds extended target position: (%d, %d) (Mag: %d)"), currentLinePos.X, currentLinePos.Y, k));
 							break;
 						}
 					}
@@ -309,7 +237,6 @@ void AAI_WeightMapManager::GenerateWeightMap()
 			if (newWeight > oldWeight)
 			{
 				WeightMap.FindOrAdd(pos) = newWeight;
-				if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Cell (%d, %d): Weight updated from %d to %d (center)"), pos.X, pos.Y, oldWeight, newWeight));
 			}
 		}
 
@@ -343,7 +270,6 @@ void AAI_WeightMapManager::GenerateWeightMap()
 						{
 							int32 oldWeight = existingWeight ? *existingWeight : 0;
 							WeightMap.FindOrAdd(nearbyCellPos) = currentWeight;
-							if (bLogVerboseGeneration) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Cell (%d, %d): Weight updated from %d to %d"), nearbyCellPos.X, nearbyCellPos.Y, oldWeight, currentWeight));
 						}
 					}
 				}
@@ -364,6 +290,57 @@ void AAI_WeightMapManager::GenerateWeightMap()
 
 	ShowWeightMap();
 }
+
+int AAI_WeightMapManager::GetWeightAtLocation(FIntPoint point)
+{
+	int* weight = WeightMap.Find(point);
+	if (weight == nullptr){return 0;}
+	return *weight;
+}
+
+TMap<FIntPoint, int> AAI_WeightMapManager::GetWeightMap()
+{
+	return WeightMap;
+}
+
+TArray<FIntPoint> AAI_WeightMapManager::GetAllWeightsOfWeight(int weight)
+{
+	TArray<FIntPoint> positions;
+	for (const TTuple<FIntPoint, int> KeyValuePair : WeightMap)
+	{
+		if (weight == KeyValuePair.Value)
+		{
+			positions.Add(weight);
+		}
+	}
+	return positions;
+}
+
+/*
+TArray<TTuple<FIntPoint, int>> AAI_WeightMapManager::GetLowToHighWeightsAroundEntity(FIntPoint EntityPosition)
+{
+	TArray <FIntPoint> positions = {{-1,-1}, {-1, 0}, {-1, 1},
+									{0,-1}, {0, 0}, {0, 1},
+									{1,-1}, {1, 0}, {1, 1},};
+
+	TArray<TTuple<FIntPoint, int>> Points;
+	
+	for (FIntPoint pos : positions)
+	{
+		int* weight = WeightMap.Find(EntityPosition + pos);
+
+		if (weight == nullptr){continue;}
+		
+		Points.Add({EntityPosition + pos, *weight});
+	}
+	
+	Points.Sort([](const TTuple<FIntPoint, int>& A, const TTuple<FIntPoint, int>& B) {
+	return A.Get<1>() < B.Get<1>();
+	});
+
+	return Points;
+}
+*/
 
 void AAI_WeightMapManager::ShowWeightMap()
 {
