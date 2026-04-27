@@ -23,7 +23,8 @@ protected:
 	
 	UPROPERTY()
 	TObjectPtr<ATraversalPlayerController> PlayerController;
-	
+
+	UPROPERTY(BlueprintReadOnly, Category="Stuff For Designers | Variables")
 	TArray<TObjectPtr<AHarryWorldTraversalNode>> TheNodePath;
 	int32 PathIndex;
 	
