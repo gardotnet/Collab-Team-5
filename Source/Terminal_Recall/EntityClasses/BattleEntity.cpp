@@ -179,6 +179,7 @@ void ABattleEntity::FindAndSaveActions(const TArray<int32>& attackArray, const T
 			if (!extractedData.IsSet())
 				continue;
 			ActionList[i].AttackAction = FActionRefStruct(
+				attackInfo->ActionName, // Added ActionName
 				extractedData.GetValue(), 
 				attackInfo->CooldownDuration,
 				attackInfo->Damage
@@ -208,8 +209,10 @@ void ABattleEntity::FindAndSaveActions(const TArray<int32>& attackArray, const T
 			if (!extractedData.IsSet())
 				continue;
 			ActionList[i].MovementAction = FActionRefStruct(
+				moveInfo->ActionName, // Added ActionName
 				extractedData.GetValue(), 
-				moveInfo->CooldownDuration
+				moveInfo->CooldownDuration,
+				0.0f // Default damage for movement actions
 			);
 			ActionList[i].Cooldown = 0;
 			if (UActionButtonUI* newMoveButton =Cast<UActionButtonUI>(CreateWidget(GetWorld()->GetFirstPlayerController(), ActionButtonClass)))

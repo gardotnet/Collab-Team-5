@@ -5,29 +5,31 @@
 #include "UObject/Object.h"
 #include "EntityTwinActionContainer.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType) // Added BlueprintType to make it accessible in Blueprints
 struct FActionRefStruct
 {
 	GENERATED_BODY()
-	UPROPERTY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Info")
+	FName ActionName; // Added ActionName property
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Info") // Changed to EditAnywhere/BlueprintReadWrite
 	FGridRangeExport ActionRange;
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Info") // Changed to EditAnywhere/BlueprintReadWrite
 	int32 CooldownDuration = -1;
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Info") // Changed to EditAnywhere/BlueprintReadWrite
 	float Damage = 0;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType) // Added BlueprintType to make it accessible in Blueprints
 struct FEntityTwinActionContainer 
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Info") // Changed to EditAnywhere/BlueprintReadWrite
 	FActionRefStruct AttackAction;
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Info") // Changed to EditAnywhere/BlueprintReadWrite
 	FActionRefStruct MovementAction;
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Info") // Changed to EditAnywhere/BlueprintReadWrite
 	int32 Cooldown = -1;
 };
-
-

@@ -8,7 +8,19 @@
 #include "VisualWeightMapCell.h"
 #include "GameFramework/Actor.h"
 #include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
+#include "Terminal_Recall/StructsAndEnums/GridRangeExport.h" // ADDED THIS LINE
 #include "AI_WeightMapManager.generated.h"
+
+// New USTRUCT to wrap TArray<FString> for UPROPERTY TMap values
+USTRUCT(BlueprintType)
+struct FActionDescriptionArray
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action Info")
+	TArray<FString> Descriptions;
+};
+
 
 UCLASS()
 class TERMINAL_RECALL_API AAI_WeightMapManager : public AActor
@@ -26,8 +38,9 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Required Variables")
 	ABattleManager* BattleManager;
 
+	// Changed from TSet<FIntPoint> to TMap<FIntPoint, FActionDescriptionArray>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Saved Information")
-	TArray<FIntPoint> possibleTravelPosition;
+	TMap<FIntPoint, FActionDescriptionArray> possibleAttackTargetActions;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Saved Information")
 	TMap<FIntPoint, int> WeightMap;
@@ -44,10 +57,16 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Generation")
 	void ShowWeightMap();
 
+	// New function for attack-from positions debug
+	UFUNCTION(BlueprintCallable, Category = "Generation")
+	void ShowAttackFromPositionsDebug();
+
+	// Helper function to get FIntPoint offset from ECompassDirection
+	FIntPoint GetDirectionOffset(ECompassDirection Direction); // Added declaration here
+
 	TMap<FIntPoint,TObjectPtr<ABattleGridCell>*> cellMap;
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Saved Information")
-	TArray<AVisualWeightMapCell*> colouredSquareArr;
+	FIntPoint LastPlayerPosition; // Added to track player movement
 
 public:
 	// Called every frame
@@ -59,6 +78,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable")
 	bool bshowWeightMap = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable" , meta = (EditCondition = "bshowWeightMap"))
-	UClass* VisualiseWeightmap;
+	// New debug boolean for attack range visualization
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable")
+	bool bShowAttackRangeDebug = false;
+
+	// New debug boolean for attack-from positions visualization
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable")
+	bool bShowAttackFromPositionsDebug = false;
+
+	// New debug boolean to control logging of final WeightMap content
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable")
+	bool bLogFinalWeightMap = false;
+
+	// New debug boolean to control verbose generation logging
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DesignerAdjustable")
+	bool bLogVerboseGeneration = false;
 };
