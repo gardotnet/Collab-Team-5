@@ -1,0 +1,162 @@
+{
+	"gridSize":
+	{
+		"x": 10,
+		"y": 10
+	},
+	"gridCells": [
+		{
+			"position":
+			{
+				"x": 0,
+				"y": 4
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 1,
+				"y": 1
+			},
+			"cellType": "PlayerSpawn",
+			"idForCellContent": -1
+		},
+		{
+			"position":
+			{
+				"x": 1,
+				"y": 4
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 1,
+				"y": 8
+			},
+			"cellType": "EnemySpawn",
+			"idForCellContent": 5
+		},
+		{
+			"position":
+			{
+				"x": 2,
+				"y": 4
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 2,
+				"y": 6
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 3,
+				"y": 4
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 3,
+				"y": 6
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 4,
+				"y": 4
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 4,
+				"y": 6
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 5,
+				"y": 6
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 6,
+				"y": 6
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 7,
+				"y": 2
+			},
+			"cellType": "EnemySpawn",
+			"idForCellContent": 5
+		},
+		{
+			"position":
+			{
+				"x": 7,
+				"y": 6
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 8,
+				"y": 4
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 8,
+				"y": 8
+			},
+			"cellType": "EnemySpawn",
+			"idForCellContent": 5
+		},
+		{
+			"position":
+			{
+				"x": 9,
+				"y": 4
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		}
+	]
+}
