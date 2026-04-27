@@ -135,6 +135,14 @@ void AAI_WeightMapManager::GetCurrentActionPositionsForPlayer()
 
 					FIntPoint currentLinePos = initialTargetPos; // Start from the initial target position
 
+					/*
+					if (BattleManager->GridMap.Find(FIntPoint(currentLinePos.X,currentLinePos.Y)))
+					{
+						GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, FString::Printf(TEXT("Tile could not be found at %i : %i"), currentLinePos.X, currentLinePos.Y));
+						continue;
+					}
+					*/
+
 					for (int k = 1; k <= dirMag.Magnitude; k++)
 					{
 						currentLinePos += directionOffset; // Move one step in the direction
@@ -143,6 +151,12 @@ void AAI_WeightMapManager::GetCurrentActionPositionsForPlayer()
 						if (currentLinePos.X >= 0 && currentLinePos.Y >= 0 &&
 							currentLinePos.X < BattleManager->GridSize.X && currentLinePos.Y < BattleManager->GridSize.Y)
 						{
+							if (BattleManager->GridMap.Find(currentLinePos))
+							{
+								GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, FString::Printf(TEXT("Tile could not be found at %i : %i"), currentLinePos.X, currentLinePos.Y));
+								continue;
+							}
+							GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Cyan, FString::Printf(TEXT("I did it, are you proud of me dad?")));
 							possibleAttackTargetActions.FindOrAdd(currentLinePos).Descriptions.AddUnique(attackActionDescription);
 							attackCellsProcessed++;
 						}
