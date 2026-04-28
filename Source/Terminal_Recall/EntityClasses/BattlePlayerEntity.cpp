@@ -31,6 +31,11 @@ void ABattlePlayerEntity::StartMove(FVector position)
 
 void ABattlePlayerEntity::CustomTakeDamage(float damage)
 {
-	Super::CustomTakeDamage(damage);
+	CurrentHealth = CurrentHealth - damage;
 	PlayerBattleController->MainBattleUIWidget->ChangeHealth(CurrentHealth);
+	if (CurrentHealth <= 0.0f)
+	{
+		OnChangeCell.Broadcast();
+		Destroy();
+	}
 }

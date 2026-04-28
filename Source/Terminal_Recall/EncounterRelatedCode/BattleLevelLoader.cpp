@@ -51,7 +51,6 @@ void ABattleLevelLoader::BeginPlay()
 
 void ABattleLevelLoader::LoadLevel(FString levelPath)
 {
-	
 	// load the json file 
 	FString content;
 	if (FFileHelper::LoadFileToString(content, *levelPath))
@@ -363,8 +362,31 @@ void ABattleLevelLoader::EditorLoadLevel()
 							}
 							break;
 						case ECellBrushMode::Trap:
-							
-							break;	
+							if (FTrapInfoStruct* trapInfo = TrapDataTable->FindRow<FTrapInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
+							{
+								if (TObjectPtr<ABattleGridCell>* newCell = TempGridMap.Find(cellData.Position))
+								{
+									if (trapInfo->ObjectRef == nullptr) { continue; }
+									AActor* trapInteractable = GetWorld()->SpawnActor<AActor>(trapInfo->ObjectRef);
+									FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
+									FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
+									trapInteractable->SetActorTransform(transform);
+								}
+							}
+							break;
+						case ECellBrushMode::InteractableSpawn:
+							if (FInteractableInfoStruct* infoStruct = InteractableDataTable->FindRow<FInteractableInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
+							{
+								if (TObjectPtr<ABattleGridCell>* newCell = TempGridMap.Find(cellData.Position))
+								{
+									if (infoStruct->ObjectRef == nullptr) { continue; }
+									AActor* ObjectInteractable = GetWorld()->SpawnActor<AActor>(infoStruct->ObjectRef);
+									FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
+									FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
+									ObjectInteractable->SetActorTransform(transform);
+								}
+							}
+							break;
 						default:
 							break;
 						}

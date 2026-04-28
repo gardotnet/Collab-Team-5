@@ -26,9 +26,12 @@ public:
 	TObjectPtr<UDataTable> ActionDataTable;
 	UPROPERTY(EditAnywhere, Category = "Stuff For Designers | Necessities")
 	TSubclassOf<UUserWidget> ActionButtonClass;
-	UPROPERTY(BlueprintReadOnly, Category = "Stuff For Designers | Delegates")
+	UPROPERTY(BlueprintAssignable, Category = "Stuff For Designers | Delegates")
 	FChangeCell OnChangeCell;
 	int32 SelectedActionID = -1;
+
+	bool bRestrictedMovement = false;
+	
 protected:
 	UPROPERTY()
 	TObjectPtr<UTextRenderComponent> TextRenderComponent;
@@ -74,10 +77,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Stuff For Designers | Functions")
 	void HidePotentialHit();
 	
-	void DealDamage(ABattleEntity* target);
 	int32 GetDamage() { return ActionList[SelectedActionID].AttackAction.Damage; }
 	FGridRangeExport* GetActionInfo(EActionType type, int32 indexInList);
-	
+
+	void EnableRestrictedMovement();
+	void DisableRestrictedMovement();
 	
 protected:
 	virtual void FindAndSaveActions(const TArray<int32>& attackArray, const TArray<int32>& moveArray, bool isEnemy = true);

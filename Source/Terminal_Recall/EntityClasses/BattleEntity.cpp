@@ -46,6 +46,7 @@ void ABattleEntity::ShowChoices()
 }
 void ABattleEntity::SetPos(FIntPoint newPos, ABattleGridCell* cell)
 {
+	UE_LOG(LogTemp, Display, TEXT("SetPos"));
 	OnChangeCell.Broadcast();
 	CurrentCell = cell;
 	GridPos = newPos;
@@ -58,6 +59,17 @@ FGridRangeExport* ABattleEntity::GetActionInfo(EActionType type, int32 indexInLi
 		return &ActionList[indexInList].MovementAction.ActionRange;
 	return nullptr;
 }
+
+void ABattleEntity::EnableRestrictedMovement()
+{
+	bRestrictedMovement = true;
+	// [NOTE] cancel UI here
+}
+void ABattleEntity::DisableRestrictedMovement()
+{
+	bRestrictedMovement = false;
+	// [NOTE] enable UI here
+}
 void ABattleEntity::CustomTakeDamage(float damage)
 {
 	CurrentHealth = CurrentHealth - damage;
@@ -65,6 +77,7 @@ void ABattleEntity::CustomTakeDamage(float damage)
 	{
 		OnChangeCell.Broadcast();
 		Destroy();
+		BattleManager->NextEntityTurn();
 	}
 }
 void ABattleEntity::BeginPlay()
@@ -103,6 +116,8 @@ void ABattleEntity::OnActionComplete(EActionType type)
 
 void ABattleEntity::AddCooldown(EActionType type)
 {
+	if (!ActionList.IsValidIndex(SelectedActionID))
+		return;
 	if (ActionList[SelectedActionID].Cooldown < 0)
 		return;
 	UE_LOG(LogTemp, Warning, TEXT("ID: %i"), SelectedActionID);
@@ -148,11 +163,6 @@ void ABattleEntity::ShowPotentialHit(float damage)
 void ABattleEntity::HidePotentialHit()
 {
 	TextRenderComponent->SetHiddenInGame(true);
-}
-
-void ABattleEntity::DealDamage(ABattleEntity* target)
-{
-	target->CustomTakeDamage(ActionList[SelectedActionID].AttackAction.Damage);
 }
 
 // finding action in data table and making a button for it

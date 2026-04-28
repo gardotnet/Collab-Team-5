@@ -7,6 +7,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnClickedCell, ABattleEntity*, target, EActionType, type, bool,
                                                mainAttackCell);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEntityLeave);
+
 class ABaseInteractable;
 class ABattleManager;
 class APlayerBattleController;
@@ -18,11 +20,14 @@ class TERMINAL_RECALL_API ABattleGridCell : public ABaseGridCell
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(BlueprintReadWrite, Category="Stuff For Designers | Delegates")
+	UPROPERTY(BlueprintAssignable, Category="Stuff For Designers | Delegates")
 	FOnClickedCell OnClickedCellEvent;
 	int32 CellGroupID = -1;
 	UPROPERTY()
 	TObjectPtr<ABaseInteractable> InteractableRef;
+
+	UPROPERTY()
+	ABattleManager* BattleManager;
 protected:
 	UPROPERTY()
 	TObjectPtr<APlayerBattleController> PlayerController;
@@ -33,8 +38,6 @@ protected:
 	UPROPERTY()
 	TObjectPtr<ABattleEntity> ResidingEntity;
 	EActionType ActionType;
-	UPROPERTY()
-	ABattleManager* BattleManager;
 	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Necessities")
 	UMaterialInterface* MoveHighlightMat;
 	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Necessities")
@@ -48,6 +51,7 @@ protected:
 	
 public:
 	ABattleGridCell();
+	
 	void AssignInteractable(TObjectPtr<ABaseInteractable> interactable);
 	bool EnableCell(EActionType actionType, ABattleEntity* causer, int32 groupID = -1);
 	UFUNCTION()
@@ -59,7 +63,7 @@ public:
 	void ForceHover(int32 groupID);
 	UFUNCTION()
 	void ForceEndHover(int32 groupID);
-	
+
 	void HouseEntity(ABattleEntity* entity);
 	UFUNCTION()
 	void EvictEntity();
@@ -75,9 +79,16 @@ public:
 	void EndForceHighlight();
 	
 	void PassInteractableRef(ABaseInteractable* interactable, bool bIsPersistent);
+
+	UFUNCTION(BlueprintCallable, Category="Stuff For Designers | Functions")
+	void DeleteCell();
+	UFUNCTION(BlueprintCallable, Category="Stuff For Designers | Functions")
+	void Explode(float damage, int magnitude = 1);
+
+	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 	
 protected:
-	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
+	UFUNCTION()
 	virtual void OnUnitArrive_Implementation() override;
 	UFUNCTION()
 	void OnHoverOver(UPrimitiveComponent* TouchedComponent);
