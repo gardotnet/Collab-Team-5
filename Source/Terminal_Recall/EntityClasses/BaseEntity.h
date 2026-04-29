@@ -24,6 +24,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events For Designers || Delegates")
 	FOnMoveDone OnActionDoneEvent; // [NOTE] Make sure to use this event when player reached destination
 	
+	UPROPERTY(BlueprintAssignable, Category = "Events For Designers || Delegates")
+	FOnMoveDone OnMoveStartEvent;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Entity Info | General Stuff")
 	float MaxHealth = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Entity Info | General Stuff", meta=(EditCondition = "false"))

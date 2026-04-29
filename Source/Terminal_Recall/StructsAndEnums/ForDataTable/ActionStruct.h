@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "Terminal_Recall/StatusEffect/BaseStatusEffect.h"
 #include "ActionStruct.generated.h"
 
 USTRUCT(BlueprintType)
@@ -24,5 +25,8 @@ struct FActionStruct : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 CooldownDuration = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<int32> IdToStatusToApply;
+	bool bIsSelfAppliedStatus;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<ABaseStatusEffect> StatusEffect;
+	
 };

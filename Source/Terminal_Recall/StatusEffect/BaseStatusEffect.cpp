@@ -2,9 +2,12 @@
 
 
 #include "BaseStatusEffect.h"
-
 #include "Terminal_Recall/EntityClasses/BattleEntity.h"
 
-void UBaseStatusEffect::DoStatusEffect(ABattleEntity entityTarget)
+ABaseStatusEffect::ABaseStatusEffect()
+{
+}
+
+void ABaseStatusEffect::DoStatusEffect(ABattleEntity* entityTarget)
 {
 }

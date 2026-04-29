@@ -86,7 +86,6 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 					TempActors.Empty();
 				}
 			}
-			
 			FActorSpawnParameters spawnParams;
 			spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			// create grid

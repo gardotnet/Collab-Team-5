@@ -7,14 +7,15 @@
 #include "Terminal_Recall/StructsAndEnums/GridRangeExport.h"
 #include "BattleEntity.generated.h"
 
-class UTextRenderComponent;
-class ABattleGridCell;
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FChangeCell);
 
+class UTextRenderComponent;
+class ABattleGridCell;
 class UActionButtonUI;
 class APlayerBattleController;
 class ABattleManager;
+class ABaseStatusEffect;
+
 
 UCLASS()
 class TERMINAL_RECALL_API ABattleEntity : public ABaseEntity
@@ -31,6 +32,9 @@ public:
 	int32 SelectedActionID = -1;
 
 	bool bRestrictedMovement = false;
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Stuff For Designers | Variables")
+	TArray<ABaseStatusEffect*> CurrentStatusEffects;
 	
 protected:
 	UPROPERTY()
@@ -86,4 +90,6 @@ public:
 protected:
 	virtual void FindAndSaveActions(const TArray<int32>& attackArray, const TArray<int32>& moveArray, bool isEnemy = true);
 	TOptional<FGridRangeExport> LoadActionInfoFromPath(FString path);
+	
+	inline void HandleStatusEffects();
 };

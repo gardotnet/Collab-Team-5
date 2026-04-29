@@ -3,17 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Object.h"
+#include "GameFramework/Actor.h"
 #include "BaseStatusEffect.generated.h"
 
 class ABattleEntity;
 
 UCLASS()
-class TERMINAL_RECALL_API UBaseStatusEffect : public UObject
+class TERMINAL_RECALL_API ABaseStatusEffect : public AActor
 {
 	GENERATED_BODY()
 	
-	//UFUNCTION(BlueprintNativeEvent, Category = "Stuff For Designers | Functions")
-	void DoStatusEffect(ABattleEntity entityTarget);
+public:
+	ABaseStatusEffect();
 	
+	int Duration;
+	
+	//UFUNCTION(BlueprintNativeEvent, Category = "Stuff For Designers | Functions")
+	//UFUNCTION()
+	void DoStatusEffect(ABattleEntity* entityTarget);
 };

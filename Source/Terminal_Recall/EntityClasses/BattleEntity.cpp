@@ -8,6 +8,7 @@
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/ActionStruct.h"
 #include "Terminal_Recall/StuffForUI/ActionButtonUI.h"
+#include "Terminal_Recall/StatusEffect/BaseStatusEffect.h"
 #include "Terminal_Recall/StuffForUI/BattleChoiceSelectUI.h"
 
 ABattleEntity::ABattleEntity()
@@ -112,6 +113,7 @@ void ABattleEntity::OnActionComplete(EActionType type)
 {
 	ReduceCooldown();
 	AddCooldown(type);
+	HandleStatusEffects();
 }
 
 void ABattleEntity::AddCooldown(EActionType type)
@@ -250,4 +252,12 @@ TOptional<FGridRangeExport> ABattleEntity::LoadActionInfoFromPath(FString path)
 		}
 	}
 	return TOptional<FGridRangeExport>();
+}
+
+void ABattleEntity::HandleStatusEffects()
+{
+	for (ABaseStatusEffect* status : CurrentStatusEffects)
+	{
+		status->DoStatusEffect(this);
+	}
 }

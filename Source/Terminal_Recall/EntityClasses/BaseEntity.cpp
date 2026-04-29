@@ -25,6 +25,7 @@ void ABaseEntity::StartMove(FVector position)
 	TargetPosition.Z = GetActorLocation().Z;
 	float distance = FVector::Dist(GetActorLocation(), position);
 	DesiredMoveDuration = distance/Speed;
+	OnMoveStartEvent.Broadcast();
 	TimerManagerRef->ClearTimer(MoveTimerHandle);
 	TimerManagerRef->SetTimer(MoveTimerHandle, this, &ABaseEntity::OnMove, 0.01f, true);
 }

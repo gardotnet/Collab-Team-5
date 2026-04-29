@@ -31,6 +31,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	FVector LastValidVisitCell;
+	
+	TSubclassOf<ABaseInteractable> RobotPickUpClass;
+	FIntPoint PickUpLoc = FIntPoint(0, 0);
 
 protected:
 	#if WITH_EDITOR

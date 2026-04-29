@@ -6,6 +6,7 @@
 #include "BattleManager.generated.h"
 
 
+class ABaseInteractable;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCellSelected);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNewTurn);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGroupCellDelegate, int32, groupID);
@@ -39,6 +40,14 @@ public:
 	TMap<FIntPoint, TObjectPtr<ABattleGridCell>> GridMap;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stuff For Designers | Variables")
 	EActionType PlayerActionType = EActionType::Movement;
+	
+	UPROPERTY()
+	TSubclassOf<ABaseInteractable> RobotPickUpClass;
+	FIntPoint PickUpLoc = FIntPoint(0, 0); 
+	
+	UPROPERTY()
+	ABaseInteractable* TrapList;
+	
 	
 protected:
 	int32 SavedActionId = -1;

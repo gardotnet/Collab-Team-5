@@ -56,6 +56,8 @@ void AHarryWorldTraversalNode::OnUnitArrive_Implementation()
 		{
 			GameInstance->Map = LevelInfo.LevelFilePath;
 			GameInstance->PlayerSpawnPos = GetActorLocation();
+			GameInstance->RobotPickUpClass = LevelInfo.RobotPickupBP;
+			GameInstance->PickUpLoc = LevelInfo.PartSpawnLoc;
 			PlayerController->OpenLevelSelect(LevelInfo.Difficulty, LevelInfo.EnemyIdForHints);
 		}
 		else

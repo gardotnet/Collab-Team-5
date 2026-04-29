@@ -7,6 +7,7 @@
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
+#include "Terminal_Recall/InteractableObject/BaseInteractable.h"
 #include "Terminal_Recall/StuffForUI/ActionButtonUI.h"
 #include "Terminal_Recall/StuffForUI/BattleChoiceSelectUI.h"
 
@@ -267,7 +268,18 @@ void ABattleManager::NextEntityTurn()
 		UDefaultInstance* theInstance = Cast<UDefaultInstance>(GetGameInstance());
 		theInstance->Health = PlayerRef->CurrentHealth;
 		theInstance->EncounterWon();
-		UGameplayStatics::OpenLevel(GetWorld(), MainGameLevel);
+		if (theInstance->RobotPickUpClass == nullptr)
+		{
+			if (TObjectPtr<ABattleGridCell>* newCell = GridMap.Find(theInstance->PickUpLoc))
+			{
+				AActor* trapInteractable = GetWorld()->SpawnActor<AActor>(theInstance->RobotPickUpClass);
+				FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
+				FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
+				trapInteractable->SetActorTransform(transform);
+				(*newCell)->AssignInteractable(Cast<ABaseInteractable>(trapInteractable));
+			}
+		}
+		//UGameplayStatics::OpenLevel(GetWorld(), MainGameLevel);
 		return;
 	}
 	// gets next entity's turn
