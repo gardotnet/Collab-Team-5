@@ -22,6 +22,11 @@ void ABattleEnemyEntity::OnTurnGo()
 	{
 		if (ActionList[i].Cooldown != 0)
 			continue;
+		if (ActionList[i].AttackAction.ActionRange.Cells.Num() == 0)
+		{
+			attacksThatCanHit.Add(i);
+			continue;
+		}
 		for (const auto& cellInfo : ActionList[i].AttackAction.ActionRange.Cells)
 		{
 			FVector rayStartPos = GetActorLocation() + (FVector(cellInfo.GridPos.X, cellInfo.GridPos.Y, 1) * 100.0f);
@@ -149,99 +154,114 @@ void ABattleEnemyEntity::OnTurnGo()
 		{
 			SelectedActionID = FMath::RandRange(0, attacksThatCanHit.Num() - 1);
 			UE_LOG(LogTemp, Warning, TEXT("Should have avoided my range"));
-			TArray<FVector> cellsDoneChecked;
-			for (const auto& cellInfo : ActionList[SelectedActionID].AttackAction.ActionRange.Cells)
+			if (ActionList[SelectedActionID].AttackAction.ActionRange.Cells.Num() == 0)
 			{
-				FVector rayStartPos = GetActorLocation() + (FVector(cellInfo.GridPos.X, cellInfo.GridPos.Y, 1) * 100.0f);
-				FVector rayEndPos = rayStartPos + FVector(0.0f, 0.0f, -500.0f);
-				FHitResult hitResult;
-				FCollisionQueryParams params;
-				if (!cellsDoneChecked.Contains(rayStartPos))
+				if (IsValid(ActionList[SelectedActionID].AttackAction.StatusToApply))
 				{
-					GetWorld()->LineTraceSingleByChannel(hitResult, rayStartPos, rayEndPos, ECC_GameTraceChannel1, params);
-					if (hitResult.bBlockingHit)
-					{
-						ABattleGridCell* gridCell = Cast<ABattleGridCell>(hitResult.GetActor());
-						if (IsValid(gridCell))
-						{
-							gridCell->ForceHighlight(this);
-							HighlightedCells.Add(gridCell);
-						}
-					}
-					cellsDoneChecked.Add(rayStartPos);
+					UE_LOG(LogTemp, Warning, TEXT("THERE's effects"));
 				}
-				for (const auto& followUpDirInfo : cellInfo.DirectionModifier)
+				else
 				{
-					FVector nextDir = FVector(0, 0, 0);
-					// gets direction for follow-up cells
-					switch (followUpDirInfo.Direction)
-					{
-					case ECompassDirection::N:
-						nextDir = FVector(0, 100, 0);
-						UE_LOG(LogTemp, Warning, TEXT("North"));
-						break;
-					case ECompassDirection::NE:
-						nextDir = FVector(100, 100, 0);
-						UE_LOG(LogTemp, Warning, TEXT("North East"));
-						break;
-					case ECompassDirection::E:
-						nextDir = FVector(100, 0, 0);
-						UE_LOG(LogTemp, Warning, TEXT("E"));
-						break;
-					case ECompassDirection::SE:
-						nextDir = FVector(100, -100, 0);
-						UE_LOG(LogTemp, Warning, TEXT("SE"));
-						break;
-					case ECompassDirection::S:
-						nextDir = FVector(0, -100, 0);
-						UE_LOG(LogTemp, Warning, TEXT("S"));
-						break;
-					case ECompassDirection::SW:
-						nextDir = FVector(-100, -100, 0);
-						UE_LOG(LogTemp, Warning, TEXT("SW"));
-						break;
-					case ECompassDirection::W:
-						nextDir = FVector(-100, 0, 0);
-						UE_LOG(LogTemp, Warning, TEXT("W"));
-						break;
-					case ECompassDirection::NW:
-						nextDir = FVector(-100, 100, 0);
-						UE_LOG(LogTemp, Warning, TEXT("NW"));
-						break;
-					default:
-						continue;
-					}
-					FVector prevPos = rayStartPos;
-					// until it cant continue in that direction or maximum range reached
-					int32 totalFollowUp = 0;
-					// get follow-up cell
-					while (true)
-					{
-						// if it reached its range limit
-						if (followUpDirInfo.Magnitude != 0 && totalFollowUp >= followUpDirInfo.Magnitude)
-							break;
-						prevPos += nextDir;
-						rayEndPos = prevPos + FVector(0.0f, 0.0f, -500.0f);
-						if (!cellsDoneChecked.Contains(prevPos))
-						{
-							GetWorld()->LineTraceSingleByChannel(hitResult, prevPos, rayEndPos, ECC_GameTraceChannel1, params);
-							if (hitResult.bBlockingHit)
-							{
-								ABattleGridCell* followUpCells = Cast<ABattleGridCell>(hitResult.GetActor());
-								if (IsValid(followUpCells))
-								{
-									followUpCells->ForceHighlight(this);
-									HighlightedCells.Add(followUpCells);
-								}
-							}
-							cellsDoneChecked.Add(prevPos);
-						}
-						totalFollowUp++;
-					}
+					UE_LOG(LogTemp, Warning, TEXT("WHERE?"));
 				}
+				DelayAttack();
 			}
-			FTimerHandle timerHandle;
-			TimerManagerRef->SetTimer(timerHandle, this, &ABattleEnemyEntity::DelayAttack, 3.0f, false);
+			else
+			{
+				TArray<FVector> cellsDoneChecked;
+				for (const auto& cellInfo : ActionList[SelectedActionID].AttackAction.ActionRange.Cells)
+				{
+					FVector rayStartPos = GetActorLocation() + (FVector(cellInfo.GridPos.X, cellInfo.GridPos.Y, 1) * 100.0f);
+					FVector rayEndPos = rayStartPos + FVector(0.0f, 0.0f, -500.0f);
+					FHitResult hitResult;
+					FCollisionQueryParams params;
+					if (!cellsDoneChecked.Contains(rayStartPos))
+					{
+						GetWorld()->LineTraceSingleByChannel(hitResult, rayStartPos, rayEndPos, ECC_GameTraceChannel1, params);
+						if (hitResult.bBlockingHit)
+						{
+							ABattleGridCell* gridCell = Cast<ABattleGridCell>(hitResult.GetActor());
+							if (IsValid(gridCell))
+							{
+								gridCell->ForceHighlight(this);
+								HighlightedCells.Add(gridCell);
+							}
+						}
+						cellsDoneChecked.Add(rayStartPos);
+					}
+					for (const auto& followUpDirInfo : cellInfo.DirectionModifier)
+					{
+						FVector nextDir = FVector(0, 0, 0);
+						// gets direction for follow-up cells
+						switch (followUpDirInfo.Direction)
+						{
+						case ECompassDirection::N:
+							nextDir = FVector(0, 100, 0);
+							UE_LOG(LogTemp, Warning, TEXT("North"));
+							break;
+						case ECompassDirection::NE:
+							nextDir = FVector(100, 100, 0);
+							UE_LOG(LogTemp, Warning, TEXT("North East"));
+							break;
+						case ECompassDirection::E:
+							nextDir = FVector(100, 0, 0);
+							UE_LOG(LogTemp, Warning, TEXT("E"));
+							break;
+						case ECompassDirection::SE:
+							nextDir = FVector(100, -100, 0);
+							UE_LOG(LogTemp, Warning, TEXT("SE"));
+							break;
+						case ECompassDirection::S:
+							nextDir = FVector(0, -100, 0);
+							UE_LOG(LogTemp, Warning, TEXT("S"));
+							break;
+						case ECompassDirection::SW:
+							nextDir = FVector(-100, -100, 0);
+							UE_LOG(LogTemp, Warning, TEXT("SW"));
+							break;
+						case ECompassDirection::W:
+							nextDir = FVector(-100, 0, 0);
+							UE_LOG(LogTemp, Warning, TEXT("W"));
+							break;
+						case ECompassDirection::NW:
+							nextDir = FVector(-100, 100, 0);
+							UE_LOG(LogTemp, Warning, TEXT("NW"));
+							break;
+						default:
+							continue;
+						}
+						FVector prevPos = rayStartPos;
+						// until it cant continue in that direction or maximum range reached
+						int32 totalFollowUp = 0;
+						// get follow-up cell
+						while (true)
+						{
+							// if it reached its range limit
+							if (followUpDirInfo.Magnitude != 0 && totalFollowUp >= followUpDirInfo.Magnitude)
+								break;
+							prevPos += nextDir;
+							rayEndPos = prevPos + FVector(0.0f, 0.0f, -500.0f);
+							if (!cellsDoneChecked.Contains(prevPos))
+							{
+								GetWorld()->LineTraceSingleByChannel(hitResult, prevPos, rayEndPos, ECC_GameTraceChannel1, params);
+								if (hitResult.bBlockingHit)
+								{
+									ABattleGridCell* followUpCells = Cast<ABattleGridCell>(hitResult.GetActor());
+									if (IsValid(followUpCells))
+									{
+										followUpCells->ForceHighlight(this);
+										HighlightedCells.Add(followUpCells);
+									}
+								}
+								cellsDoneChecked.Add(prevPos);
+							}
+							totalFollowUp++;
+						}
+					}
+				}
+				FTimerHandle timerHandle;
+				TimerManagerRef->SetTimer(timerHandle, this, &ABattleEnemyEntity::DelayAttack, 3.0f, false);
+			}
 		}
 	}
 	else
@@ -421,7 +441,8 @@ void ABattleEnemyEntity::StartMove(FVector position)
 	if (importantCells.Num() == 0 && offTargetCell.Num() == 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("This enemy doesn't have a move action :c"));
-		OnActionDoneEvent.Broadcast();
+		//OnActionDoneEvent.Broadcast();
+		BattleManager->NextEntityTurn();
 		return;
 	}
 	int32 randomInt = FMath::RandRange(1, 100);
@@ -463,6 +484,7 @@ void ABattleEnemyEntity::OnMove()
 		CurrentCell = TargetCell;
 		GridPos = CurrentCell->GetGridPos();
 		OnActionDoneEvent.Broadcast();
+		BattleManager->NextEntityTurn();
 	}
 	else
 	{
@@ -494,9 +516,25 @@ void ABattleEnemyEntity::DelayAttack()
 	{
 		cell->EndForceHighlight();
 	}
-	PlayerRef->CustomTakeDamage(ActionList[SelectedActionID].AttackAction.Damage * DamageMultiplier);
+	if (IsValid(ActionList[SelectedActionID].AttackAction.StatusToApply))
+	{
+		ABaseStatusEffect* statusToAdd = GetWorld()->SpawnActor<ABaseStatusEffect>(ActionList[SelectedActionID].AttackAction.StatusToApply);
+		if (ActionList[SelectedActionID].AttackAction.bIsSelfAppliedStatus)
+		{
+			CurrentStatusEffects.Add(statusToAdd);
+		}
+		else
+		{
+			PlayerRef->CustomTakeDamageAndApplyStatus(ActionList[SelectedActionID].AttackAction.Damage * DamageMultiplier, statusToAdd);
+		}
+	}
+	else
+	{
+		PlayerRef->CustomTakeDamage(ActionList[SelectedActionID].AttackAction.Damage * DamageMultiplier);
+	}
 	OnActionComplete(EActionType::Attack);
-	OnActionDoneEvent.Broadcast();
+	//OnActionDoneEvent.Broadcast();
+	BattleManager->NextEntityTurn();
 }
 
 void ABattleEnemyEntity::SetRandomTargetInList(const TArray<FPotentialMoveCellInfo>& list)

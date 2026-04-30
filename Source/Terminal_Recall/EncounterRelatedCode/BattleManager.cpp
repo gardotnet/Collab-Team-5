@@ -226,7 +226,6 @@ void ABattleManager::ToggleMoveOrAttack()
 
 void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, bool mainAttackCell)
 {
-	PlayerRef->SelectedActionID = -1;
 	// so attack follow-ups do not trigger this
 	if (mainAttackCell || (type != EActionType::Attack && type != EActionType::EnemyAttack))
 	{
@@ -236,7 +235,10 @@ void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, boo
 	}
 	// if there is a target to attack
 	if (IsValid(target) && type == EActionType::Attack)
-		target->CustomTakeDamage(1.0f);
+	{
+		target->CustomTakeDamage(PlayerRef->GetDamage());
+	}
+	PlayerRef->SelectedActionID = -1;
 	if (mainAttackCell && !(type == EActionType::EnemyAttack || type == EActionType::EnemyMove))
 	{
 		PlayerRef->OnActionComplete(type);
@@ -245,6 +247,7 @@ void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, boo
 	}
 	SelectMode = false;
 }
+
 void ABattleManager::NextEntityTurn()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Next turn"));
@@ -268,18 +271,27 @@ void ABattleManager::NextEntityTurn()
 		UDefaultInstance* theInstance = Cast<UDefaultInstance>(GetGameInstance());
 		theInstance->Health = PlayerRef->CurrentHealth;
 		theInstance->EncounterWon();
-		if (theInstance->RobotPickUpClass == nullptr)
+		if (IsValid(theInstance->RobotPickUpClass))
 		{
 			if (TObjectPtr<ABattleGridCell>* newCell = GridMap.Find(theInstance->PickUpLoc))
 			{
-				AActor* trapInteractable = GetWorld()->SpawnActor<AActor>(theInstance->RobotPickUpClass);
+				for (AActor* trap : TrapList)
+				{
+					ABaseInteractable* convertedTrap = Cast<ABaseInteractable>(trap);
+					if (IsValid(convertedTrap))
+					{
+						convertedTrap->RemoveFromGame();
+					}
+				}
+				AActor* pickUp = GetWorld()->SpawnActor<AActor>(theInstance->RobotPickUpClass);
 				FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
 				FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
-				trapInteractable->SetActorTransform(transform);
-				(*newCell)->AssignInteractable(Cast<ABaseInteractable>(trapInteractable));
+				pickUp->SetActorTransform(transform);
+				(*newCell)->AssignInteractable(Cast<ABaseInteractable>(pickUp));
+				return;
 			}
 		}
-		//UGameplayStatics::OpenLevel(GetWorld(), MainGameLevel);
+		UGameplayStatics::OpenLevel(GetWorld(), MainGameLevel);
 		return;
 	}
 	// gets next entity's turn

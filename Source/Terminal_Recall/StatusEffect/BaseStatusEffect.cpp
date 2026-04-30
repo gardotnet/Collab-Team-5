@@ -8,6 +8,14 @@ ABaseStatusEffect::ABaseStatusEffect()
 {
 }
 
-void ABaseStatusEffect::DoStatusEffect(ABattleEntity* entityTarget)
+void ABaseStatusEffect::DoStatusEffect_Implementation(ABattleEntity* entityTarget)
 {
+	DoStatusEffect(entityTarget);
+	UE_LOG(LogTemp, Error, TEXT("IM RUNNING DW"));
+	Duration--;
+	if (Duration <= 0)
+	{
+		OnEffectEnded();
+		Destroy();
+	}
 }

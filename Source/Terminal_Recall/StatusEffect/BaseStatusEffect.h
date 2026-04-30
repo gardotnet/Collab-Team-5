@@ -15,10 +15,16 @@ class TERMINAL_RECALL_API ABaseStatusEffect : public AActor
 	
 public:
 	ABaseStatusEffect();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Variables")
+	FString StatusEffectName;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Variables")
 	int Duration;
 	
-	//UFUNCTION(BlueprintNativeEvent, Category = "Stuff For Designers | Functions")
-	//UFUNCTION()
+	UFUNCTION(BlueprintNativeEvent, Category = "Stuff For Designers | Functions")
 	void DoStatusEffect(ABattleEntity* entityTarget);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Stuff For Designers | Functions")
+	void OnEffectEnded();
 };

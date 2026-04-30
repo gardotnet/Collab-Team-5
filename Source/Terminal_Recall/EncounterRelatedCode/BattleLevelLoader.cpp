@@ -150,7 +150,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 								battleManager->PlayerRef = GetWorld()->SpawnActor<ABattlePlayerEntity>(PlayerEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
 								battleManager->PlayerRef->SetPos(cellData.Position, *newCell);
 								battleManager->PlayerRef->OnBattleStart(battleManager);
-								battleManager->PlayerRef->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
+								//battleManager->PlayerRef->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
 								(*newCell)->HouseEntity(battleManager->PlayerRef);
 								TempActors.Add(battleManager->PlayerRef);
 							}
@@ -168,7 +168,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 							ABattleEnemyEntity* newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
 							// [NOTE] Pass data to enemy
 							battleManager->EnemyArray.Add(newEnemy);
-							newEnemy->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
+							//newEnemy->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
 							newEnemy->OnBattleStart(battleManager, cellData.IdForCellContent);
 							newEnemy->SetPos(cellData.Position, *newCell);
 							(*newCell)->HouseEntity(newEnemy);
@@ -186,6 +186,7 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 								FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
 								trapInteractable->SetActorTransform(transform);
 								(*newCell)->AssignInteractable(Cast<ABaseInteractable>(trapInteractable));
+								battleManager->TrapList.Add(trapInteractable);
 							}
 						}
 					break;

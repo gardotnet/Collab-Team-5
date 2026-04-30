@@ -65,6 +65,8 @@ public:
 	void ShowChoices();
 	UFUNCTION(BlueprintCallable, Category = "Stuff For Designers | Functions")
 	virtual void CustomTakeDamage(float damage);
+	UFUNCTION(BlueprintCallable, Category = "Stuff For Designers | Functions")
+	virtual void CustomTakeDamageAndApplyStatus(float damage, ABaseStatusEffect* effect);
 	void SetPos(FIntPoint newPos, ABattleGridCell* cell);
 	FIntPoint GetPos() { return GridPos; }
 	

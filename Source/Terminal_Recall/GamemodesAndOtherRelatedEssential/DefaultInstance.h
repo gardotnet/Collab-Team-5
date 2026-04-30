@@ -6,6 +6,8 @@
 #include "Engine/GameInstance.h"
 #include "DefaultInstance.generated.h"
 
+class ABaseInteractable;
+
 UCLASS()
 class TERMINAL_RECALL_API UDefaultInstance : public UGameInstance
 {

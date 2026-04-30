@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GridRangeExport.h"
+#include "Terminal_Recall/StatusEffect/BaseStatusEffect.h"
 #include "UObject/Object.h"
 #include "EntityTwinActionContainer.generated.h"
 
@@ -15,6 +16,10 @@ struct FActionRefStruct
 	int32 CooldownDuration = -1;
 	UPROPERTY()
 	float Damage = 0;
+	UPROPERTY()
+	TSubclassOf<ABaseStatusEffect> StatusToApply = nullptr;
+	UPROPERTY()
+	bool bIsSelfAppliedStatus = false;
 };
 
 USTRUCT()

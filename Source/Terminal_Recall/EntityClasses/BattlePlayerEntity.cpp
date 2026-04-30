@@ -26,7 +26,7 @@ void ABattlePlayerEntity::OnBattleStart(ABattleManager* battleManager)
 void ABattlePlayerEntity::StartMove(FVector position)
 {
 	Super::StartMove(position);
-	OnActionComplete(EActionType::Movement);
+	
 }
 
 void ABattlePlayerEntity::CustomTakeDamage(float damage)

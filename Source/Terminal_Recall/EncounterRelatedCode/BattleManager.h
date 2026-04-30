@@ -5,7 +5,6 @@
 #include "Terminal_Recall/StructsAndEnums/For2dArray/FGridRowCell.h"
 #include "BattleManager.generated.h"
 
-
 class ABaseInteractable;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCellSelected);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNewTurn);
@@ -46,7 +45,7 @@ public:
 	FIntPoint PickUpLoc = FIntPoint(0, 0); 
 	
 	UPROPERTY()
-	ABaseInteractable* TrapList;
+	TArray<AActor*> TrapList;
 	
 	
 protected:

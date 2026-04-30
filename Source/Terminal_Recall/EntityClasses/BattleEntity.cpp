@@ -80,7 +80,18 @@ void ABattleEntity::CustomTakeDamage(float damage)
 		Destroy();
 		BattleManager->NextEntityTurn();
 	}
+	else if (CurrentHealth > MaxHealth)
+	{
+		CurrentHealth = MaxHealth;
+	}
 }
+
+void ABattleEntity::CustomTakeDamageAndApplyStatus(float damage, ABaseStatusEffect* effect)
+{
+	CustomTakeDamage(damage);
+	CurrentStatusEffects.Add(effect);
+}
+
 void ABattleEntity::BeginPlay()
 {
 	Super::BeginPlay();
@@ -97,7 +108,9 @@ void ABattleEntity::OnMove()
 	{
 		TimerManagerRef->ClearTimer(MoveTimerHandle);
 		SetActorLocation(TargetPosition);
+		OnActionComplete(EActionType::Movement);
 		OnActionDoneEvent.Broadcast();
+		BattleManager->NextEntityTurn();
 	}
 	else
 	{
@@ -193,8 +206,18 @@ void ABattleEntity::FindAndSaveActions(const TArray<int32>& attackArray, const T
 			ActionList[i].AttackAction = FActionRefStruct(
 				extractedData.GetValue(), 
 				attackInfo->CooldownDuration,
-				attackInfo->Damage
+				attackInfo->Damage,
+				attackInfo->StatusEffect,
+				attackInfo->bIsSelfAppliedStatus
 			);
+			if (IsValid(attackInfo->StatusEffect))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Has Effect"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("No effect"));
+			}
 			ActionList[i].Cooldown = 0;
 			// create button and set it up
 			if (UActionButtonUI* newAttackButton =Cast<UActionButtonUI>(CreateWidget(GetWorld()->GetFirstPlayerController(), ActionButtonClass)))
@@ -258,6 +281,6 @@ void ABattleEntity::HandleStatusEffects()
 {
 	for (ABaseStatusEffect* status : CurrentStatusEffects)
 	{
-		status->DoStatusEffect(this);
+		status->DoStatusEffect_Implementation(this);
 	}
 }
