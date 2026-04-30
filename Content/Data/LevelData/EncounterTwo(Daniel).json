@@ -108,6 +108,33 @@
 			"position":
 			{
 				"x": 5,
+				"y": 3
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 5,
+				"y": 4
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 5,
+				"y": 5
+			},
+			"cellType": "InteractableSpawn",
+			"idForCellContent": 2
+		},
+		{
+			"position":
+			{
+				"x": 5,
 				"y": 6
 			},
 			"cellType": "Wall",
