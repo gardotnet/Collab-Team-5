@@ -36,72 +36,81 @@
 			"position":
 			{
 				"x": 1,
-				"y": 8
+				"y": 7
 			},
 			"cellType": "EnemySpawn",
-			"idForCellContent": 1
+			"idForCellContent": 4
 		},
 		{
 			"position":
 			{
-				"x": 2,
-				"y": 4
-			},
-			"cellType": "Wall",
-			"idForCellContent": 0
-		},
-		{
-			"position":
-			{
-				"x": 2,
-				"y": 6
-			},
-			"cellType": "Wall",
-			"idForCellContent": 1
-		},
-		{
-			"position":
-			{
-				"x": 3,
-				"y": 4
-			},
-			"cellType": "Wall",
-			"idForCellContent": 0
-		},
-		{
-			"position":
-			{
-				"x": 3,
-				"y": 6
-			},
-			"cellType": "Wall",
-			"idForCellContent": 1
-		},
-		{
-			"position":
-			{
-				"x": 4,
-				"y": 4
-			},
-			"cellType": "Wall",
-			"idForCellContent": 0
-		},
-		{
-			"position":
-			{
-				"x": 4,
-				"y": 6
-			},
-			"cellType": "Wall",
-			"idForCellContent": 1
-		},
-		{
-			"position":
-			{
-				"x": 5,
-				"y": 4
+				"x": 1,
+				"y": 9
 			},
 			"cellType": "Trap",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 2,
+				"y": 3
+			},
+			"cellType": "Trap",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 2,
+				"y": 4
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 2,
+				"y": 6
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 3,
+				"y": 4
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 3,
+				"y": 6
+			},
+			"cellType": "Wall",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 4,
+				"y": 4
+			},
+			"cellType": "Wall",
+			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 4,
+				"y": 6
+			},
+			"cellType": "Wall",
 			"idForCellContent": 1
 		},
 		{
@@ -135,15 +144,6 @@
 			"position":
 			{
 				"x": 7,
-				"y": 4
-			},
-			"cellType": "Trap",
-			"idForCellContent": 1
-		},
-		{
-			"position":
-			{
-				"x": 7,
 				"y": 6
 			},
 			"cellType": "Wall",
@@ -153,6 +153,15 @@
 			"position":
 			{
 				"x": 8,
+				"y": 0
+			},
+			"cellType": "Trap",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 8,
 				"y": 4
 			},
 			"cellType": "Wall",
@@ -162,10 +171,10 @@
 			"position":
 			{
 				"x": 8,
-				"y": 8
+				"y": 7
 			},
 			"cellType": "EnemySpawn",
-			"idForCellContent": 1
+			"idForCellContent": 4
 		},
 		{
 			"position":
@@ -175,6 +184,15 @@
 			},
 			"cellType": "Wall",
 			"idForCellContent": 0
+		},
+		{
+			"position":
+			{
+				"x": 9,
+				"y": 8
+			},
+			"cellType": "Trap",
+			"idForCellContent": 1
 		}
 	]
 }
