@@ -99,6 +99,15 @@
 			"position":
 			{
 				"x": 5,
+				"y": 4
+			},
+			"cellType": "Trap",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 5,
 				"y": 6
 			},
 			"cellType": "Wall",
@@ -120,6 +129,15 @@
 				"y": 2
 			},
 			"cellType": "EnemySpawn",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 7,
+				"y": 4
+			},
+			"cellType": "Trap",
 			"idForCellContent": 1
 		},
 		{

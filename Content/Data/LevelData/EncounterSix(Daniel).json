@@ -270,6 +270,15 @@
 			"position":
 			{
 				"x": 5,
+				"y": 6
+			},
+			"cellType": "InteractableSpawn",
+			"idForCellContent": 2
+		},
+		{
+			"position":
+			{
+				"x": 5,
 				"y": 9
 			},
 			"cellType": "Wall",
