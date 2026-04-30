@@ -144,6 +144,15 @@
 			"position":
 			{
 				"x": 4,
+				"y": 1
+			},
+			"cellType": "Trap",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 4,
 				"y": 8
 			},
 			"cellType": "Wall",
@@ -532,6 +541,15 @@
 			{
 				"x": 12,
 				"y": 6
+			},
+			"cellType": "Trap",
+			"idForCellContent": 1
+		},
+		{
+			"position":
+			{
+				"x": 12,
+				"y": 7
 			},
 			"cellType": "Trap",
 			"idForCellContent": 1
