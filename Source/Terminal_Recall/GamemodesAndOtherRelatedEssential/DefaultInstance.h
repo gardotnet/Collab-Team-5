@@ -44,5 +44,6 @@ protected:
 
 	virtual void OnStart() override;
 public:
+	UFUNCTION(BlueprintCallable, Category="Stuff For Designers | System Variables")
 	void EncounterWon();
 };
