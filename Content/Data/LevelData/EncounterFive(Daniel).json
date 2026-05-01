@@ -270,33 +270,6 @@
 			"position":
 			{
 				"x": 5,
-				"y": 5
-			},
-			"cellType": "Trap",
-			"idForCellContent": 2
-		},
-		{
-			"position":
-			{
-				"x": 5,
-				"y": 6
-			},
-			"cellType": "Trap",
-			"idForCellContent": 2
-		},
-		{
-			"position":
-			{
-				"x": 5,
-				"y": 7
-			},
-			"cellType": "Trap",
-			"idForCellContent": 2
-		},
-		{
-			"position":
-			{
-				"x": 5,
 				"y": 8
 			},
 			"cellType": "Wall",
