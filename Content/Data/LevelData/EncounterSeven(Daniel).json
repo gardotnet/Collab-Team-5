@@ -44,15 +44,6 @@
 		{
 			"position":
 			{
-				"x": 2,
-				"y": 10
-			},
-			"cellType": "InteractableSpawn",
-			"idForCellContent": 2
-		},
-		{
-			"position":
-			{
 				"x": 3,
 				"y": 7
 			},
@@ -418,15 +409,6 @@
 			},
 			"cellType": "Wall",
 			"idForCellContent": 0
-		},
-		{
-			"position":
-			{
-				"x": 11,
-				"y": 4
-			},
-			"cellType": "InteractableSpawn",
-			"idForCellContent": 2
 		},
 		{
 			"position":
