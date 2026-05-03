@@ -1,6 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
@@ -26,6 +24,8 @@ public:
 	float MaxHealth = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	float DamageMultiplier = 1.0f;
+
+	//Reference to player's current mech parts
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	TArray<int> AttackList;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")

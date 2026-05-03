@@ -24,6 +24,7 @@ void UDefaultInstance::OnStart()
 	Super::OnStart();
 	AttackList.SetNum(5);
 	MoveList.SetNum(5);
+
 }
 
 void UDefaultInstance::EncounterWon()
