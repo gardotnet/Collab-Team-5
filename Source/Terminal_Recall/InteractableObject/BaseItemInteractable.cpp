@@ -17,16 +17,29 @@ void ABaseItemInteractable::OnItemUse_Implementation()
 	UDefaultInstance* GI = Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(this));
 	if (!GI) return;
 
-	// add attack to player's unlocked mech part array
-	if (AttackIndex >= 0 && !GI->AttackList.Contains(AttackIndex))
+	/* ATTACK / MOVE ASSIGNMENT TO PLAYER ON MECH PART PICKUP */
+	// > 0 skips king in index 0, DO NOT REMOVE
+
+	// add attack to player's attack array
+	if (AttackIndex > 0 && GI->AttackList.IsValidIndex(AttackIndex))
 	{
-		GI->AttackList.Add(AttackIndex);
+		int32 CurrentValue = GI->AttackList[AttackIndex];
+		if (CurrentValue == -1)
+		{
+			GI->AttackList[AttackIndex] = AttackIndex;
+			UE_LOG(LogTemp, Warning, TEXT("attack added at index %d: %d"), AttackIndex, GI->AttackList[AttackIndex]);
+		}
 	}
 
-	// add move to player's unlocked mech part array
-	if (MoveIndex >= 0 && !GI->MoveList.Contains(MoveIndex))
+	// add move to player's move array
+	if (MoveIndex > 0 && GI->MoveList.IsValidIndex(MoveIndex))
 	{
-		GI->MoveList.Add(MoveIndex);
+		int32 CurrentValue = GI->MoveList[MoveIndex];
+		if (CurrentValue == -1)
+		{
+			GI->MoveList[MoveIndex] = MoveIndex;
+			UE_LOG(LogTemp, Warning, TEXT("move added at index %d: %d"), MoveIndex, GI->MoveList[MoveIndex]);
+		}
 	}
 
 	RemoveFromGame();

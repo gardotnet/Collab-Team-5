@@ -22,8 +22,19 @@ void UDefaultInstance::PostEditChangeProperty(FPropertyChangedEvent& PropertyCha
 void UDefaultInstance::OnStart()
 {
 	Super::OnStart();
+
+	//initialise lists with -1 (empty/unused slot)
+	AttackList.Init(-1, 5);
+	MoveList.Init(-1,5);
+
+	//set king move from DT_ActionList at index 0
+	AttackList[0] = 1;
+	MoveList[0] = 1;
+
+	/*
 	AttackList.SetNum(5);
 	MoveList.SetNum(5);
+	*/
 
 }
 

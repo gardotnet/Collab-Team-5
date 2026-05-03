@@ -21,10 +21,10 @@ public:
 
 	//Index to get from DataList
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Interactable|Info")
-	int32 AttackIndex = -1;
+	int32 AttackIndex = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Interactable|Info")
-	int32 MoveIndex = -1;
+	int32 MoveIndex = 0;
 
 	// Use confirmation UI func when player attempts to interact
 	// BlueprintImplementableEvent allows designers to build the UI logic entirely in Blueprints
