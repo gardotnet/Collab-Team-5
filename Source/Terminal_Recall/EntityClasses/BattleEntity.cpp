@@ -151,12 +151,7 @@ void ABattleEntity::AddCooldown(EActionType type)
 		ActionList[SelectedActionID].Cooldown = ActionList[SelectedActionID].AttackAction.CooldownDuration;
 		UE_LOG(LogTemp, Warning, TEXT("attack cd: %i"), ActionList[SelectedActionID].Cooldown)
 	}
-	if (ActionList[SelectedActionID].Cooldown == 0)
-		return;
-	if (AttackActionsUI.IsValidIndex(SelectedActionID))
-		AttackActionsUI[SelectedActionID]->SetCooldown(ActionList[SelectedActionID].Cooldown);
-	if (MovementActionsUI.IsValidIndex(SelectedActionID))
-		MovementActionsUI[SelectedActionID]->SetCooldown(ActionList[SelectedActionID].Cooldown);
+	
 }
 
 void ABattleEntity::ReduceCooldown()
@@ -166,10 +161,6 @@ void ABattleEntity::ReduceCooldown()
 		if (ActionList[i].Cooldown > 0)
 		{
 			ActionList[i].Cooldown--;
-			if (AttackActionsUI.IsValidIndex(i))
-				AttackActionsUI[i]->SetCooldown(ActionList[i].Cooldown);
-			if (MovementActionsUI.IsValidIndex(i))
-				MovementActionsUI[i]->SetCooldown(ActionList[i].Cooldown);
 		}
 	}
 }
@@ -224,17 +215,6 @@ void ABattleEntity::FindAndSaveActions(const TArray<int32>& attackArray, const T
 				UE_LOG(LogTemp, Warning, TEXT("No effect"));
 			}
 			ActionList[i].Cooldown = 0;
-			// create button and set it up
-			if (UActionButtonUI* newAttackButton =Cast<UActionButtonUI>(CreateWidget(GetWorld()->GetFirstPlayerController(), ActionButtonClass)))
-			{
-				newAttackButton->Entity = this;
-				newAttackButton->ActionType = attackType;
-				newAttackButton->ActionName = attackInfo->ActionName.ToString();
-				newAttackButton->NameLabel->SetText(FText::FromString(attackInfo->ActionName.ToString()));
-				AttackActionsUI.Add(newAttackButton);
-				newAttackButton->IndexInOwningEntityArray = i;
-				newAttackButton->OnActionSelected.AddDynamic(BattleManager, &ABattleManager::ActionChoiceSelected);
-			}
 		}
 	}
 	for (int i = 0; i < 5; i++)
@@ -252,16 +232,6 @@ void ABattleEntity::FindAndSaveActions(const TArray<int32>& attackArray, const T
 				moveInfo->CooldownDuration
 			);
 			ActionList[i].Cooldown = 0;
-			if (UActionButtonUI* newMoveButton =Cast<UActionButtonUI>(CreateWidget(GetWorld()->GetFirstPlayerController(), ActionButtonClass)))
-			{
-				newMoveButton->Entity = this;
-				newMoveButton->ActionType = moveType;
-				newMoveButton->ActionName = moveInfo->ActionName.ToString();
-				newMoveButton->NameLabel->SetText(FText::FromString(moveInfo->ActionName.ToString()));
-				MovementActionsUI.Add(newMoveButton);
-				newMoveButton->IndexInOwningEntityArray = i;
-				newMoveButton->OnActionSelected.AddDynamic(BattleManager, &ABattleManager::ActionChoiceSelected);
-			}
 		}
 	}
 }

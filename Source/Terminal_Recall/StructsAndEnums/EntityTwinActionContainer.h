@@ -6,13 +6,13 @@
 #include "UObject/Object.h"
 #include "EntityTwinActionContainer.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FActionRefStruct
 {
 	GENERATED_BODY()
 	UPROPERTY()
 	FGridRangeExport ActionRange;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	int32 CooldownDuration = -1;
 	UPROPERTY()
 	float Damage = 0;
@@ -22,17 +22,15 @@ struct FActionRefStruct
 	bool bIsSelfAppliedStatus = false;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FEntityTwinActionContainer 
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	FActionRefStruct AttackAction;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	FActionRefStruct MovementAction;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	int32 Cooldown = -1;
 };
-
-

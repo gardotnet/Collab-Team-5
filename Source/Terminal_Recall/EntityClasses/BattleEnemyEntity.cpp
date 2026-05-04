@@ -9,6 +9,8 @@
 ABattleEnemyEntity::ABattleEnemyEntity()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	MeshComponent->OnBeginCursorOver.AddDynamic(this, &ABattleEnemyEntity::OnHoverOver);
+	MeshComponent->OnEndCursorOver.AddDynamic(this, &ABattleEnemyEntity::OnHoverEnd);
 }
 void ABattleEnemyEntity::OnTurnGo()
 {
@@ -491,23 +493,14 @@ void ABattleEnemyEntity::OnMove()
 	}
 }
 
-void ABattleEnemyEntity::OnBattleStart(ABattleManager* battleManager, int32 enemyID)
+void ABattleEnemyEntity::OnBattleStart(ABattleManager* battleManager, FEnemyInfoStruct* enemyInfoStruct)
 {
 	BattleManager = battleManager;
-	FString enemyIDString = FString::FromInt(enemyID);
-	if (!EnemyDataTable)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Where the enemy data table?"))
-		return;
-	}
-	if (FEnemyInfoStruct* enemyInfo = EnemyDataTable->FindRow<FEnemyInfoStruct>(FName(*enemyIDString), TEXT("Entity Search")))
-	{
-		FindAndSaveActions(enemyInfo->AttackIdList, enemyInfo->MovementIdList);
-		CurrentHealth = enemyInfo->Health;
-		MaxHealth = enemyInfo->Health;
-		DamageMultiplier = 1;
-		HeathDropChance = enemyInfo->HealthDropChance;
-	}
+	FindAndSaveActions(enemyInfoStruct->AttackIdList, enemyInfoStruct->MovementIdList);
+	CurrentHealth = enemyInfoStruct->Health;
+	MaxHealth = enemyInfoStruct->Health;
+	DamageMultiplier = 1;
+	HeathDropChance = enemyInfoStruct->HealthDropChance;
 }
 
 void ABattleEnemyEntity::CustomTakeDamage(float damage)
@@ -585,8 +578,24 @@ void ABattleEnemyEntity::SetRandomTargetInList(const TArray<FPotentialMoveCellIn
 void ABattleEnemyEntity::OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
 	//PlayerBattleController->MainBattleUIWidget->SetEnemyHp(CurrentHealth);
-	if (TObjectPtr<ABattleGridCell>* currentCell = BattleManager->GridMap.Find(GridPos))
+	if (CurrentCell != nullptr)
 	{
-		(*currentCell)->OnCellClicked(nullptr, FKey());
+		CurrentCell->OnCellClicked(nullptr, FKey());
+	}
+}
+
+void ABattleEnemyEntity::OnHoverOver(UPrimitiveComponent* TouchedComponent)
+{
+	if (CurrentCell != nullptr)
+	{
+		CurrentCell->OnHoverOver(TouchedComponent);
+	}
+}
+
+void ABattleEnemyEntity::OnHoverEnd(UPrimitiveComponent* TouchedComponent)
+{
+	if (CurrentCell != nullptr)
+	{
+		CurrentCell->OnHoverEnd(TouchedComponent);
 	}
 }

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "BattleEntity.h"
+#include "Terminal_Recall/StructsAndEnums/ForDataTable/EnemyInfoStruct.h"
 #include "BattleEnemyEntity.generated.h"
 
 class ABaseInteractable;
@@ -23,10 +24,7 @@ UCLASS()
 class TERMINAL_RECALL_API ABattleEnemyEntity : public ABattleEntity
 {
 	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditDefaultsOnly, Category = "Stuff For Designers | Necessities")
-	TObjectPtr<UDataTable> EnemyDataTable;
+	
 protected:
 	UPROPERTY()
 	TObjectPtr<UWorld> WorldRef;
@@ -47,7 +45,7 @@ public:
 	virtual void OnTurnGo() override;
 	virtual void StartMove(FVector position) override;
 	virtual void OnMove() override;
-	virtual void OnBattleStart(ABattleManager* battleManager, int32 enemyID) override;
+	virtual void OnBattleStart(ABattleManager* battleManager, FEnemyInfoStruct* enemyInfoStruct);
 	
 	virtual void CustomTakeDamage(float damage) override;
 
@@ -56,4 +54,9 @@ protected:
 	void DelayAttack();
 	void SetRandomTargetInList(const TArray<FPotentialMoveCellInfo>& list);
 	virtual void OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed) override;
+
+	UFUNCTION()
+	void OnHoverOver(UPrimitiveComponent* TouchedComponent);
+	UFUNCTION()
+	void OnHoverEnd(UPrimitiveComponent* TouchedComponent);
 };

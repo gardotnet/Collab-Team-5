@@ -87,12 +87,14 @@ public:
 
 	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 	
-protected:
-	UFUNCTION()
-	virtual void OnUnitArrive_Implementation() override;
 	UFUNCTION()
 	void OnHoverOver(UPrimitiveComponent* TouchedComponent);
 	UFUNCTION()
 	void OnHoverEnd(UPrimitiveComponent* TouchedComponent);
+	
+protected:
+	UFUNCTION()
+	virtual void OnUnitArrive_Implementation() override;
+	
 	
 };

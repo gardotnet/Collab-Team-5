@@ -12,6 +12,7 @@
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
 #include "Terminal_Recall/StructsAndEnums/LevelExportStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/AssetLookUpStruct.h"
+#include "Terminal_Recall/StructsAndEnums/ForDataTable/EnemyInfoStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/InteractableInfoStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/TrapInfoStruct.h"
 
@@ -165,14 +166,31 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 					if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 					{
 						propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
-						ABattleEnemyEntity* newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
-						// [NOTE] Pass data to enemy
-						battleManager->EnemyArray.Add(newEnemy);
-						//newEnemy->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
-						newEnemy->OnBattleStart(battleManager, cellData.IdForCellContent);
-						newEnemy->SetPos(cellData.Position, *newCell);
-						(*newCell)->HouseEntity(newEnemy);
-						TempActors.Add(newEnemy);
+						FString enemyIDString = FString::FromInt(cellData.IdForCellContent);
+						if (!EnemyDataTable)
+						{
+							UE_LOG(LogTemp, Error, TEXT("Where the enemy data table?"))
+							return;
+						}
+						if (FEnemyInfoStruct* enemyInfo = EnemyDataTable->FindRow<FEnemyInfoStruct>(FName(*enemyIDString), TEXT("Entity Search")))
+						{
+							ABattleEnemyEntity* newEnemy = nullptr;
+							if (IsValid(enemyInfo->EnemyOverrideBP))
+							{
+								newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(enemyInfo->EnemyOverrideBP, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
+							}
+							else
+							{
+								newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
+							}
+							battleManager->EnemyArray.Add(newEnemy);
+							//newEnemy->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
+							newEnemy->OnBattleStart(battleManager, enemyInfo);
+							newEnemy->SetPos(cellData.Position, *newCell);
+							(*newCell)->HouseEntity(newEnemy);
+							TempActors.Add(newEnemy);
+						}
+						
 					}
 					break;
 				case ECellBrushMode::Trap:

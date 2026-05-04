@@ -68,6 +68,9 @@ protected:
 	FCellSelected CellSelectedEvent;
 	// to disable player clicking entity choices while clicking grid
 	bool SelectMode = false;
+	// allows player to move after battle ended
+	bool bFreeMode = false;
+	
 public:
 	ABattleManager();
 	void OnEntitySelected(ABattleEntity* entity);

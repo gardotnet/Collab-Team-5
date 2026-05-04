@@ -265,7 +265,7 @@ void ABattleManager::NextEntityTurn()
 	{
 		return !IsValid(Enemy); 
 	});
-	if (EnemyArray.IsEmpty())
+	if (EnemyArray.IsEmpty() && !bFreeMode)
 	{
 		UDefaultInstance* theInstance = Cast<UDefaultInstance>(GetGameInstance());
 		theInstance->Health = PlayerRef->CurrentHealth;
@@ -287,6 +287,7 @@ void ABattleManager::NextEntityTurn()
 				FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
 				pickUp->SetActorTransform(transform);
 				(*newCell)->AssignInteractable(Cast<ABaseInteractable>(pickUp));
+				bFreeMode = true;
 				return;
 			}
 		}
@@ -295,7 +296,7 @@ void ABattleManager::NextEntityTurn()
 	}
 	// gets next entity's turn
 	EntityIndex++;
-	if (EntityIndex == EnemyArray.Num())
+	if (EntityIndex >= EnemyArray.Num())
 	{
 		OnNewTurnEvent.Broadcast();
 		//PlayerBattleController->BattleChoiceUIWidget->AddToViewport();

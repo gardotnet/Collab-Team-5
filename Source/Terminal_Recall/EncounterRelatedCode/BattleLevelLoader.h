@@ -25,6 +25,8 @@ protected:
 	TObjectPtr<UDataTable> TrapDataTable;
 	UPROPERTY(EditDefaultsOnly, Category = "Stuff For Designers | Necessities")
 	TObjectPtr<UDataTable> InteractableDataTable;
+	UPROPERTY(EditDefaultsOnly, Category = "Stuff For Designers | Necessities")
+	TObjectPtr<UDataTable> EnemyDataTable;
 	// base classes
 	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Necessities")
 	TSubclassOf<ABattleGridCell> BattleGridClass;
