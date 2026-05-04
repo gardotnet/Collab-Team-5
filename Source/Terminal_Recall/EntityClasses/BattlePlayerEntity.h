@@ -4,6 +4,8 @@
 #include "BattleEntity.h"
 #include "BattlePlayerEntity.generated.h"
 
+
+
 UCLASS()
 class TERMINAL_RECALL_API ABattlePlayerEntity : public ABattleEntity
 {

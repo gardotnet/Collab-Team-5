@@ -43,7 +43,9 @@ void ABattleEntity::OnTurnGo()
 void ABattleEntity::ShowChoices()
 {
 	// add all buttons to the UI
-	PlayerBattleController->BattleChoiceUIWidget->AddActionButton(MovementActionsUI, AttackActionsUI, ItemActionsUI);
+	
+	//PlayerBattleController->BattleChoiceUIWidget->AddToViewport();
+	//PlayerBattleController->BattleChoiceUIWidget->AddActionButton(MovementActionsUI, AttackActionsUI, ItemActionsUI);
 }
 void ABattleEntity::SetPos(FIntPoint newPos, ABattleGridCell* cell)
 {
@@ -74,8 +76,10 @@ void ABattleEntity::DisableRestrictedMovement()
 void ABattleEntity::CustomTakeDamage(float damage)
 {
 	CurrentHealth = CurrentHealth - damage;
+	OnDamagedEvent.Broadcast(CurrentHealth);
 	if (CurrentHealth <= 0.0f)
 	{
+		// tells the grid it 'WAS' on, that it is now empty
 		OnChangeCell.Broadcast();
 		Destroy();
 		BattleManager->NextEntityTurn();
@@ -119,7 +123,8 @@ void ABattleEntity::OnMove()
 }
 void ABattleEntity::OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
-	BattleManager->OnEntitySelected(this);
+	//BattleManager->OnEntitySelected(this);
+	
 }
 
 void ABattleEntity::OnActionComplete(EActionType type)

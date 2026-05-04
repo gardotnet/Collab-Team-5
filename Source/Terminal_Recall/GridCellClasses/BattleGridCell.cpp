@@ -25,7 +25,6 @@ bool ABattleGridCell::EnableCell(EActionType actionType, ABattleEntity* causer, 
 		return false;
 	if (!Walkable || Clickable)
 		return false;
-	
 	EntityCauserRef = causer;
 	ActionType = actionType;
 	CellGroupID = groupID;
@@ -156,20 +155,21 @@ void ABattleGridCell::Explode(float damage, int magnitude)
 
 void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
+	UE_LOG(LogTemp, Error, TEXT("Wait What"))
 	if (!Clickable)
 		return;
 	Clickable = false;
-	
+	UE_LOG(LogTemp, Error, TEXT("Bruh Move alre"))
 	switch (ActionType)
 	{
 		case EActionType::Attack:
 			// Tells listeners "I Need You To Find This Guy And #### Him Up!" 
 			BattleManager->CallGroupAttackEvent.Broadcast(CellGroupID);
 			OnClickedCellEvent.Broadcast(ResidingEntity, ActionType, true);
-			
 		break;
 		case EActionType::Movement:
 			EntityCauserRef->OnActionDoneEvent.AddDynamic(this, &ABattleGridCell::OnUnitArrive_Implementation);
+			BattleManager->OnPlayerEndTurnEvent.Broadcast();
 			EntityCauserRef->StartMove(GetActorLocation());
 			OnClickedCellEvent.Broadcast(nullptr, ActionType, false);
 		break;

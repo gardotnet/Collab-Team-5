@@ -2,10 +2,9 @@
 
 #include "BattlePlayerEntity.h"
 #include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
-#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
 #include "Terminal_Recall/GridCellClasses/BattleGridCell.h"
+#include "Terminal_Recall/InteractableObject/BaseInteractable.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/EnemyInfoStruct.h"
-#include "Terminal_Recall/StuffForUI/MainBattleUI.h"
 
 ABattleEnemyEntity::ABattleEnemyEntity()
 {
@@ -507,6 +506,37 @@ void ABattleEnemyEntity::OnBattleStart(ABattleManager* battleManager, int32 enem
 		CurrentHealth = enemyInfo->Health;
 		MaxHealth = enemyInfo->Health;
 		DamageMultiplier = 1;
+		HeathDropChance = enemyInfo->HealthDropChance;
+	}
+}
+
+void ABattleEnemyEntity::CustomTakeDamage(float damage)
+{
+	CurrentHealth = CurrentHealth - damage;
+	OnDamagedEvent.Broadcast(CurrentHealth);
+	if (CurrentHealth <= 0.0f)
+	{
+		// tells the grid it 'WAS' on, that it is now empty
+		OnChangeCell.Broadcast();
+		if (IsValid(HealthPickUpClass))
+		{
+			int32 randomInt = FMath::RandRange(1, 100);
+			if (randomInt <= HeathDropChance)
+			{
+				if (IsValid(CurrentCell) && CurrentCell->InteractableRef == nullptr)
+				{
+					FActorSpawnParameters spawnParams;
+					spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+					CurrentCell->AssignInteractable(GetWorld()->SpawnActor<ABaseInteractable>(HealthPickUpClass, CurrentCell->GetActorTransform(), spawnParams));
+				}
+			}
+		}
+		Destroy();
+		BattleManager->NextEntityTurn();
+	}
+	else if (CurrentHealth > MaxHealth)
+	{
+		CurrentHealth = MaxHealth;
 	}
 }
 
@@ -554,7 +584,7 @@ void ABattleEnemyEntity::SetRandomTargetInList(const TArray<FPotentialMoveCellIn
 
 void ABattleEnemyEntity::OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
-	PlayerBattleController->MainBattleUIWidget->SetEnemyHp(CurrentHealth);
+	//PlayerBattleController->MainBattleUIWidget->SetEnemyHp(CurrentHealth);
 	if (TObjectPtr<ABattleGridCell>* currentCell = BattleManager->GridMap.Find(GridPos))
 	{
 		(*currentCell)->OnCellClicked(nullptr, FKey());
