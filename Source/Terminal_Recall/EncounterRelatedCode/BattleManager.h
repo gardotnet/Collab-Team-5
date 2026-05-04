@@ -5,11 +5,13 @@
 #include "Terminal_Recall/StructsAndEnums/For2dArray/FGridRowCell.h"
 #include "BattleManager.generated.h"
 
-class ABaseInteractable;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCellSelected);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNewTurn);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FEndOfPlayerTurn);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSetUpDone);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGroupCellDelegate, int32, groupID);
 
+class ABaseInteractable;
 class APlayerBattleController;
 class UActionButtonUI;
 class ABattleEntity;
@@ -28,6 +30,13 @@ public:
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Stuff For Designers | Delegates")
 	FNewTurn OnNewTurnEvent;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Stuff For Designers | Delegates")
+	FEndOfPlayerTurn OnPlayerEndTurnEvent;
+	
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Stuff For Designers | Variables")
+	bool bSetUpComplete = false;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Stuff For Designers | Delegates")
+	FSetUpDone OnSetUpDone;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stuff For Designers | Necessities")
 	FName MainGameLevel = "Viet_Test_Place";
@@ -76,6 +85,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Stuff For Designers | Function")
 	void NextEntityTurn();
 	
+	UFUNCTION(BlueprintCallable, Category = "Stuff For Designers | Function")
 	inline void ClearPrediction();
 protected:
 	virtual void BeginPlay() override;

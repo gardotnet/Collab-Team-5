@@ -36,7 +36,7 @@ void UBattleChoiceSelectUI::NativeDestruct()
 void UBattleChoiceSelectUI::OnCloseButtonClicked()
 {
 	RemoveFromParent();
-	PlayerBattleController->MainBattleUIWidget->HideEnemyHp();
+	//PlayerBattleController->MainBattleUIWidget->HideEnemyHp();
 }
 
 void UBattleChoiceSelectUI::OnMoveTabButtonClicked()

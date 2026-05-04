@@ -31,7 +31,7 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 	// allow player to pick cells
 	PlayerBattleController->bEnableMouseOverEvents = true;
 	// Can put in array and link after
-	PlayerBattleController->BattleChoiceUIWidget->OnCloseButtonClicked();
+	PlayerBattleController->HideUI();
 	FGridRangeExport* gridRange = entityRef->GetActionInfo(selectedButton->ActionType, selectedButton->IndexInOwningEntityArray);
 	FIntPoint entityPos = entityRef->GetPos();
 	// for each cell required for the action
@@ -121,15 +121,14 @@ void ABattleManager::ActionChoiceSelected(UActionButtonUI* selectedButton)
 void ABattleManager::ActionSelected(int hotbarSlot)
 {
 	ClearPrediction();
-	if (PlayerRef->SelectedActionID == hotbarSlot)
-		return;
 	PlayerRef->SelectedActionID = hotbarSlot;
+	UE_LOG(LogTemp, Error, TEXT("%d"), PlayerRef->SelectedActionID);
 	// allow player to select entity
 	SelectMode = true;
 	// allow player to pick cells
 	PlayerBattleController->bEnableMouseOverEvents = true;
 	// Can put in array and link after
-	PlayerBattleController->BattleChoiceUIWidget->OnCloseButtonClicked();
+	//PlayerBattleController->HideUI();
 	FGridRangeExport* gridRange = PlayerRef->GetActionInfo(PlayerActionType, hotbarSlot);
 	FIntPoint entityPos = PlayerRef->GetPos();
 	// for each cell required for the action
@@ -238,10 +237,13 @@ void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, boo
 	{
 		target->CustomTakeDamage(PlayerRef->GetDamage());
 	}
-	PlayerRef->SelectedActionID = -1;
+	
 	if (mainAttackCell && !(type == EActionType::EnemyAttack || type == EActionType::EnemyMove))
 	{
+		PlayerRef->SelectedActionID = -1;
+		UE_LOG(LogTemp, Error, TEXT("%d"), PlayerRef->SelectedActionID);
 		PlayerRef->OnActionComplete(type);
+		OnPlayerEndTurnEvent.Broadcast();
 		NextEntityTurn();
 		return;
 	}
@@ -250,10 +252,8 @@ void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, boo
 
 void ABattleManager::NextEntityTurn()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Next turn"));
 	if (!IsValid(PlayerRef))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Player Lost"));
 		UDefaultInstance* theInstance = Cast<UDefaultInstance>(GetGameInstance());
 		theInstance->Health = theInstance->MaxHealth;
 		UGameplayStatics::OpenLevel(GetWorld(), MainGameLevel);
@@ -267,7 +267,6 @@ void ABattleManager::NextEntityTurn()
 	});
 	if (EnemyArray.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Player Won"));
 		UDefaultInstance* theInstance = Cast<UDefaultInstance>(GetGameInstance());
 		theInstance->Health = PlayerRef->CurrentHealth;
 		theInstance->EncounterWon();
@@ -299,20 +298,21 @@ void ABattleManager::NextEntityTurn()
 	if (EntityIndex == EnemyArray.Num())
 	{
 		OnNewTurnEvent.Broadcast();
+		//PlayerBattleController->BattleChoiceUIWidget->AddToViewport();
 		EntityIndex = -1;
 		SelectMode = false;
 		PlayerRef->OnTurnGo();
-		UE_LOG(LogTemp, Warning, TEXT("Loop to player"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Where enemy turn"));
 		EnemyArray[EntityIndex]->OnTurnGo();
 	}
 }
 
 void ABattleManager::ClearPrediction()
 {
+	SelectMode = false;
+	PlayerBattleController->bEnableMouseOverEvents = false;
 	// remove selection material for every cell
 	CellSelectedEvent.Broadcast();
 	// wipes delegates for next choice

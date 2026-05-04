@@ -16,12 +16,18 @@ class TERMINAL_RECALL_API APlayerBattleController : public AOurBasePlayerControl
 public:
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	TSubclassOf<UUserWidget> BattleChoiceUIClass;
-	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
+	UPROPERTY(BlueprintReadWrite, Category="Stuff For Designers | Variables")
+	TObjectPtr<UUserWidget> BattleChoiceUIWidget;
+	
+	/*UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	TSubclassOf<UUserWidget> MainBattleUIClass;
 	UPROPERTY(BlueprintReadWrite, Category="Stuff For Designers | Variables")
-	TObjectPtr<UBattleChoiceSelectUI> BattleChoiceUIWidget;
-	UPROPERTY(BlueprintReadWrite, Category="Stuff For Designers | Variables")
-	TObjectPtr<UMainBattleUI> MainBattleUIWidget;
+	TObjectPtr<UMainBattleUI> MainBattleUIWidget;*/
+	
+public:
+	
+	UFUNCTION(BlueprintCallable, Category="Stuff For Designers | Functions")
+	void HideUI();
 	
 protected:
 	virtual void BeginPlay() override;

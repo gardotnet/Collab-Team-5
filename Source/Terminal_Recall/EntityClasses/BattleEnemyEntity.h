@@ -4,6 +4,7 @@
 #include "BattleEntity.h"
 #include "BattleEnemyEntity.generated.h"
 
+class ABaseInteractable;
 class ABattleGridCell;
 class ABattlePlayerEntity;
 class APlayerBattleController;
@@ -33,9 +34,13 @@ protected:
 	TObjectPtr<ABattlePlayerEntity> PlayerRef;
 	UPROPERTY()
 	TObjectPtr<ABattleGridCell> TargetCell;
-	
 	UPROPERTY()
 	TArray<ABattleGridCell*> HighlightedCells;
+	
+	float HeathDropChance = 0.0f;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Stuff For Designers | Necessity")
+	TSubclassOf<ABaseInteractable> HealthPickUpClass = nullptr;
 
 public:
 	ABattleEnemyEntity();
@@ -43,6 +48,8 @@ public:
 	virtual void StartMove(FVector position) override;
 	virtual void OnMove() override;
 	virtual void OnBattleStart(ABattleManager* battleManager, int32 enemyID) override;
+	
+	virtual void CustomTakeDamage(float damage) override;
 
 protected:
 	UFUNCTION()
