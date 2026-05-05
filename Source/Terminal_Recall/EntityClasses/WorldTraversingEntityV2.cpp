@@ -1,8 +1,10 @@
 ﻿#include "WorldTraversingEntityV2.h"
 
-#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/DefaultPlayerController.h"
+#include "Kismet/GameplayStatics.h"
+#include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/TraversalPlayerController.h"
 #include "Terminal_Recall/GridCellClasses/HarryWorldTraversalNode.h"
+#include "Terminal_Recall/Harry/TraversalFunctionLibrary.h"
 
 AWorldTraversingEntityV2::AWorldTraversingEntityV2()
 {
@@ -19,6 +21,8 @@ void AWorldTraversingEntityV2::OnMove()
 {
 	MoveTimer += 0.01f;
 	FVector playerPos = GetActorLocation();
+	SetActorLocation(FMath::Lerp(playerPos, TargetPosition, MoveTimer/DesiredMoveDuration));
+	
 	float distance = FVector::Dist(playerPos, TargetPosition);
 	// if reached target
 	if (MoveTimer > DesiredMoveDuration || distance < 1)
@@ -26,27 +30,69 @@ void AWorldTraversingEntityV2::OnMove()
 		// ensure it is at target
 		SetActorLocation(TargetPosition);
 		PlayerController->UpdatePlayerPos(TheNodePath[PathIndex]);
-		PathIndex++;
 		// if end point of navigation
-		if (PathIndex >= TheNodePath.Num())
+		if (PathIndex + 1 >= TheNodePath.Num())
 		{
+			TheReversePath.Add(TheNodePath[PathIndex]);
+			Algo::Reverse(TheReversePath);
 			TheNodePath.Last()->OnUnitArrive_Implementation();
 			TimerManagerRef->ClearTimer(MoveTimerHandle);
 			return;
 		}
-		// move on to next point
+		TimerManagerRef->ClearTimer(MoveTimerHandle);
 		MoveTimer = 0;
+		
+		if (TheGameInstance->VisitedCells.Contains(TheNodePath[PathIndex]->GetActorLocation()))
+		{
+			TheReversePath.Empty();
+			TheReversePath.Add(TheNodePath[PathIndex]);
+		}
+		else
+		{
+			TheReversePath.Add(TheNodePath[PathIndex]);
+		}
+		// move on to next spline point
+		auto* connectedNeighbour = TheNodePath[PathIndex]->NeighbouringNodes.FindByPredicate([&](const auto& info) {
+			return info.Node == TheNodePath[PathIndex + 1];
+		});
+		UE_LOG(LogTemp, Log, TEXT("Next: %s and current %s"), *TheNodePath[PathIndex + 1]->GetActorNameOrLabel(), *TheNodePath[PathIndex]->GetActorNameOrLabel());
+		CurrentSplineComp = connectedNeighbour->PathSplineComponent;
+		bDontReverseSplineLoc = true;
+		UTraversalFunctionLibrary::EvaluateSplineMovement(CurrentSplineComp, 0, bDontReverseSplineLoc, TargetPosition, TargetRotation);
+		
+		float DistanceToCurrent = FVector::DistSquared(TargetPosition, TheNodePath[PathIndex]->GetActorLocation());
+
+		if (DistanceToCurrent > 0) 
+		{
+			bDontReverseSplineLoc = false; 
+			UTraversalFunctionLibrary::EvaluateSplineMovement(CurrentSplineComp, 0.0f, bDontReverseSplineLoc, TargetPosition, TargetRotation);
+		}
+		UTraversalFunctionLibrary::CalculateSplineMoveDuration(CurrentSplineComp, Speed, DesiredMoveDuration);
+		TargetPosition.Z = GetActorLocation().Z;
+		TimerManagerRef->SetTimer(MoveTimerHandle, this, &AWorldTraversingEntityV2::OnSplineTraversal, 0.01f, true);
+	}
+}
+
+void AWorldTraversingEntityV2::OnSplineTraversal()
+{
+	MoveTimer += 0.01f;
+	// move on to next Spline point
+	float splineCompletePer = FMath::Clamp(MoveTimer / DesiredMoveDuration, 0.0f, 1.0f);
+	UTraversalFunctionLibrary::EvaluateSplineMovement(CurrentSplineComp, splineCompletePer , bDontReverseSplineLoc, TargetPosition, TargetRotation);
+	TargetPosition.Z = GetActorLocation().Z;
+	SetActorLocation(FMath::Lerp(GetActorLocation(), TargetPosition, MoveTimer/DesiredMoveDuration));
+	if (splineCompletePer >= 1)
+	{
+		// move onto next path node
+		TimerManagerRef->ClearTimer(MoveTimerHandle);
+		PathIndex++;
 		TargetPosition = TheNodePath[PathIndex]->GetActorLocation();
 		TargetPosition.Z = GetActorLocation().Z;
 		float newDistance = FVector::Dist(GetActorLocation(), TargetPosition);
 		DesiredMoveDuration = newDistance/Speed;
-	}
-	else
-	{
-		SetActorLocation(FMath::Lerp(playerPos, TargetPosition, MoveTimer/DesiredMoveDuration));
+		TimerManagerRef->SetTimer(MoveTimerHandle, this, &AWorldTraversingEntityV2::OnMove, 0.01f, true);
 	}
 }
-
 
 void AWorldTraversingEntityV2::StartMove(TArray<TObjectPtr<AHarryWorldTraversalNode>> path)
 {
@@ -59,4 +105,10 @@ void AWorldTraversingEntityV2::StartMove(TArray<TObjectPtr<AHarryWorldTraversalN
 	DesiredMoveDuration = distance/Speed;
 	TimerManagerRef->ClearTimer(MoveTimerHandle);
 	TimerManagerRef->SetTimer(MoveTimerHandle, this, &AWorldTraversingEntityV2::OnMove, 0.01f, true);
+	TheGameInstance = Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+}
+
+void AWorldTraversingEntityV2::MoveBack()
+{
+	StartMove(TheReversePath);
 }

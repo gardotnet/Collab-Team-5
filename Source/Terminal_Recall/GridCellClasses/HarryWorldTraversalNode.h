@@ -2,10 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "BaseGridCell.h"
+#include "Components/SplineMeshComponent.h"
 #include "Terminal_Recall/StructsAndEnums/HarryNeighbourStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/LevelnfoStruct.h"
 #include "HarryWorldTraversalNode.generated.h"
 
+class AHarryWorldTraversalSystem;
 class ATraversalPlayerController;
 class UDefaultInstance;
 
@@ -24,14 +26,16 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Stuff For Designers | Grid Cell Info | Necessities")
 	TObjectPtr<UDataTable> LevelDataTable;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Grid Cell Info | General Stuff")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Grid Cell Info | General Stuff",  meta = (EditCondition = "VariableLoaded"))
 	TArray<FHarryNeighbourStruct> NeighbouringNodes;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Grid Cell Info | General Stuff")
 	bool Visited = false;
-	
+
 	UPROPERTY(EditInstanceOnly, Category="Stuff For Designers | Grid Cell Info | Encounter Stuff", meta = (ToolTip = "Add the Level ID from \"Level Data Table\" here"))
-	int32 LevelID = 0;
+	bool IsEncounter = true;
+	UPROPERTY(EditInstanceOnly, Category="Stuff For Designers | Grid Cell Info | Encounter Stuff", meta = (ToolTip = "Add the Level ID from \"Level Data Table\" here"))
+	int32 LevelID = 1;
 	UPROPERTY(BlueprintReadOnly, Category="Stuff For Designers | Grid Cell Info | Encounter Stuff")
 	FLevelInfoStruct LevelInfo;
 	
@@ -52,15 +56,27 @@ protected:
 	TObjectPtr<ATraversalPlayerController> PlayerController;
 	UPROPERTY()
 	TObjectPtr<UDefaultInstance> GameInstance;
+	UPROPERTY(Transient)
 	TArray<FHarryNeighbourStruct> OldNeighbouringNodes;
+	
+	UPROPERTY()
+	TObjectPtr<AHarryWorldTraversalSystem> WorldTraversalSystem;
+	UPROPERTY(VisibleInstanceOnly, Transient, Category="Stuff For Designers | Grid Cell Info | General Stuff")
+	bool VariableLoaded = false;
 
 public:
 	virtual void BeginPlay() override;
 	virtual void OnCellClicked(AActor* TouchedActor, FKey ButtonPressed) override;
 	virtual void OnUnitArrive_Implementation() override;
+	void CreateSinglePath(FHarryNeighbourStruct* neighbour);
 
 protected:
+	
 #if WITH_EDITOR
+	virtual void OnConstruction(const FTransform& Transform) override;
+	virtual void PostActorCreated() override;
+	void InitializeVariables();
+	virtual void PreEditChange(FProperty* PropertyAboutToChange) override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
 };

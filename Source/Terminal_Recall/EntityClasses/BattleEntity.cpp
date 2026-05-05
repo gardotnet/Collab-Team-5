@@ -2,39 +2,54 @@
 
 #include "JsonObjectConverter.h"
 #include "Components/TextBlock.h"
+#include "Components/TextRenderComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/Controllers/PlayerBattleController.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/ActionStruct.h"
 #include "Terminal_Recall/StuffForUI/ActionButtonUI.h"
+#include "Terminal_Recall/StatusEffect/BaseStatusEffect.h"
 #include "Terminal_Recall/StuffForUI/BattleChoiceSelectUI.h"
 
 ABattleEntity::ABattleEntity()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	TextRenderComponent = CreateDefaultSubobject<UTextRenderComponent>("Text Component");
+	TextRenderComponent->SetupAttachment(RootComponent);
+	TextRenderComponent->AddLocalOffset(FVector(0.0f, 0.0f, 100.0f));
+	TextRenderComponent->SetText(FText::FromString("-1"));
+	TextRenderComponent->AddLocalRotation(FRotator(90.0f, 180.0f, 0.0f));
+	TextRenderComponent->SetTextRenderColor(FColor::Blue);
+	TextRenderComponent->VerticalAlignment = EVerticalTextAligment::EVRTA_TextCenter;
+	TextRenderComponent->HorizontalAlignment = EHorizTextAligment::EHTA_Center;
+	TextRenderComponent->SetHiddenInGame(true);
+	TextRenderComponent->YScale = 2.0f;
+	TextRenderComponent->XScale = 2.0f;
 }
 void ABattleEntity::OnBattleStart(ABattleManager* battleManager)
 {
 	BattleManager = battleManager;
 }
 
-void ABattleEntity::OnBattleStart(ABattleManager* battleManager, int32 enemyID )
+void ABattleEntity::OnBattleStart(ABattleManager* battleManager, int32 enemyID)
 {
 	BattleManager = battleManager;
 }
 
 void ABattleEntity::OnTurnGo()
 {
-	// Decrement all cooldowns by 1
 	ShowChoices();
 }
 void ABattleEntity::ShowChoices()
 {
 	// add all buttons to the UI
-	PlayerBattleController->BattleChoiceUIWidget->AddActionButton(MovementActionsUI, AttackActionsUI, ItemActionsUI);
+	
+	//PlayerBattleController->BattleChoiceUIWidget->AddToViewport();
+	//PlayerBattleController->BattleChoiceUIWidget->AddActionButton(MovementActionsUI, AttackActionsUI, ItemActionsUI);
 }
 void ABattleEntity::SetPos(FIntPoint newPos, ABattleGridCell* cell)
 {
+	UE_LOG(LogTemp, Display, TEXT("SetPos"));
 	OnChangeCell.Broadcast();
 	CurrentCell = cell;
 	GridPos = newPos;
@@ -42,20 +57,45 @@ void ABattleEntity::SetPos(FIntPoint newPos, ABattleGridCell* cell)
 FGridRangeExport* ABattleEntity::GetActionInfo(EActionType type, int32 indexInList)
 {
 	if (type == EActionType::Attack || type == EActionType::EnemyAttack)
-		return &AttackInfoList[indexInList].ActionRange;
+		return &ActionList[indexInList].AttackAction.ActionRange;
 	if (type == EActionType::Movement || type == EActionType::EnemyMove)
-		return &MoveInfoList[indexInList].ActionRange;
+		return &ActionList[indexInList].MovementAction.ActionRange;
 	return nullptr;
+}
+
+void ABattleEntity::EnableRestrictedMovement()
+{
+	bRestrictedMovement = true;
+	// [NOTE] cancel UI here
+}
+void ABattleEntity::DisableRestrictedMovement()
+{
+	bRestrictedMovement = false;
+	// [NOTE] enable UI here
 }
 void ABattleEntity::CustomTakeDamage(float damage)
 {
 	CurrentHealth = CurrentHealth - damage;
+	OnDamagedEvent.Broadcast(CurrentHealth);
 	if (CurrentHealth <= 0.0f)
 	{
+		// tells the grid it 'WAS' on, that it is now empty
 		OnChangeCell.Broadcast();
 		Destroy();
+		BattleManager->NextEntityTurn();
+	}
+	else if (CurrentHealth > MaxHealth)
+	{
+		CurrentHealth = MaxHealth;
 	}
 }
+
+void ABattleEntity::CustomTakeDamageAndApplyStatus(float damage, ABaseStatusEffect* effect)
+{
+	CustomTakeDamage(damage);
+	CurrentStatusEffects.Add(effect);
+}
+
 void ABattleEntity::BeginPlay()
 {
 	Super::BeginPlay();
@@ -72,7 +112,9 @@ void ABattleEntity::OnMove()
 	{
 		TimerManagerRef->ClearTimer(MoveTimerHandle);
 		SetActorLocation(TargetPosition);
+		OnActionComplete(EActionType::Movement);
 		OnActionDoneEvent.Broadcast();
+		BattleManager->NextEntityTurn();
 	}
 	else
 	{
@@ -81,11 +123,63 @@ void ABattleEntity::OnMove()
 }
 void ABattleEntity::OnEntityClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
-	BattleManager->OnEntitySelected(this);
+	//BattleManager->OnEntitySelected(this);
+	
 }
+
+void ABattleEntity::OnActionComplete(EActionType type)
+{
+	ReduceCooldown();
+	AddCooldown(type);
+	HandleStatusEffects();
+}
+
+void ABattleEntity::AddCooldown(EActionType type)
+{
+	if (!ActionList.IsValidIndex(SelectedActionID))
+		return;
+	if (ActionList[SelectedActionID].Cooldown < 0)
+		return;
+	UE_LOG(LogTemp, Warning, TEXT("ID: %i"), SelectedActionID);
+	if (type == EActionType::Movement)
+	{
+		ActionList[SelectedActionID].Cooldown = ActionList[SelectedActionID].MovementAction.CooldownDuration;
+		UE_LOG(LogTemp, Warning, TEXT("move cd: %i"), ActionList[SelectedActionID].Cooldown)
+	}
+	else if (type == EActionType::Attack)
+	{
+		ActionList[SelectedActionID].Cooldown = ActionList[SelectedActionID].AttackAction.CooldownDuration;
+		UE_LOG(LogTemp, Warning, TEXT("attack cd: %i"), ActionList[SelectedActionID].Cooldown)
+	}
+	
+}
+
+void ABattleEntity::ReduceCooldown()
+{
+	for (int i = 0; i < 5; i++)
+	{
+		if (ActionList[i].Cooldown > 0)
+		{
+			ActionList[i].Cooldown--;
+		}
+	}
+}
+
+void ABattleEntity::ShowPotentialHit(float damage)
+{
+	TextRenderComponent->SetHiddenInGame(false);
+	TextRenderComponent->SetText(FText::FromString("-" + FString::FromInt(damage)));
+}
+
+void ABattleEntity::HidePotentialHit()
+{
+	TextRenderComponent->SetHiddenInGame(true);
+}
+
 // finding action in data table and making a button for it
 void ABattleEntity::FindAndSaveActions(const TArray<int32>& attackArray, const TArray<int32>& moveArray, bool isEnemy)
 {
+	ActionList.SetNum(5);
 	EActionType attackType = EActionType::Attack;
 	EActionType moveType = EActionType::Movement;
 	if (isEnemy)
@@ -94,48 +188,50 @@ void ABattleEntity::FindAndSaveActions(const TArray<int32>& attackArray, const T
 		moveType = EActionType::EnemyMove;
 	}
 	// find attack info and set up button 
-	for (auto attackID : attackArray)
+	
+	for (int i = 0; i < 5; i++)
 	{
-		FString stringConvert = FString::FromInt(attackID);
+		if (!attackArray.IsValidIndex(i) || attackArray[i] <= 0)
+			continue;
+		FString stringConvert = FString::FromInt(attackArray[i]);
 		if (FActionStruct* attackInfo = ActionDataTable->FindRow<FActionStruct>(FName(*stringConvert), TEXT("Entity Search")))
 		{
 			auto extractedData = LoadActionInfoFromPath(FPaths::ProjectContentDir() + attackInfo->GridRangeFilePath);
 			if (!extractedData.IsSet())
 				continue;
-			AttackInfoList.Add(FMoveStruct(extractedData.GetValue(), 0));
-			// create button and set it up
-			if (UActionButtonUI* newAttackButton =Cast<UActionButtonUI>(CreateWidget(GetWorld()->GetFirstPlayerController(), ActionButtonClass)))
+			ActionList[i].AttackAction = FActionRefStruct(
+				extractedData.GetValue(), 
+				attackInfo->CooldownDuration,
+				attackInfo->Damage,
+				attackInfo->StatusEffect,
+				attackInfo->bIsSelfAppliedStatus
+			);
+			if (IsValid(attackInfo->StatusEffect))
 			{
-				newAttackButton->Entity = this;
-				newAttackButton->ActionType = attackType;
-				newAttackButton->ActionName = attackInfo->ActionName.ToString();
-				newAttackButton->NameLabel->SetText(FText::FromString(attackInfo->ActionName.ToString()));
-				AttackActionsUI.Add(newAttackButton);
-				newAttackButton->IndexInOwningEntityArray = AttackActionsUI.Num() - 1;
-				newAttackButton->OnActionSelected.AddDynamic(BattleManager, &ABattleManager::ActionChoiceSelected);
+				UE_LOG(LogTemp, Warning, TEXT("Has Effect"));
 			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("No effect"));
+			}
+			ActionList[i].Cooldown = 0;
 		}
 	}
-	// find move info and set up button 
-	for (auto moveID : moveArray)
+	for (int i = 0; i < 5; i++)
 	{
-		FString stringConvert = FString::FromInt(moveID);
+		if (!moveArray.IsValidIndex(i) || moveArray[i] <= 0)
+			continue;
+		FString stringConvert = FString::FromInt(moveArray[i]);
 		if (FActionStruct* moveInfo = ActionDataTable->FindRow<FActionStruct>(FName(*stringConvert), TEXT("Entity Search")))
 		{
 			auto extractedData = LoadActionInfoFromPath(FPaths::ProjectContentDir() + moveInfo->GridRangeFilePath);
 			if (!extractedData.IsSet())
 				continue;
-			MoveInfoList.Add(FMoveStruct(extractedData.GetValue(), 0));
-			if (UActionButtonUI* newMoveButton =Cast<UActionButtonUI>(CreateWidget(GetWorld()->GetFirstPlayerController(), ActionButtonClass)))
-			{
-				newMoveButton->Entity = this;
-				newMoveButton->ActionType = moveType;
-				newMoveButton->ActionName = moveInfo->ActionName.ToString();
-				newMoveButton->NameLabel->SetText(FText::FromString(moveInfo->ActionName.ToString()));
-				MovementActionsUI.Add(newMoveButton);
-				newMoveButton->IndexInOwningEntityArray = MovementActionsUI.Num() - 1;
-				newMoveButton->OnActionSelected.AddDynamic(BattleManager, &ABattleManager::ActionChoiceSelected);
-			}
+			ActionList[i].MovementAction = FActionRefStruct(
+				extractedData.GetValue(), 
+				moveInfo->CooldownDuration
+			);
+			ActionList[i].Cooldown = 0;
 		}
 	}
 }
@@ -156,6 +252,10 @@ TOptional<FGridRangeExport> ABattleEntity::LoadActionInfoFromPath(FString path)
 	return TOptional<FGridRangeExport>();
 }
 
-
-
-
+void ABattleEntity::HandleStatusEffects()
+{
+	for (ABaseStatusEffect* status : CurrentStatusEffects)
+	{
+		status->DoStatusEffect_Implementation(this);
+	}
+}

@@ -16,7 +16,7 @@ public:
 	TObjectPtr<UBoxComponent> BoxComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> MeshComponent;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stuff For Designers | Grid Cell Info | General Stuff")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stuff For Designers | Grid Cell Info | General Stuff", meta=(ToolTip="Determines if player can click the cell or not"))
 	bool Clickable;
 	UPROPERTY()
 	TObjectPtr<ABaseEntity> UnitRef;

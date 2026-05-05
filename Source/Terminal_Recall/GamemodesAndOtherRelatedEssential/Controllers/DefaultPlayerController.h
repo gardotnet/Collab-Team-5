@@ -21,9 +21,7 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category="Stuff For Designers | General Stuff")
 	TSubclassOf<AWorldTraversalEntity> PlayerChar;
-	UPROPERTY(EditAnywhere, Category="Stuff For Designers | General Stuff")
-	float PlayerSpeed = 100;
-	UPROPERTY(EditAnywhere, Category="Input Stuff")
+	UPROPERTY(EditAnywhere, Category="Stuff For Designers | Input Stuff")
 	TObjectPtr<UInputMappingContext> MappingContext;
 	
 protected:

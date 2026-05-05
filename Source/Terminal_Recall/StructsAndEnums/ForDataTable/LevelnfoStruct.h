@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "Terminal_Recall/InteractableObject/BaseInteractable.h"
 #include "LevelnfoStruct.generated.h"
 
 USTRUCT(BLueprintType)
@@ -23,4 +24,8 @@ struct FLevelInfoStruct: public FTableRowBase
 	TArray<int32> EnemyIdForHints;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString LevelFilePath = "";
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<ABaseInteractable> RobotPickupBP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FIntPoint PartSpawnLoc = FIntPoint(0,0);
 };

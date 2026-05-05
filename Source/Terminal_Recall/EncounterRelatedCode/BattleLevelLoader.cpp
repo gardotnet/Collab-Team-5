@@ -5,6 +5,7 @@
 #include "IDesktopPlatform.h"
 #include "JsonObjectConverter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialIR.h"
 #include "Terminal_Recall/EntityClasses/BattleEnemyEntity.h"
 #include "Terminal_Recall/EntityClasses/BattlePlayerEntity.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
@@ -12,6 +13,8 @@
 #include "Terminal_Recall/StructsAndEnums/LevelExportStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/AssetLookUpStruct.h"
 #include "Terminal_Recall/StructsAndEnums/ForDataTable/EnemyInfoStruct.h"
+#include "Terminal_Recall/StructsAndEnums/ForDataTable/InteractableInfoStruct.h"
+#include "Terminal_Recall/StructsAndEnums/ForDataTable/TrapInfoStruct.h"
 
 ABattleLevelLoader::ABattleLevelLoader()
 {
@@ -59,7 +62,31 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 			// battle manager for game
 			ABattleManager* battleManager = Cast<ABattleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ABattleManager::StaticClass()));
 			if (!IsValid(battleManager))
+			{
 				battleManager = GetWorld()->SpawnActor<ABattleManager>(BattleManagerClass);
+			}
+			else
+			{
+				if (!battleManager->GridMap.IsEmpty())
+				{
+					for (auto& It : battleManager->GridMap)
+					{
+						if (It.Value)
+						{
+							It.Value->Destroy();
+						}
+					}
+					battleManager->GridMap.Empty();
+					for (AActor* Actor : TempActors)
+					{
+						if (IsValid(Actor))
+						{
+							Actor->Destroy();
+						}
+					}
+					TempActors.Empty();
+				}
+			}
 			FActorSpawnParameters spawnParams;
 			spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			// create grid
@@ -69,9 +96,9 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 				{
 					FVector spawnPos = FVector(-100 * x, 100 * y, 0.0f);
 					ABattleGridCell* newCell = GetWorld()->SpawnActor<ABattleGridCell>(BattleGridClass, spawnPos, FRotator::ZeroRotator, spawnParams);
-					#if WITH_EDITOR
+#if WITH_EDITOR
 					newCell->SetFolderPath(FName("GridCells"));
-					#endif
+#endif
 					// check board pattern
 					if ((x+y) % 2 == 0)
 					{
@@ -94,68 +121,113 @@ void ABattleLevelLoader::LoadLevel(FString levelPath)
 				switch (cellData.CellType)
 				{
 					// if it is a prop
-					case ECellBrushMode::Wall:
-						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
+				case ECellBrushMode::Wall:
+					if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
+					{
+						if (cellData.IdForCellContent == 0)
 						{
-							if (cellData.IdForCellContent == 0)
-							{
-								(*newCell)->Destroy();
-								battleManager->GridMap.Remove(cellData.Position);
-								continue;
-							}
-							FString stringConvert = FString::FromInt(cellData.IdForCellContent);
-							// look for prop info using ID given
-							if (FAssetLookUpTable* propInfo = PropDataTable->FindRow<FAssetLookUpTable>(FName(*stringConvert), TEXT("Level Loader")))
-							{
-								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
-								GetWorld()->SpawnActor<AActor>(propInfo->ActorBP, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
-								(*newCell)->SetWalkable(false);
-							}
+							(*newCell)->Destroy();
+							battleManager->GridMap.Remove(cellData.Position);
+							continue;
 						}
+						FString stringConvert = FString::FromInt(cellData.IdForCellContent);
+						// look for prop info using ID given
+						if (FAssetLookUpTable* propInfo = PropDataTable->FindRow<FAssetLookUpTable>(FName(*stringConvert), TEXT("Level Loader")))
+						{
+							propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
+							TempActors.Add(GetWorld()->SpawnActor<AActor>(propInfo->ActorBP, propSpawnLoc, FRotator::ZeroRotator, spawnParams));
+							(*newCell)->SetWalkable(false);
+						}
+					}
 					break;
 					// if it is player spawn
-					case ECellBrushMode::PlayerSpawn:
-						// Check if player is already spawned
-						if (!IsValid(battleManager->PlayerRef))
-						{
-							if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
-							{
-								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
-								battleManager->PlayerRef = GetWorld()->SpawnActor<ABattlePlayerEntity>(PlayerEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
-								battleManager->PlayerRef->SetPos(cellData.Position, *newCell);
-								battleManager->PlayerRef->OnBattleStart(battleManager);
-								battleManager->PlayerRef->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
-								(*newCell)->HouseEntity(battleManager->PlayerRef);
-							}
-						}
-						else
-						{
-							UE_LOG(LogTemp, Warning, TEXT("More than one player spawn point, Ignoring..."));
-						}
-					break;
-					// if it is enemy spawn
-					case ECellBrushMode::EnemySpawn:
+				case ECellBrushMode::PlayerSpawn:
+					// Check if player is already spawned
+					if (!IsValid(battleManager->PlayerRef))
+					{
 						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
 						{
-							FString stringConvert = FString::FromInt(cellData.IdForCellContent);
-							// look for enemy info using ID given
-							if (FEnemyInfoStruct* enemyInfo = EnemyDataTable->FindRow<FEnemyInfoStruct>(FName(*stringConvert), TEXT("Level Loader")))
-							{
-								propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
-								ABattleEnemyEntity* newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
-								// [NOTE] Pass data to enemy
-								battleManager->EnemyArray.Add(newEnemy);
-								newEnemy->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
-								newEnemy->OnBattleStart(battleManager, cellData.IdForCellContent);
-								newEnemy->SetPos(cellData.Position, *newCell);
-								(*newCell)->HouseEntity(newEnemy);
-							}
+							propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
+							battleManager->PlayerRef = GetWorld()->SpawnActor<ABattlePlayerEntity>(PlayerEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
+							battleManager->PlayerRef->SetPos(cellData.Position, *newCell);
+							battleManager->PlayerRef->OnBattleStart(battleManager);
+							//battleManager->PlayerRef->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
+							(*newCell)->HouseEntity(battleManager->PlayerRef);
+							TempActors.Add(battleManager->PlayerRef);
 						}
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("More than one player spawn point, Ignoring..."));
+					}
 					break;
-					default:
+					// if it is enemy spawn
+				case ECellBrushMode::EnemySpawn:
+					if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
+					{
+						propSpawnLoc = (*newCell)->GetActorLocation() + FVector(0.0f,0.0f, 100.0f);
+						FString enemyIDString = FString::FromInt(cellData.IdForCellContent);
+						if (!EnemyDataTable)
+						{
+							UE_LOG(LogTemp, Error, TEXT("Where the enemy data table?"))
+							return;
+						}
+						if (FEnemyInfoStruct* enemyInfo = EnemyDataTable->FindRow<FEnemyInfoStruct>(FName(*enemyIDString), TEXT("Entity Search")))
+						{
+							ABattleEnemyEntity* newEnemy = nullptr;
+							if (IsValid(enemyInfo->EnemyOverrideBP))
+							{
+								newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(enemyInfo->EnemyOverrideBP, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
+							}
+							else
+							{
+								newEnemy = GetWorld()->SpawnActor<ABattleEnemyEntity>(BaseEnemyEntityClass, propSpawnLoc, FRotator::ZeroRotator, spawnParams);
+							}
+							battleManager->EnemyArray.Add(newEnemy);
+							//newEnemy->OnActionDoneEvent.AddDynamic(battleManager, &ABattleManager::NextEntityTurn);
+							newEnemy->OnBattleStart(battleManager, enemyInfo);
+							newEnemy->SetPos(cellData.Position, *newCell);
+							(*newCell)->HouseEntity(newEnemy);
+							TempActors.Add(newEnemy);
+						}
+						
+					}
+					break;
+				case ECellBrushMode::Trap:
+					if (FTrapInfoStruct* trapInfo = TrapDataTable->FindRow<FTrapInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
+					{
+						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
+						{
+							if (trapInfo->ObjectRef == nullptr) { continue; }
+							AActor* trapInteractable = GetWorld()->SpawnActor<AActor>(trapInfo->ObjectRef);
+							FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
+							FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
+							trapInteractable->SetActorTransform(transform);
+							(*newCell)->AssignInteractable(Cast<ABaseInteractable>(trapInteractable));
+							battleManager->TrapList.Add(trapInteractable);
+						}
+					}
+					break;
+				case ECellBrushMode::InteractableSpawn:
+					if (FInteractableInfoStruct* infoStruct = InteractableDataTable->FindRow<FInteractableInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
+					{
+						if (TObjectPtr<ABattleGridCell>* newCell = battleManager->GridMap.Find(cellData.Position))
+						{
+							if (infoStruct->ObjectRef == nullptr) { continue; }
+							AActor* ObjectInteractable = GetWorld()->SpawnActor<AActor>(infoStruct->ObjectRef);
+							FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
+							FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
+							ObjectInteractable->SetActorTransform(transform);
+							(*newCell)->AssignInteractable(Cast<ABaseInteractable>(ObjectInteractable));
+						}
+					}
+					break;
+				default:
 					break;
 				}
 			}
+			battleManager->bSetUpComplete = true;
+			battleManager->OnSetUpDone.Broadcast();
 		}
 	}
 }
@@ -203,6 +275,16 @@ void ABattleLevelLoader::EditorLoadLevel()
 		if (bOpened && OutFileNames.Num() > 0)
 		{
 			OverwriteLevelPath = OutFileNames[0];
+			#if WITH_EDITOR
+			if (UWorld* World = GetWorld())
+			{
+				if (World->IsGameWorld())
+				{
+					LoadLevel(OverwriteLevelPath);
+					return;
+				}
+			}
+			#endif
 			FString jsonData;
 			// fetch file data and shove it into "jsonData"
 			if (FFileHelper::LoadFileToString(jsonData, *OverwriteLevelPath))
@@ -240,11 +322,17 @@ void ABattleLevelLoader::EditorLoadLevel()
 					for (const auto& cellData : levelData.GridCells)
 					{
 						FVector propSpawnLoc;
+						
 						switch (cellData.CellType)
 						{
 						case ECellBrushMode::Wall:
 							if (TObjectPtr<ABattleGridCell>* newCell = TempGridMap.Find(cellData.Position))
 							{
+								if (cellData.IdForCellContent == 0)
+								{
+									(*newCell)->Destroy();
+									continue;
+								}
 								FString stringConvert = FString::FromInt(cellData.IdForCellContent);
 								if (FAssetLookUpTable* propInfo = PropDataTable->FindRow<FAssetLookUpTable>(FName(*stringConvert), TEXT("Level Loader")))
 								{
@@ -291,6 +379,32 @@ void ABattleLevelLoader::EditorLoadLevel()
 								enemyChar->SetFolderPath(FName("Stuff from battle level"));
 								#endif
 								TempActors.Add(enemyChar);
+							}
+							break;
+						case ECellBrushMode::Trap:
+							if (FTrapInfoStruct* trapInfo = TrapDataTable->FindRow<FTrapInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
+							{
+								if (TObjectPtr<ABattleGridCell>* newCell = TempGridMap.Find(cellData.Position))
+								{
+									if (trapInfo->ObjectRef == nullptr) { continue; }
+									AActor* trapInteractable = GetWorld()->SpawnActor<AActor>(trapInfo->ObjectRef);
+									FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
+									FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
+									trapInteractable->SetActorTransform(transform);
+								}
+							}
+							break;
+						case ECellBrushMode::InteractableSpawn:
+							if (FInteractableInfoStruct* infoStruct = InteractableDataTable->FindRow<FInteractableInfoStruct>(FName(*FString::FromInt(cellData.IdForCellContent)), TEXT("Entity Search")))
+							{
+								if (TObjectPtr<ABattleGridCell>* newCell = TempGridMap.Find(cellData.Position))
+								{
+									if (infoStruct->ObjectRef == nullptr) { continue; }
+									AActor* ObjectInteractable = GetWorld()->SpawnActor<AActor>(infoStruct->ObjectRef);
+									FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
+									FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
+									ObjectInteractable->SetActorTransform(transform);
+								}
 							}
 							break;
 						default:

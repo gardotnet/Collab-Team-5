@@ -4,6 +4,7 @@
 #include "OurBasePlayerController.h"
 #include "PlayerBattleController.generated.h"
 
+class UMainBattleUI;
 class UActionButtonUI;
 class UBattleChoiceSelectUI;
 
@@ -15,8 +16,19 @@ class TERMINAL_RECALL_API APlayerBattleController : public AOurBasePlayerControl
 public:
 	UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
 	TSubclassOf<UUserWidget> BattleChoiceUIClass;
-	UPROPERTY()
-	TObjectPtr<UBattleChoiceSelectUI> BattleChoiceUIWidget;
+	UPROPERTY(BlueprintReadWrite, Category="Stuff For Designers | Variables")
+	TObjectPtr<UUserWidget> BattleChoiceUIWidget;
+	
+	/*UPROPERTY(EditDefaultsOnly, Category="For Designers | Necessities")
+	TSubclassOf<UUserWidget> MainBattleUIClass;
+	UPROPERTY(BlueprintReadWrite, Category="Stuff For Designers | Variables")
+	TObjectPtr<UMainBattleUI> MainBattleUIWidget;*/
+	
+public:
+	
+	UFUNCTION(BlueprintCallable, Category="Stuff For Designers | Functions")
+	void HideUI();
+	
 protected:
 	virtual void BeginPlay() override;
 };

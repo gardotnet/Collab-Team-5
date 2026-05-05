@@ -26,6 +26,7 @@ protected:
 	#if WITH_EDITOR
 	virtual bool IsSelectable() const override { return false; }
 	#endif
+	virtual void OnConstruction(const FTransform& Transform) override;
 public:
 	void RegenerateGrid(FIntPoint gridSize);
 	void AddText(int32 ismIndex, FText text, FIntPoint groupSize);
