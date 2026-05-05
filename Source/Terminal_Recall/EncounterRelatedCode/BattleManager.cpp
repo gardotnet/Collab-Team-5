@@ -240,9 +240,8 @@ void ABattleManager::OnCellSelected(ABattleEntity* target, EActionType type, boo
 	
 	if (mainAttackCell && !(type == EActionType::EnemyAttack || type == EActionType::EnemyMove))
 	{
-		PlayerRef->SelectedActionID = -1;
-		UE_LOG(LogTemp, Error, TEXT("%d"), PlayerRef->SelectedActionID);
 		PlayerRef->OnActionComplete(type);
+		PlayerRef->SelectedActionID = -1;
 		OnPlayerEndTurnEvent.Broadcast();
 		NextEntityTurn();
 		return;

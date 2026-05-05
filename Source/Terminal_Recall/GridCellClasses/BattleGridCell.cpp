@@ -155,11 +155,9 @@ void ABattleGridCell::Explode(float damage, int magnitude)
 
 void ABattleGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 {
-	UE_LOG(LogTemp, Error, TEXT("Wait What"))
 	if (!Clickable)
 		return;
 	Clickable = false;
-	UE_LOG(LogTemp, Error, TEXT("Bruh Move alre"))
 	switch (ActionType)
 	{
 		case EActionType::Attack:
