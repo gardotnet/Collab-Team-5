@@ -52,14 +52,6 @@ void AHarryWorldTraversalNode::OnUnitArrive_Implementation()
 		if (!GameInstance) return;
 	}
 
-	// OUTPOST GAME END CUTSCENE TRIGGERING
-	if (IsOutpost) {
-		if (GameInstance->HasFixedMech() && !GameInstance->bGameEndEligible) {
-			GameInstance->bGameEndEligible = true;
-			GameInstance->TriggerGameEnd();
-		}
-	}
-
 	// NODE VISITING
 	if (GameInstance->VisitedCells.IsEmpty())
 		return;
@@ -95,6 +87,15 @@ void AHarryWorldTraversalNode::OnUnitArrive_Implementation()
 			neighbour.Node->CoverObject->Destroy();
 	}
 	NeighbourCloudRemoved = true;
+
+	// OUTPOST GAME END CUTSCENE TRIGGERING
+	// only triggers if visited (returning to node)
+	if (IsOutpost && Visited) {
+		if (GameInstance->HasFixedMech() && !GameInstance->bGameEndEligible) {
+			GameInstance->bGameEndEligible = true;
+			GameInstance->TriggerGameEnd();
+		}
+	}
 }
 
 void AHarryWorldTraversalNode::CreateSinglePath(FHarryNeighbourStruct* neighbour)
