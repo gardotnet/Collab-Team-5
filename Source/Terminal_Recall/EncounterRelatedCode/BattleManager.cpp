@@ -335,3 +335,15 @@ void ABattleManager::BeginDestroy()
 	CallGroupHoverEndEvent.Clear();
 	CallGroupAttackEvent.Clear();
 }
+
+void ABattleManager::EndCombat()
+{
+	UDefaultInstance* GI = Cast<UDefaultInstance>(GetGameInstance());
+	if (GI)
+	{
+		GI->Health = PlayerRef ? PlayerRef->CurrentHealth : GI->Health;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[BATTLE] Current encounter completed. Returning player to level select."));
+	UGameplayStatics::OpenLevel(GetWorld(), MainGameLevel);
+}

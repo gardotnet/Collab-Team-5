@@ -90,6 +90,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Stuff For Designers | Function")
 	inline void ClearPrediction();
+
+	UFUNCTION()
+	void EndCombat();
 protected:
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;

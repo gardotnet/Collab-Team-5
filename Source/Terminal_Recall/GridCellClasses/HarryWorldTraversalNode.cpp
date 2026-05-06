@@ -44,8 +44,6 @@ void AHarryWorldTraversalNode::OnCellClicked(AActor* TouchedActor, FKey ButtonPr
 void AHarryWorldTraversalNode::OnUnitArrive_Implementation()
 {
 	Super::OnUnitArrive_Implementation();
-
-	if (!IsOutpost) return;
 	
 	if (!IsValid(GameInstance)) {
 		GameInstance = Cast<UDefaultInstance>(GetGameInstance());

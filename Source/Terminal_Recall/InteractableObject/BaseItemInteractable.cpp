@@ -1,6 +1,7 @@
 ﻿#include "BaseItemInteractable.h"
 #include "Kismet/GameplayStatics.h"
 #include "Terminal_Recall/GamemodesAndOtherRelatedEssential/DefaultInstance.h"
+#include "Terminal_Recall/EncounterRelatedCode/BattleManager.h"
 
 ABaseItemInteractable::ABaseItemInteractable()
 {
@@ -27,7 +28,7 @@ void ABaseItemInteractable::OnItemUse_Implementation()
 		if (CurrentValue == -1)
 		{
 			GI->AttackList[AttackIndex] = AttackIndex;
-			UE_LOG(LogTemp, Warning, TEXT("attack added at index %d: %d"), AttackIndex, GI->AttackList[AttackIndex]);
+			UE_LOG(LogTemp, Warning, TEXT("[ITEM PICKUP] attack added at index %d"), AttackIndex);
 		}
 	}
 
@@ -38,11 +39,15 @@ void ABaseItemInteractable::OnItemUse_Implementation()
 		if (CurrentValue == -1)
 		{
 			GI->MoveList[MoveIndex] = MoveIndex;
-			UE_LOG(LogTemp, Warning, TEXT("move added at index %d: %d"), MoveIndex, GI->MoveList[MoveIndex]);
+			UE_LOG(LogTemp, Warning, TEXT("[ITEM PICKUP] move added at index %d"), MoveIndex);
 		}
 	}
 
 	RemoveFromGame();
+	if (ABattleManager* BM = Cast<ABattleManager>(UGameplayStatics::GetActorOfClass(this, ABattleManager::StaticClass())))
+	{
+		BM->EndCombat();
+	}
 }
 
 void ABaseItemInteractable::GetItemInfo(FString& OutName, FString& OutDescription) const
