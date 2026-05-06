@@ -42,3 +42,20 @@ void UDefaultInstance::EncounterWon()
 {
 	VisitedCells.Add(PlayerSpawnPos);
 }
+
+bool UDefaultInstance::HasFixedMech() const
+{
+	for (int32 Value : AttackList)
+	{
+		if (Value == -1)
+			return false;
+	}
+
+	for (int32 Value : MoveList)
+	{
+		if (Value == -1)
+			return false;
+	}
+
+	return true;
+}

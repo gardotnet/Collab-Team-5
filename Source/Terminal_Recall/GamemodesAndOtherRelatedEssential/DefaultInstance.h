@@ -25,14 +25,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	float DamageMultiplier = 1.0f;
 
-	//Reference to player's current mech parts
+	//reference to player's current mech parts
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	TArray<int> AttackList;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	TArray<int> MoveList;
-	
+	UFUNCTION(BlueprintCallable)
+	bool HasFixedMech() const;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bGameEndEligible = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	FVector LastValidVisitCell;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void TriggerGameEnd();
 	
 	TSubclassOf<ABaseInteractable> RobotPickUpClass;
 	FIntPoint PickUpLoc = FIntPoint(0, 0);

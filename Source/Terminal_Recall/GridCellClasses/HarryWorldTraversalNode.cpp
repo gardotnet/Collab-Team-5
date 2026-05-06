@@ -44,8 +44,23 @@ void AHarryWorldTraversalNode::OnCellClicked(AActor* TouchedActor, FKey ButtonPr
 void AHarryWorldTraversalNode::OnUnitArrive_Implementation()
 {
 	Super::OnUnitArrive_Implementation();
-	if (!IsValid(GameInstance))
+
+	if (!IsOutpost) return;
+	
+	if (!IsValid(GameInstance)) {
 		GameInstance = Cast<UDefaultInstance>(GetGameInstance());
+		if (!GameInstance) return;
+	}
+
+	// OUTPOST GAME END CUTSCENE TRIGGERING
+	if (IsOutpost) {
+		if (GameInstance->HasFixedMech() && !GameInstance->bGameEndEligible) {
+			GameInstance->bGameEndEligible = true;
+			GameInstance->TriggerGameEnd();
+		}
+	}
+
+	// NODE VISITING
 	if (GameInstance->VisitedCells.IsEmpty())
 		return;
 	if (GameInstance->VisitedCells.Contains(GetActorLocation()))
