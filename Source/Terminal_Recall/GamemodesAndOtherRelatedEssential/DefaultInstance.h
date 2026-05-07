@@ -1,6 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
@@ -26,13 +24,22 @@ public:
 	float MaxHealth = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	float DamageMultiplier = 1.0f;
+
+	//reference to player's current mech parts
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	TArray<int> AttackList;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	TArray<int> MoveList;
-	
+	UFUNCTION(BlueprintCallable)
+	bool HasFixedMech() const;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bGameEndEligible = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	FVector LastValidVisitCell;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void TriggerGameEnd();
 	
 	TSubclassOf<ABaseInteractable> RobotPickUpClass;
 	FIntPoint PickUpLoc = FIntPoint(0, 0);
@@ -44,5 +51,6 @@ protected:
 
 	virtual void OnStart() override;
 public:
+	UFUNCTION(BlueprintCallable, Category="Stuff For Designers | System Variables")
 	void EncounterWon();
 };

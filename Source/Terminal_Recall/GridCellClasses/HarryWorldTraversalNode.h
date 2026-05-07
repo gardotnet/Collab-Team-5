@@ -35,6 +35,8 @@ public:
 	UPROPERTY(EditInstanceOnly, Category="Stuff For Designers | Grid Cell Info | Encounter Stuff", meta = (ToolTip = "Add the Level ID from \"Level Data Table\" here"))
 	bool IsEncounter = true;
 	UPROPERTY(EditInstanceOnly, Category="Stuff For Designers | Grid Cell Info | Encounter Stuff", meta = (ToolTip = "Add the Level ID from \"Level Data Table\" here"))
+	bool IsOutpost= false; // for eventing endgame cutscenes
+	UPROPERTY(EditInstanceOnly, Category="Stuff For Designers | Grid Cell Info | Encounter Stuff", meta = (ToolTip = "Add the Level ID from \"Level Data Table\" here"))
 	int32 LevelID = 1;
 	UPROPERTY(BlueprintReadOnly, Category="Stuff For Designers | Grid Cell Info | Encounter Stuff")
 	FLevelInfoStruct LevelInfo;

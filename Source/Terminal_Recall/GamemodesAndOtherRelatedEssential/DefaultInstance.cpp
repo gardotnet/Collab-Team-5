@@ -22,11 +22,40 @@ void UDefaultInstance::PostEditChangeProperty(FPropertyChangedEvent& PropertyCha
 void UDefaultInstance::OnStart()
 {
 	Super::OnStart();
+
+	//initialise lists with -1 (empty/unused slot)
+	AttackList.Init(-1, 5);
+	MoveList.Init(-1,5);
+
+	//set king move from DT_ActionList at index 0
+	AttackList[0] = 1;
+	MoveList[0] = 1;
+
+	/*
 	AttackList.SetNum(5);
 	MoveList.SetNum(5);
+	*/
+
 }
 
 void UDefaultInstance::EncounterWon()
 {
 	VisitedCells.Add(PlayerSpawnPos);
+}
+
+bool UDefaultInstance::HasFixedMech() const
+{
+	for (int32 Value : AttackList)
+	{
+		if (Value == -1)
+			return false;
+	}
+
+	for (int32 Value : MoveList)
+	{
+		if (Value == -1)
+			return false;
+	}
+
+	return true;
 }
