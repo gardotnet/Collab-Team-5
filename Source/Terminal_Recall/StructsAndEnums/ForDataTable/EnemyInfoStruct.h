@@ -13,7 +13,7 @@ struct FEnemyInfoStruct : public FTableRowBase
 {
 	GENERATED_BODY()
 	FEnemyInfoStruct() = default;
-	FEnemyInfoStruct(FName name, float health , const TArray<int32>& attackList, const TArray<int32>& moveList, int32 moveDist, FIntPoint size, UTexture2D)
+	FEnemyInfoStruct(FName name, float health , const TArray<int32>& attackList, const TArray<int32>& moveList, int32 moveDist, FIntPoint size)
 	{
 		EnemyName = name;
 		Health = health;
@@ -35,7 +35,9 @@ struct FEnemyInfoStruct : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FIntPoint GridSize = FIntPoint(1, 1);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<ABattleEnemyEntity> EnemyBpRef = nullptr;
+	TSubclassOf<ABattleEnemyEntity> EnemyOverrideBP = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UTexture2D> EnemyIconTexture = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float HealthDropChance = 0.0f;
 };

@@ -4,9 +4,6 @@
 #include "BaseInteractable.h"
 #include "BaseItemInteractable.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class TERMINAL_RECALL_API ABaseItemInteractable : public ABaseInteractable
 {
@@ -21,6 +18,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Info")
 	FString ItemDescription;
+
+	//Index to get from DataList
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Interactable|Info")
+	int32 AttackIndex = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Interactable|Info")
+	int32 MoveIndex = 0;
 
 	// Use confirmation UI func when player attempts to interact
 	// BlueprintImplementableEvent allows designers to build the UI logic entirely in Blueprints

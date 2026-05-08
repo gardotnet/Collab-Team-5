@@ -44,8 +44,13 @@ void AHarryWorldTraversalNode::OnCellClicked(AActor* TouchedActor, FKey ButtonPr
 void AHarryWorldTraversalNode::OnUnitArrive_Implementation()
 {
 	Super::OnUnitArrive_Implementation();
-	if (!IsValid(GameInstance))
+	
+	if (!IsValid(GameInstance)) {
 		GameInstance = Cast<UDefaultInstance>(GetGameInstance());
+		if (!GameInstance) return;
+	}
+
+	// NODE VISITING
 	if (GameInstance->VisitedCells.IsEmpty())
 		return;
 	if (GameInstance->VisitedCells.Contains(GetActorLocation()))
@@ -80,6 +85,15 @@ void AHarryWorldTraversalNode::OnUnitArrive_Implementation()
 			neighbour.Node->CoverObject->Destroy();
 	}
 	NeighbourCloudRemoved = true;
+
+	// OUTPOST GAME END CUTSCENE TRIGGERING
+	// only triggers if visited (returning to node)
+	if (IsOutpost && Visited) {
+		if (GameInstance->HasFixedMech() && !GameInstance->bGameEndEligible) {
+			GameInstance->bGameEndEligible = true;
+			GameInstance->TriggerGameEnd();
+		}
+	}
 }
 
 void AHarryWorldTraversalNode::CreateSinglePath(FHarryNeighbourStruct* neighbour)

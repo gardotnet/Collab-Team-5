@@ -8,6 +8,8 @@
 #include "BattleEntity.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FChangeCell);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FForCooldown);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamaged, float, newHp);
 
 class UTextRenderComponent;
 class ABattleGridCell;
@@ -15,7 +17,6 @@ class UActionButtonUI;
 class APlayerBattleController;
 class ABattleManager;
 class ABaseStatusEffect;
-
 
 UCLASS()
 class TERMINAL_RECALL_API ABattleEntity : public ABaseEntity
@@ -25,8 +26,6 @@ class TERMINAL_RECALL_API ABattleEntity : public ABaseEntity
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Stuff For Designers | Necessities")
 	TObjectPtr<UDataTable> ActionDataTable;
-	UPROPERTY(EditAnywhere, Category = "Stuff For Designers | Necessities")
-	TSubclassOf<UUserWidget> ActionButtonClass;
 	UPROPERTY(BlueprintAssignable, Category = "Stuff For Designers | Delegates")
 	FChangeCell OnChangeCell;
 	int32 SelectedActionID = -1;
@@ -36,23 +35,21 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Stuff For Designers | Variables")
 	TArray<ABaseStatusEffect*> CurrentStatusEffects;
 	
+	UPROPERTY(BlueprintAssignable, Category = "Stuff For Designers | Delegates")
+	FOnDamaged OnDamagedEvent;
+	
 protected:
 	UPROPERTY()
 	TObjectPtr<UTextRenderComponent> TextRenderComponent;
 	UPROPERTY()
 	TObjectPtr<ABattleManager> BattleManager;
-	UPROPERTY(EditAnywhere, Category="Stuff For Designers | Entity Info | General Stuff")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Entity Info | General Stuff")
 	float DamageMultiplier = 1.0f;
 	UPROPERTY()
 	FIntPoint GridPos = FIntPoint(0.0f, 0.0f);
 	UPROPERTY()
 	TObjectPtr<APlayerBattleController> PlayerBattleController;
-	UPROPERTY()
-	TArray<UActionButtonUI*> MovementActionsUI;
-	UPROPERTY()
-	TArray<UActionButtonUI*> AttackActionsUI;
-	UPROPERTY()
-	TArray<UActionButtonUI*> ItemActionsUI;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Stuff For Designers | Variables")
 	TArray<FEntityTwinActionContainer> ActionList;
 	UPROPERTY()
 	TObjectPtr<ABattleGridCell> CurrentCell;
