@@ -54,11 +54,16 @@ void ABattlePlayerEntity::OnBattleStart(ABattleManager* battleManager)
 	BattleManager = battleManager;
 	if (UDefaultInstance* gameInstance =  Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
 	{
+		GI = gameInstance;
+		
 		FindAndSaveActions(gameInstance->AttackList, gameInstance->MoveList, false);
+
 		CurrentHealth = gameInstance->Health;
 		MaxHealth = gameInstance->MaxHealth;
 		DamageMultiplier = gameInstance->DamageMultiplier;
 	}
+
+	EquipMechPart();
 }
 
 void ABattlePlayerEntity::StartMove(FVector position)
@@ -76,4 +81,56 @@ void ABattlePlayerEntity::CustomTakeDamage(float damage)
 		OnChangeCell.Broadcast();
 		Destroy();
 	}
+}
+
+void ABattlePlayerEntity::EquipMechPart() {
+	bool bAnyPartEnabled = false;
+
+	UE_LOG(LogTemp, Warning, TEXT("[CURRENT PLAYER PARTS] Arms=%d Legs=%d Booster=%d Wings=%d"),
+		IsMechPartUnlocked(true, ATK_ArmsIndex),
+		IsMechPartUnlocked(true, ATK_LegsIndex),
+		IsMechPartUnlocked(true, ATK_BoosterIndex),
+		IsMechPartUnlocked(true, ATK_WingsIndex)
+	);
+	
+	if (IsMechPartUnlocked(true, ATK_ArmsIndex) || IsMechPartUnlocked(false,MOVE_ArmsIndex)) {
+		R_ArmMesh->SetHiddenInGame(false);
+		L_ArmMesh->SetHiddenInGame(false);
+
+		bAnyPartEnabled = true;
+	}
+
+	if (IsMechPartUnlocked(true, ATK_LegsIndex) || IsMechPartUnlocked(false,MOVE_LegsIndex)) {
+		R_LegMesh->SetHiddenInGame(false);
+		L_LegMesh->SetHiddenInGame(false);
+
+		bAnyPartEnabled = true;
+	}
+
+	if (IsMechPartUnlocked(true, ATK_BoosterIndex) || IsMechPartUnlocked(false,MOVE_BoosterIndex)) {
+		BoostersMesh->SetHiddenInGame(false);
+
+		bAnyPartEnabled = true;
+	}
+
+	if (IsMechPartUnlocked(true, ATK_WingsIndex) || IsMechPartUnlocked(false,MOVE_WingsIndex)) {
+		WindshieldMesh->SetHiddenInGame(false);
+
+		bAnyPartEnabled = true;
+	}
+
+	MouseMesh->SetHiddenInGame(bAnyPartEnabled);
+	
+	CockpitMesh->SetHiddenInGame(!bAnyPartEnabled);
+	CharaMesh->SetHiddenInGame(!bAnyPartEnabled);
+}
+
+bool ABattlePlayerEntity::IsMechPartUnlocked(bool bIsAttack, int32 Index) const{
+	if (!GI) return false;
+
+	const TArray<int32>& List = bIsAttack
+		? GI->AttackList
+		: GI->MoveList;
+
+	return List.IsValidIndex(Index) && List[Index] != INDEX_NONE;
 }

@@ -53,7 +53,11 @@ AWorldTraversingEntityV2::AWorldTraversingEntityV2()
 void AWorldTraversingEntityV2::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	PlayerController = Cast<ATraversalPlayerController>(GetWorld()->GetFirstPlayerController());
+	TheGameInstance = Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	
+	EquipMechPart();
 }
 
 void AWorldTraversingEntityV2::OnMove()
@@ -153,7 +157,54 @@ void AWorldTraversingEntityV2::MoveBack()
 }
 
 void AWorldTraversingEntityV2::EquipMechPart() {
-	if (!TheGameInstance) return;
+	bool bAnyPartEnabled = false;
 	
+	UE_LOG(LogTemp, Warning, TEXT("[CURRENT PLAYER PARTS] Arms=%d Legs=%d Booster=%d Wings=%d"),
+		IsMechPartUnlocked(true, ATK_ArmsIndex),
+		IsMechPartUnlocked(true, ATK_LegsIndex),
+		IsMechPartUnlocked(true, ATK_BoosterIndex),
+		IsMechPartUnlocked(true, ATK_WingsIndex)
+	);
+	
+	if (IsMechPartUnlocked(true, ATK_ArmsIndex) || IsMechPartUnlocked(false,MOVE_ArmsIndex)) {
+		R_ArmMesh->SetHiddenInGame(false);
+		L_ArmMesh->SetHiddenInGame(false);
+
+		bAnyPartEnabled = true;
+	}
+
+	if (IsMechPartUnlocked(true, ATK_LegsIndex) || IsMechPartUnlocked(false,MOVE_LegsIndex)) {
+		R_LegMesh->SetHiddenInGame(false);
+		L_LegMesh->SetHiddenInGame(false);
+
+		bAnyPartEnabled = true;
+	}
+
+	if (IsMechPartUnlocked(true, ATK_BoosterIndex) || IsMechPartUnlocked(false,MOVE_BoosterIndex)) {
+		BoostersMesh->SetHiddenInGame(false);
+
+		bAnyPartEnabled = true;
+	}
+
+	if (IsMechPartUnlocked(true, ATK_WingsIndex) || IsMechPartUnlocked(false,MOVE_WingsIndex)) {
+		WindshieldMesh->SetHiddenInGame(false);
+
+		bAnyPartEnabled = true;
+	}
+
+	MouseMesh->SetHiddenInGame(bAnyPartEnabled);
+	
+	CockpitMesh->SetHiddenInGame(!bAnyPartEnabled);
+	CharaMesh->SetHiddenInGame(!bAnyPartEnabled);
+}
+
+bool AWorldTraversingEntityV2::IsMechPartUnlocked(bool bIsAttack, int32 Index) const{
+	if (!TheGameInstance) return false;
+
+	const TArray<int32>& List = bIsAttack
+		? TheGameInstance->AttackList
+		: TheGameInstance->MoveList;
+
+	return List.IsValidIndex(Index) && List[Index] != INDEX_NONE;
 }
 
