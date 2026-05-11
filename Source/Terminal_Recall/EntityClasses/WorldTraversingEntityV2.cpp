@@ -9,12 +9,55 @@
 AWorldTraversingEntityV2::AWorldTraversingEntityV2()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	MouseMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MouseMesh"));
+	MouseMesh->SetupAttachment(MeshComponent);
+	
+	//Mesh for mouse in cockpit, NOT freeroaming
+	CharaMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CharaMesh"));
+	CharaMesh->SetupAttachment(MeshComponent);
+
+	R_ArmMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightArmMesh"));
+	R_ArmMesh->SetupAttachment(MeshComponent);
+
+	L_ArmMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftArmMesh"));
+	L_ArmMesh->SetupAttachment(MeshComponent);
+
+	R_LegMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightLegMesh"));
+	R_LegMesh->SetupAttachment(MeshComponent);
+
+	L_LegMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftLegMesh"));
+	L_LegMesh->SetupAttachment(MeshComponent);
+
+	BoostersMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BoostersMesh"));
+	BoostersMesh->SetupAttachment(MeshComponent);
+
+	CockpitMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CockpitMesh"));
+	CockpitMesh->SetupAttachment(MeshComponent);
+
+	WindshieldMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WindshieldMesh"));
+	WindshieldMesh->SetupAttachment(MeshComponent);
+
+	//Hide mech parts on start:
+	CharaMesh->SetHiddenInGame(true);
+	R_ArmMesh->SetHiddenInGame(true);
+	L_ArmMesh->SetHiddenInGame(true);
+	R_LegMesh->SetHiddenInGame(true);
+	L_LegMesh->SetHiddenInGame(true);
+	BoostersMesh->SetHiddenInGame(true);
+	CockpitMesh->SetHiddenInGame(true);
+	WindshieldMesh->SetHiddenInGame(true);
+	
 }
 
 void AWorldTraversingEntityV2::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	PlayerController = Cast<ATraversalPlayerController>(GetWorld()->GetFirstPlayerController());
+	TheGameInstance = Cast<UDefaultInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	
+	EquipMechPart();
 }
 
 void AWorldTraversingEntityV2::OnMove()
@@ -112,3 +155,56 @@ void AWorldTraversingEntityV2::MoveBack()
 {
 	StartMove(TheReversePath);
 }
+
+void AWorldTraversingEntityV2::EquipMechPart() {
+	bool bAnyPartEnabled = false;
+	
+	UE_LOG(LogTemp, Warning, TEXT("[CURRENT PLAYER PARTS] Arms=%d Legs=%d Booster=%d Wings=%d"),
+		IsMechPartUnlocked(true, ATK_ArmsIndex),
+		IsMechPartUnlocked(true, ATK_LegsIndex),
+		IsMechPartUnlocked(true, ATK_BoosterIndex),
+		IsMechPartUnlocked(true, ATK_WingsIndex)
+	);
+	
+	if (IsMechPartUnlocked(true, ATK_ArmsIndex) || IsMechPartUnlocked(false,MOVE_ArmsIndex)) {
+		R_ArmMesh->SetHiddenInGame(false);
+		L_ArmMesh->SetHiddenInGame(false);
+
+		bAnyPartEnabled = true;
+	}
+
+	if (IsMechPartUnlocked(true, ATK_LegsIndex) || IsMechPartUnlocked(false,MOVE_LegsIndex)) {
+		R_LegMesh->SetHiddenInGame(false);
+		L_LegMesh->SetHiddenInGame(false);
+
+		bAnyPartEnabled = true;
+	}
+
+	if (IsMechPartUnlocked(true, ATK_BoosterIndex) || IsMechPartUnlocked(false,MOVE_BoosterIndex)) {
+		BoostersMesh->SetHiddenInGame(false);
+
+		bAnyPartEnabled = true;
+	}
+
+	if (IsMechPartUnlocked(true, ATK_WingsIndex) || IsMechPartUnlocked(false,MOVE_WingsIndex)) {
+		WindshieldMesh->SetHiddenInGame(false);
+
+		bAnyPartEnabled = true;
+	}
+
+	MouseMesh->SetHiddenInGame(bAnyPartEnabled);
+	
+	CockpitMesh->SetHiddenInGame(!bAnyPartEnabled);
+	CharaMesh->SetHiddenInGame(!bAnyPartEnabled);
+}
+
+bool AWorldTraversingEntityV2::IsMechPartUnlocked(bool bIsAttack, int32 Index) const{
+	if (!TheGameInstance) return false;
+
+	const TArray<int32>& List = bIsAttack
+		? TheGameInstance->AttackList
+		: TheGameInstance->MoveList;
+
+	return List.IsValidIndex(Index) && List[Index] != INDEX_NONE;
+}
+
