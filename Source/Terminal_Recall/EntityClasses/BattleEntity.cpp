@@ -49,7 +49,6 @@ void ABattleEntity::ShowChoices()
 }
 void ABattleEntity::SetPos(FIntPoint newPos, ABattleGridCell* cell)
 {
-	UE_LOG(LogTemp, Display, TEXT("SetPos"));
 	OnChangeCell.Broadcast();
 	CurrentCell = cell;
 	GridPos = newPos;
@@ -140,16 +139,13 @@ void ABattleEntity::AddCooldown(EActionType type)
 		return;
 	if (ActionList[SelectedActionID].Cooldown < 0)
 		return;
-	UE_LOG(LogTemp, Warning, TEXT("ID: %i"), SelectedActionID);
 	if (type == EActionType::Movement)
 	{
 		ActionList[SelectedActionID].Cooldown = ActionList[SelectedActionID].MovementAction.CooldownDuration;
-		UE_LOG(LogTemp, Warning, TEXT("move cd: %i"), ActionList[SelectedActionID].Cooldown)
 	}
 	else if (type == EActionType::Attack)
 	{
 		ActionList[SelectedActionID].Cooldown = ActionList[SelectedActionID].AttackAction.CooldownDuration;
-		UE_LOG(LogTemp, Warning, TEXT("attack cd: %i"), ActionList[SelectedActionID].Cooldown)
 	}
 	
 }

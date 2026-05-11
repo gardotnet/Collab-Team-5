@@ -122,7 +122,6 @@ void ABattleManager::ActionSelected(int hotbarSlot)
 {
 	ClearPrediction();
 	PlayerRef->SelectedActionID = hotbarSlot;
-	UE_LOG(LogTemp, Error, TEXT("%d"), PlayerRef->SelectedActionID);
 	// allow player to select entity
 	SelectMode = true;
 	// allow player to pick cells
