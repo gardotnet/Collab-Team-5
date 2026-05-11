@@ -30,7 +30,7 @@
 				"y": 1
 			},
 			"cellType": "EnemySpawn",
-			"idForCellContent": 5
+			"idForCellContent": 12
 		},
 		{
 			"position":
@@ -174,7 +174,7 @@
 				"y": 5
 			},
 			"cellType": "EnemySpawn",
-			"idForCellContent": 8
+			"idForCellContent": 12
 		},
 		{
 			"position":

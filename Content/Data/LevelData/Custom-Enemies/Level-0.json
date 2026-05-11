@@ -243,15 +243,6 @@
 			"position":
 			{
 				"x": 5,
-				"y": 2
-			},
-			"cellType": "EnemySpawn",
-			"idForCellContent": 5
-		},
-		{
-			"position":
-			{
-				"x": 5,
 				"y": 5
 			},
 			"cellType": "Wall",
@@ -282,7 +273,7 @@
 				"y": 8
 			},
 			"cellType": "EnemySpawn",
-			"idForCellContent": 5
+			"idForCellContent": 12
 		}
 	]
 }
