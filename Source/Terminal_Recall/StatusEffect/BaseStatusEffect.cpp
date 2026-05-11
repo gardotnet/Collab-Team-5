@@ -11,7 +11,6 @@ ABaseStatusEffect::ABaseStatusEffect()
 void ABaseStatusEffect::DoStatusEffect_Implementation(ABattleEntity* entityTarget)
 {
 	DoStatusEffect(entityTarget);
-	UE_LOG(LogTemp, Error, TEXT("IM RUNNING DW"));
 	Duration--;
 	if (Duration <= 0)
 	{

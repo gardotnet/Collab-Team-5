@@ -358,7 +358,6 @@ void AHarryWorldTraversalNode::PostEditChangeChainProperty(FPropertyChangedChain
         					return;
         			}        		
         			
-        			UE_LOG(LogTemp, Warning, TEXT("Im running"));
         			//CreateSinglePath(neighbourInfo);
         			if (!IsValid(WorldTraversalSystem))
         				WorldTraversalSystem = Cast<AHarryWorldTraversalSystem>(UGameplayStatics::GetActorOfClass(GetWorld(), AHarryWorldTraversalSystem::StaticClass()));

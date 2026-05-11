@@ -73,7 +73,6 @@ void ABattleGridCell::HouseEntity(ABattleEntity* entity)
 }
 void ABattleGridCell::EvictEntity()
 {
-	UE_LOG(LogTemp, Display, TEXT("EvictEntity %s"), *ResidingEntity->GetActorNameOrLabel());
 	ResidingEntity->OnChangeCell.RemoveDynamic(this, &ABattleGridCell::EvictEntity);
 	if (InteractableRef != nullptr)
 	{

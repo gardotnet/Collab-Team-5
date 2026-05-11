@@ -21,14 +21,12 @@ void ABaseGridCell::BeginPlay()
 void ABaseGridCell::BeginDestroy()
 {
 	Super::BeginDestroy();
-	UE_LOG(LogTemp, Warning, TEXT("Bye bye party"));
 	OnClicked.RemoveDynamic(this, &ABaseGridCell::OnCellClicked);
 }
 
 void ABaseGridCell::OnUnitArrive_Implementation()
 {
 	OnUnitArrive();
-	UE_LOG(LogTemp, Warning, TEXT("Now the party can start"));
 }
 void ABaseGridCell::OnCellClicked(AActor* TouchedActor, FKey ButtonPressed)
 {

@@ -64,35 +64,27 @@ void ABattleEnemyEntity::OnTurnGo()
 				{
 				case ECompassDirection::N:
 					nextDir = FVector(0, 100, 0);
-					UE_LOG(LogTemp, Warning, TEXT("North"));
 					break;
 				case ECompassDirection::NE:
 					nextDir = FVector(100, 100, 0);
-					UE_LOG(LogTemp, Warning, TEXT("North East"));
 					break;
 				case ECompassDirection::E:
 					nextDir = FVector(100, 0, 0);
-					UE_LOG(LogTemp, Warning, TEXT("E"));
 					break;
 				case ECompassDirection::SE:
 					nextDir = FVector(100, -100, 0);
-					UE_LOG(LogTemp, Warning, TEXT("SE"));
 					break;
 				case ECompassDirection::S:
 					nextDir = FVector(0, -100, 0);
-					UE_LOG(LogTemp, Warning, TEXT("S"));
 					break;
 				case ECompassDirection::SW:
 					nextDir = FVector(-100, -100, 0);
-					UE_LOG(LogTemp, Warning, TEXT("SW"));
 					break;
 				case ECompassDirection::W:
 					nextDir = FVector(-100, 0, 0);
-					UE_LOG(LogTemp, Warning, TEXT("W"));
 					break;
 				case ECompassDirection::NW:
 					nextDir = FVector(-100, 100, 0);
-					UE_LOG(LogTemp, Warning, TEXT("NW"));
 					break;
 				default:
 					continue;
@@ -163,7 +155,7 @@ void ABattleEnemyEntity::OnTurnGo()
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("WHERE?"));
+					UE_LOG(LogTemp, Warning, TEXT("No effects awww?"));
 				}
 				DelayAttack();
 			}
@@ -198,35 +190,27 @@ void ABattleEnemyEntity::OnTurnGo()
 						{
 						case ECompassDirection::N:
 							nextDir = FVector(0, 100, 0);
-							UE_LOG(LogTemp, Warning, TEXT("North"));
 							break;
 						case ECompassDirection::NE:
 							nextDir = FVector(100, 100, 0);
-							UE_LOG(LogTemp, Warning, TEXT("North East"));
 							break;
 						case ECompassDirection::E:
 							nextDir = FVector(100, 0, 0);
-							UE_LOG(LogTemp, Warning, TEXT("E"));
 							break;
 						case ECompassDirection::SE:
 							nextDir = FVector(100, -100, 0);
-							UE_LOG(LogTemp, Warning, TEXT("SE"));
 							break;
 						case ECompassDirection::S:
 							nextDir = FVector(0, -100, 0);
-							UE_LOG(LogTemp, Warning, TEXT("S"));
 							break;
 						case ECompassDirection::SW:
 							nextDir = FVector(-100, -100, 0);
-							UE_LOG(LogTemp, Warning, TEXT("SW"));
 							break;
 						case ECompassDirection::W:
 							nextDir = FVector(-100, 0, 0);
-							UE_LOG(LogTemp, Warning, TEXT("W"));
 							break;
 						case ECompassDirection::NW:
 							nextDir = FVector(-100, 100, 0);
-							UE_LOG(LogTemp, Warning, TEXT("NW"));
 							break;
 						default:
 							continue;
@@ -346,42 +330,34 @@ void ABattleEnemyEntity::StartMove(FVector position)
 				case ECompassDirection::N:
 					nextDir = FVector(0, 100, 0);
 					direction = FIntPoint(0, 1);
-					UE_LOG(LogTemp, Warning, TEXT("North"));
 					break;
 				case ECompassDirection::NE:
 					nextDir = FVector(100, 100, 0);
 					direction = FIntPoint(1, 1);
-					UE_LOG(LogTemp, Warning, TEXT("North East"));
 					break;
 				case ECompassDirection::E:
 					nextDir = FVector(100, 0, 0);
 					direction = FIntPoint(1, 0);
-					UE_LOG(LogTemp, Warning, TEXT("E"));
 					break;
 				case ECompassDirection::SE:
 					nextDir = FVector(100, -100, 0);
 					direction = FIntPoint(1, -1);
-					UE_LOG(LogTemp, Warning, TEXT("SE"));
 					break;
 				case ECompassDirection::S:
 					nextDir = FVector(0, -100, 0);
 					direction = FIntPoint(0, -1);
-					UE_LOG(LogTemp, Warning, TEXT("S"));
 					break;
 				case ECompassDirection::SW:
 					nextDir = FVector(-100, -100, 0);
 					direction = FIntPoint(-1, -1);
-					UE_LOG(LogTemp, Warning, TEXT("SW"));
 					break;
 				case ECompassDirection::W:
 					nextDir = FVector(-100, 0, 0);
 					direction = FIntPoint(-1, 0);
-					UE_LOG(LogTemp, Warning, TEXT("W"));
 					break;
 				case ECompassDirection::NW:
 					nextDir = FVector(-100, 100, 0);
 					direction = FIntPoint(-1, 1);
-					UE_LOG(LogTemp, Warning, TEXT("NW"));
 					break;
 				default:
 					continue;
