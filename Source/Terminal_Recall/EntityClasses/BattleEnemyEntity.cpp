@@ -509,7 +509,7 @@ void ABattleEnemyEntity::CustomTakeDamage(float damage)
 			EnemyDeathDelay,
 			BattleManager.Get(),
 			&ABattleManager::NextEntityTurn,
-			0.05f,
+			0.3f,
 			false
 		);
 		
