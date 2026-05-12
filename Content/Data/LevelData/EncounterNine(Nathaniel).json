@@ -72,15 +72,6 @@
 			"position":
 			{
 				"x": 2,
-				"y": 5
-			},
-			"cellType": "Wall",
-			"idForCellContent": 0
-		},
-		{
-			"position":
-			{
-				"x": 2,
 				"y": 6
 			},
 			"cellType": "Wall",
