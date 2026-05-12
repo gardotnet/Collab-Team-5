@@ -410,6 +410,7 @@ void ABattleEnemyEntity::StartMove(FVector position)
 						}
 					}
 					searchedLoc.Add(prevPos);
+					totalFollowUp++;
 				}
 			}
 		}
