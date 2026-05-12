@@ -216,15 +216,6 @@
 			"position":
 			{
 				"x": 4,
-				"y": 8
-			},
-			"cellType": "Wall",
-			"idForCellContent": 0
-		},
-		{
-			"position":
-			{
-				"x": 4,
 				"y": 9
 			},
 			"cellType": "Trap",
@@ -522,15 +513,6 @@
 			"position":
 			{
 				"x": 10,
-				"y": 10
-			},
-			"cellType": "Wall",
-			"idForCellContent": 0
-		},
-		{
-			"position":
-			{
-				"x": 10,
 				"y": 11
 			},
 			"cellType": "Wall",
@@ -594,15 +576,6 @@
 			"position":
 			{
 				"x": 11,
-				"y": 10
-			},
-			"cellType": "Wall",
-			"idForCellContent": 0
-		},
-		{
-			"position":
-			{
-				"x": 11,
 				"y": 11
 			},
 			"cellType": "Wall",
@@ -625,15 +598,6 @@
 			},
 			"cellType": "Trap",
 			"idForCellContent": 2
-		},
-		{
-			"position":
-			{
-				"x": 12,
-				"y": 1
-			},
-			"cellType": "Wall",
-			"idForCellContent": 1
 		},
 		{
 			"position":

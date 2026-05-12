@@ -99,15 +99,6 @@
 			"position":
 			{
 				"x": 4,
-				"y": 8
-			},
-			"cellType": "Wall",
-			"idForCellContent": 0
-		},
-		{
-			"position":
-			{
-				"x": 4,
 				"y": 12
 			},
 			"cellType": "Wall",
@@ -370,15 +361,6 @@
 			{
 				"x": 10,
 				"y": 9
-			},
-			"cellType": "Wall",
-			"idForCellContent": 0
-		},
-		{
-			"position":
-			{
-				"x": 10,
-				"y": 10
 			},
 			"cellType": "Wall",
 			"idForCellContent": 0
