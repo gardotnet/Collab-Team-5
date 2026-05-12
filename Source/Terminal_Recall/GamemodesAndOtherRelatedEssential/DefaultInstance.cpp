@@ -8,13 +8,13 @@ void UDefaultInstance::PostEditChangeProperty(FPropertyChangedEvent& PropertyCha
 
 	if (PropertyName == GET_MEMBER_NAME_CHECKED(UDefaultInstance, AttackList))
 	{
-		if (AttackList.Num() > 5)
-			AttackList.SetNum(5);
+		if (AttackList.Num() > 7)
+			AttackList.SetNum(7);
 	}
 	else if (PropertyName == GET_MEMBER_NAME_CHECKED(UDefaultInstance, MoveList))
 	{
-		if (MoveList.Num() > 5)
-			MoveList.SetNum(5);
+		if (MoveList.Num() >7)
+			MoveList.SetNum(7);
 	}
 }
 #endif
@@ -23,18 +23,13 @@ void UDefaultInstance::OnStart()
 {
 	Super::OnStart();
 
-	//initialise lists with -1 (empty/unused slot)
-	AttackList.Init(-1, 5);
-	MoveList.Init(-1,5);
+	//initialise lists with empty/unused slots
+	AttackList.Init(INDEX_NONE, 7);
+	MoveList.Init(INDEX_NONE,7);
 
 	//set king move from DT_ActionList at index 0
 	AttackList[0] = 1;
 	MoveList[0] = 1;
-
-	/*
-	AttackList.SetNum(5);
-	MoveList.SetNum(5);
-	*/
 
 }
 
@@ -47,13 +42,13 @@ bool UDefaultInstance::HasFixedMech() const
 {
 	for (int32 Value : AttackList)
 	{
-		if (Value == -1)
+		if (Value == INDEX_NONE)
 			return false;
 	}
 
 	for (int32 Value : MoveList)
 	{
-		if (Value == -1)
+		if (Value == INDEX_NONE)
 			return false;
 	}
 

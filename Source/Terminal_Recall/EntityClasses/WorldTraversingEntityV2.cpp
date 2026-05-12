@@ -158,12 +158,12 @@ void AWorldTraversingEntityV2::MoveBack()
 
 void AWorldTraversingEntityV2::EquipMechPart() {
 	bool bAnyPartEnabled = false;
-	
+
 	UE_LOG(LogTemp, Warning, TEXT("[CURRENT PLAYER PARTS] Arms=%d Legs=%d Booster=%d Wings=%d"),
 		IsMechPartUnlocked(true, ATK_ArmsIndex),
 		IsMechPartUnlocked(true, ATK_LegsIndex),
 		IsMechPartUnlocked(true, ATK_BoosterIndex),
-		IsMechPartUnlocked(true, ATK_WingsIndex)
+		IsMechPartUnlocked(false, MOVE_WingsIndex)
 	);
 	
 	if (IsMechPartUnlocked(true, ATK_ArmsIndex) || IsMechPartUnlocked(false,MOVE_ArmsIndex)) {
@@ -186,7 +186,7 @@ void AWorldTraversingEntityV2::EquipMechPart() {
 		bAnyPartEnabled = true;
 	}
 
-	if (IsMechPartUnlocked(true, ATK_WingsIndex) || IsMechPartUnlocked(false,MOVE_WingsIndex)) {
+	if ( IsMechPartUnlocked(false,MOVE_WingsIndex)) {
 		WindshieldMesh->SetHiddenInGame(false);
 
 		bAnyPartEnabled = true;
@@ -200,6 +200,8 @@ void AWorldTraversingEntityV2::EquipMechPart() {
 
 bool AWorldTraversingEntityV2::IsMechPartUnlocked(bool bIsAttack, int32 Index) const{
 	if (!TheGameInstance) return false;
+
+	if (Index < 0) return false;
 
 	const TArray<int32>& List = bIsAttack
 		? TheGameInstance->AttackList

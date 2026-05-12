@@ -90,7 +90,7 @@ void ABattlePlayerEntity::EquipMechPart() {
 		IsMechPartUnlocked(true, ATK_ArmsIndex),
 		IsMechPartUnlocked(true, ATK_LegsIndex),
 		IsMechPartUnlocked(true, ATK_BoosterIndex),
-		IsMechPartUnlocked(true, ATK_WingsIndex)
+		IsMechPartUnlocked(false, MOVE_WingsIndex)
 	);
 	
 	if (IsMechPartUnlocked(true, ATK_ArmsIndex) || IsMechPartUnlocked(false,MOVE_ArmsIndex)) {
@@ -113,7 +113,7 @@ void ABattlePlayerEntity::EquipMechPart() {
 		bAnyPartEnabled = true;
 	}
 
-	if (IsMechPartUnlocked(true, ATK_WingsIndex) || IsMechPartUnlocked(false,MOVE_WingsIndex)) {
+	if (IsMechPartUnlocked(false,MOVE_WingsIndex)) {
 		WindshieldMesh->SetHiddenInGame(false);
 
 		bAnyPartEnabled = true;
