@@ -501,8 +501,18 @@ void ABattleEnemyEntity::CustomTakeDamage(float damage)
 				}
 			}
 		}
+		BattleManager->EnemyArray.Remove(this);
 		Destroy();
-		BattleManager->NextEntityTurn();
+		
+		FTimerHandle EnemyDeathDelay;
+		GetWorld()->GetTimerManager().SetTimer(
+			EnemyDeathDelay,
+			BattleManager.Get(),
+			&ABattleManager::NextEntityTurn,
+			0.05f,
+			false
+		);
+		
 	}
 	else if (CurrentHealth > MaxHealth)
 	{

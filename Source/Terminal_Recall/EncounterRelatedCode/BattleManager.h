@@ -90,7 +90,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Stuff For Designers | Function")
 	inline void ClearPrediction();
-
+	
 	UFUNCTION()
 	void EndCombat();
 protected:
