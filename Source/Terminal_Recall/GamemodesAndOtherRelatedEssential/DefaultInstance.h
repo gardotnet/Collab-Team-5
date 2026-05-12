@@ -19,7 +19,7 @@ public:
 	TArray<FVector> VisitedCells;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
-	float Health = 10.0f;
+	float Health = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	float MaxHealth = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
@@ -30,6 +30,10 @@ public:
 	TArray<int> AttackList;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	TArray<int> MoveList;
+	
+	UPROPERTY(BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
+	bool bHadFirstUpgrade = false;
+	
 	UFUNCTION(BlueprintCallable)
 	bool HasFixedMech() const;
 

@@ -26,7 +26,7 @@ void AHarryWorldTraversalNode::BeginPlay()
 		LevelInfo = *LevelDataTable->FindRow<FLevelInfoStruct>(FName(*stringConvert), TEXT(""));
 	}
 	WorldTraversalSystem = Cast<AHarryWorldTraversalSystem>(UGameplayStatics::GetActorOfClass(GetWorld(), AHarryWorldTraversalSystem::StaticClass()));
-	if (!IsCellHidden)
+	if (!IsCellHidden) 
 		Clickable = true;
 }
 
@@ -89,9 +89,21 @@ void AHarryWorldTraversalNode::OnUnitArrive_Implementation()
 	// OUTPOST GAME END CUTSCENE TRIGGERING
 	// only triggers if visited (returning to node)
 	if (IsOutpost && Visited) {
-		if (GameInstance->HasFixedMech() && !GameInstance->bGameEndEligible) {
+		if (!GameInstance->bHadFirstUpgrade)
+		{
+			GameInstance->bHadFirstUpgrade = true;
+
+			GameInstance->MaxHealth = 10.0f;
+			GameInstance->Health = GameInstance->MaxHealth;
+
+			UE_LOG(LogTemp, Warning, TEXT("[OUTPOST] player max health set to 10"));
+		}
+		
+		if (GameInstance->HasFixedMech() && GameInstance->bHadFirstUpgrade && !GameInstance->bGameEndEligible) {
 			GameInstance->bGameEndEligible = true;
 			GameInstance->TriggerGameEnd();
+
+			UE_LOG(LogTemp, Warning, TEXT("[OUTPOST] return visit w/ full mech, game end triggered"));
 		}
 	}
 }
