@@ -134,20 +134,11 @@
 		{
 			"position":
 			{
-				"x": 6,
-				"y": 9
-			},
-			"cellType": "EnemySpawn",
-			"idForCellContent": 5
-		},
-		{
-			"position":
-			{
 				"x": 7,
 				"y": 3
 			},
 			"cellType": "EnemySpawn",
-			"idForCellContent": 5
+			"idForCellContent": 12
 		},
 		{
 			"position":
