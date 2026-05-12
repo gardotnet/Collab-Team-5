@@ -31,14 +31,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	TArray<int> MoveList;
 	
-	UPROPERTY(BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	bool bHadFirstUpgrade = false;
-	
 	UFUNCTION(BlueprintCallable)
 	bool HasFixedMech() const;
-
 	UPROPERTY(BlueprintReadWrite)
 	bool bGameEndEligible = false;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stuff For Designers | Player Variables")
 	FVector LastValidVisitCell;
 
