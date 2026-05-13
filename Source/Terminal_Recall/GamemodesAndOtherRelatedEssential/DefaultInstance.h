@@ -44,7 +44,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void TriggerGameEnd();
 	
-	TSubclassOf<ABaseInteractable> RobotPickUpClass;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Stuff For Designers | Variables")
+	TSoftClassPtr<ABaseInteractable> RobotPickUpClass;
 	FIntPoint PickUpLoc = FIntPoint(0, 0);
 
 protected:

@@ -25,7 +25,7 @@ struct FLevelInfoStruct: public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString LevelFilePath = "";
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<ABaseInteractable> RobotPickupBP;
+	TSoftClassPtr<ABaseInteractable> RobotPickupBP;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FIntPoint PartSpawnLoc = FIntPoint(0,0);
 };

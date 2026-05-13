@@ -268,7 +268,8 @@ void ABattleManager::NextEntityTurn()
 		UDefaultInstance* theInstance = Cast<UDefaultInstance>(GetGameInstance());
 		theInstance->Health = PlayerRef->CurrentHealth;
 		theInstance->EncounterWon();
-		if (IsValid(theInstance->RobotPickUpClass))
+		UClass* LoadedClass = theInstance->RobotPickUpClass.LoadSynchronous();
+		if (IsValid(LoadedClass))
 		{
 			if (TObjectPtr<ABattleGridCell>* newCell = GridMap.Find(theInstance->PickUpLoc))
 			{
@@ -280,7 +281,7 @@ void ABattleManager::NextEntityTurn()
 						convertedTrap->RemoveFromGame();
 					}
 				}
-				AActor* pickUp = GetWorld()->SpawnActor<AActor>(theInstance->RobotPickUpClass);
+				AActor* pickUp = GetWorld()->SpawnActor<AActor>(LoadedClass);
 				FVector positionToSpawn = (*newCell)->GetActorLocation() + FVector(0,0,10);
 				FTransform transform = FTransform(FRotator::ZeroRotator, positionToSpawn, FVector::OneVector);
 				pickUp->SetActorTransform(transform);
