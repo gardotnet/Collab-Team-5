@@ -6,7 +6,7 @@ void UDefaultInstance::PostEditChangeProperty(FPropertyChangedEvent& PropertyCha
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 	const FName PropertyName = (PropertyChangedEvent.Property != nullptr) ? PropertyChangedEvent.Property->GetFName() : NAME_None;
 
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(UDefaultInstance, AttackList))
+	/*if (PropertyName == GET_MEMBER_NAME_CHECKED(UDefaultInstance, AttackList))
 	{
 		if (AttackList.Num() > 7)
 			AttackList.SetNum(7);
@@ -15,7 +15,7 @@ void UDefaultInstance::PostEditChangeProperty(FPropertyChangedEvent& PropertyCha
 	{
 		if (MoveList.Num() >7)
 			MoveList.SetNum(7);
-	}
+	}*/
 }
 #endif
 
@@ -24,12 +24,12 @@ void UDefaultInstance::OnStart()
 	Super::OnStart();
 
 	//initialise lists with empty/unused slots
-	AttackList.Init(INDEX_NONE, 7);
-	MoveList.Init(INDEX_NONE,7);
+	/*AttackList.Init(INDEX_NONE, 7);
+	MoveList.Init(INDEX_NONE,7);*/
 
 	//set king move from DT_ActionList at index 0
-	AttackList[0] = 1;
-	MoveList[0] = 1;
+	AttackList.Add(1);
+	MoveList.Add(1);
 
 }
 

@@ -166,27 +166,27 @@ void AWorldTraversingEntityV2::EquipMechPart() {
 		IsMechPartUnlocked(false, MOVE_WingsIndex)
 	);
 	
-	if (IsMechPartUnlocked(true, ATK_ArmsIndex) || IsMechPartUnlocked(false,MOVE_ArmsIndex)) {
+	if (IsMechPartUnlocked(false,MOVE_ArmsIndex)) {
 		R_ArmMesh->SetHiddenInGame(false);
 		L_ArmMesh->SetHiddenInGame(false);
 
 		bAnyPartEnabled = true;
 	}
 
-	if (IsMechPartUnlocked(true, ATK_LegsIndex) || IsMechPartUnlocked(false,MOVE_LegsIndex)) {
+	if (IsMechPartUnlocked(false,MOVE_LegsIndex)) {
 		R_LegMesh->SetHiddenInGame(false);
 		L_LegMesh->SetHiddenInGame(false);
 
 		bAnyPartEnabled = true;
 	}
 
-	if (IsMechPartUnlocked(true, ATK_BoosterIndex) || IsMechPartUnlocked(false,MOVE_BoosterIndex)) {
+	if (IsMechPartUnlocked(false,MOVE_BoosterIndex)) {
 		BoostersMesh->SetHiddenInGame(false);
 
 		bAnyPartEnabled = true;
 	}
 
-	if ( IsMechPartUnlocked(false,MOVE_WingsIndex)) {
+	if (IsMechPartUnlocked(false,MOVE_WingsIndex)) {
 		WindshieldMesh->SetHiddenInGame(false);
 
 		bAnyPartEnabled = true;
@@ -201,12 +201,6 @@ void AWorldTraversingEntityV2::EquipMechPart() {
 bool AWorldTraversingEntityV2::IsMechPartUnlocked(bool bIsAttack, int32 Index) const{
 	if (!TheGameInstance) return false;
 
-	if (Index < 0) return false;
-
-	const TArray<int32>& List = bIsAttack
-		? TheGameInstance->AttackList
-		: TheGameInstance->MoveList;
-
-	return List.IsValidIndex(Index) && List[Index] != INDEX_NONE;
+	return TheGameInstance->MoveList.Contains(Index);
 }
 

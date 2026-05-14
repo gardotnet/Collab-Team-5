@@ -21,19 +21,15 @@ void ABaseItemInteractable::OnItemUse_Implementation()
 	/* ATTACK / MOVE ASSIGNMENT TO PLAYER ON MECH PART PICKUP */
 
 	// add attack to player's attack array
-	if (AttackIndex >= 0 && GI->AttackList.IsValidIndex(AttackIndex)){
-		if (GI->AttackList[AttackIndex] == INDEX_NONE){
-			GI->AttackList[AttackIndex] = AttackIndex;
-			UE_LOG(LogTemp, Warning, TEXT("[ITEM PICKUP] attack added at index %d"), AttackIndex);
-		}
+	if (AttackIndex >= 0){
+		GI->AttackList.Add(AttackIndex);
+		UE_LOG(LogTemp, Warning, TEXT("[ITEM PICKUP] attack added at index %d"), AttackIndex);
 	}
 
 	// add move to player's move array
-	if (MoveIndex >= 0 && GI->MoveList.IsValidIndex(MoveIndex)){
-		if (GI->MoveList[MoveIndex] == INDEX_NONE){
-			GI->MoveList[MoveIndex] = MoveIndex;
-			UE_LOG(LogTemp, Warning, TEXT("[ITEM PICKUP] move added at index %d"), MoveIndex);
-		}
+	if (MoveIndex >= 0){
+		GI->MoveList.Add(MoveIndex);
+		UE_LOG(LogTemp, Warning, TEXT("[ITEM PICKUP] move added at index %d"), MoveIndex);
 	}
 
 	RemoveFromGame();
